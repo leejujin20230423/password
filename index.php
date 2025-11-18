@@ -1,53 +1,12 @@
 <?php
-require_once "db.php";
-require_once "auth_check.php";
-
-
-$db = new Database();
-$pdo = $db->connect(); // ★ 반드시 필요
-
-//--------------------------------------
-// 비밀번호 목록 가져오기
-//--------------------------------------
-$sql = "SELECT * FROM password ORDER BY id DESC";
-$stmt = $pdo->prepare($sql);
-$stmt->execute();
-$list = $stmt->fetchAll(PDO::FETCH_ASSOC);
+session_start();
+if(isset($_SESSION['username'])){
+    echo "안녕하세요, ".$_SESSION['username']."님! <a href='logout.php'>로그아웃</a>";
+    exit;
+}
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>비밀번호 목록</title>
-</head>
-<body>
-<h2>비밀번호 목록</h2>
 
-<a href="add.php">+ 새 비밀번호 등록</a>
-<br><br>
+<h2>비밀번호 관리</h2>
 
-<table border="1" cellpadding="5">
-    <tr>
-        <th>No</th>
-        <th>구분</th>
-        <th>사이트</th>
-        <th>아이디</th>
-        <th>등록일</th>
-        <th>보기</th>
-    </tr>
-
-    <?php foreach($list as $row) { ?>
-    <tr>
-        <td><?php echo $row['id']; ?></td>
-        <td><?php echo htmlspecialchars($row['category']); ?></td>
-        <td><?php echo htmlspecialchars($row['site_url']); ?></td>
-        <td><?php echo htmlspecialchars($row['login_id']); ?></td>
-        <td><?php echo $row['created_at']; ?></td>
-        <td><a href="view.php?id=<?php echo $row['id']; ?>">보기</a></td>
-    </tr>
-    <?php } ?>
-
-</table>
-
-</body>
-</html>
+<a href="login.php">로그인</a> | 
+<a href="register.php">회원가입</a>
