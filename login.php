@@ -49,6 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <p>비밀번호: <input type="password" name="password" required></p>
 
     <button type="submit">로그인</button>
+    <a href="register.php">회원가입</a>
+
 </form>
 
 <?php if($error): ?>
