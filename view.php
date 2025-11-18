@@ -4,6 +4,8 @@ require_once "crypto.php";
 require_once "auth_check.php";
 
 
+echo "aaa --- IGNORE ---";
+
 // DB 연결
 $db = new Database();
 $pdo = $db->connect();
