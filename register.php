@@ -3,7 +3,6 @@ require_once "db.php";
 
 $db = new Database();
 $pdo = $db->connect();
-
 $error = "";
 $success = "";
 
@@ -15,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 기존 계정 확인
     $stmt = $pdo->prepare("SELECT * FROM pass_users WHERE username = :username");
     $stmt->execute([':username' => $username]);
+
     if ($stmt->fetch()) {
         $error = "이미 존재하는 아이디입니다. 비밀번호를 갱신하려면 관리자에게 문의하세요.";
     } else {

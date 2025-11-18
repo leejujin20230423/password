@@ -4,7 +4,6 @@ require_once "db.php";
 
 $db = new Database();
 $pdo = $db->connect();
-
 $error = "";
 
 // 로그인 처리
@@ -20,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($user && password_verify($password, $user['password_hash'])) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
-        header("Location: view.php");
+        header("Location: view.php"); // 로그인 성공 후 등록 화면으로
         exit;
     } else {
         $error = "아이디 또는 비밀번호가 잘못되었습니다.";
@@ -38,4 +37,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php if($error): ?>
     <p style="color:red;"><?php echo $error; ?></p>
 <?php endif; ?>
+
 <a href="register.php">회원가입</a>

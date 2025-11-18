@@ -1,71 +1,33 @@
 <?php
 require_once "db.php";
-require_once "crypto.php";
 require_once "auth_check.php";
 
-
-
-
-// DB 연결
 $db = new Database();
 $pdo = $db->connect();
 
-// 암호화 객체
-$crypto = new PasswordCrypto();
-
-// id 체크
-if (!isset($_GET['id']) || empty($_GET['id'])) {
-    die("잘못된 접근입니다.");
-}
-
-$id = $_GET['id'];
-
-// 데이터 조회
-$sql = "SELECT * FROM password WHERE id = :id";
-$stmt = $pdo->prepare($sql);
-$stmt->execute([':id' => $id]);
-$row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// 데이터 없으면
-if (!$row) {
-    die("데이터를 찾을 수 없습니다.");
-}
-
-// 비밀번호 복호화
-$decrypted_password = $crypto->decrypt($row['encrypted_password']);
+// 현재 로그인한 유저의 등록 항목 조회
+$stmt = $pdo->prepare("SELECT * FROM pass_items WHERE user_id = :user_id ORDER BY created_at DESC");
+$stmt->execute([':user_id' => $_SESSION['user_id']]);
+$items = $stmt->fetchAll();
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>비밀번호 상세</title>
-</head>
-<body>
 
-<h2>비밀번호 상세 정보</h2>
+<h2>등록 화면</h2>
+<p>안녕하세요, <?php echo htmlspecialchars($_SESSION['username']); ?>님!</p>
 
-<p><b>구분:</b> <?php echo htmlspecialchars($row['category']); ?></p>
-<p>
-    <b>사이트 주소:</b>
-    <?php echo htmlspecialchars($row['site_url']); ?>
+<!-- 등록 폼 -->
+<form method="POST" action="register_item.php">
+    <p>등록 항목: <input type="text" name="item_name" required></p>
+    <button type="submit">등록</button>
+</form>
 
-    <?php if (!empty($row['site_url'])): ?>
-        <a href="<?php echo (strpos($row['site_url'], 'http') === 0 ? $row['site_url'] : 'https://' . $row['site_url']); ?>"
-           target="_blank"
-           style="padding: 4px 10px; background:#007bff; color:#fff;
-                  border-radius:5px; text-decoration:none; margin-left:10px;">
-            이동하기
-        </a>
-    <?php endif; ?>
-</p>
+<h3>등록 목록</h3>
+<ul>
+<?php foreach($items as $item): ?>
+    <li>
+        <?php echo htmlspecialchars($item['item_name']); ?> 
+        [<a href="view_detail.php?id=<?php echo $item['id']; ?>">상세보기</a>]
+    </li>
+<?php endforeach; ?>
+</ul>
 
-<p><b>아이디:</b> <?php echo htmlspecialchars($row['login_id']); ?></p>
-<p><b>비밀번호:</b> <?php echo htmlspecialchars($decrypted_password); ?></p>
-<p><b>메모:</b> <?php echo nl2br(htmlspecialchars($row['memo'])); ?></p>
-<p><b>등록일:</b> <?php echo $row['created_at']; ?></p>
-
-<br>
-<a href="index.php">← 목록으로</a>
-
-</body>
-</html>
+<a href="logout.php">로그아웃</a>
