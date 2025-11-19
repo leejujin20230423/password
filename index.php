@@ -1,11 +1,14 @@
 <?php
 session_start();
-if(isset($_SESSION['username'])){
-    header("Location: view.php"); // 로그인 되어 있으면 등록 화면으로
+
+// 로그인 안 되어 있으면 로그인 페이지로 이동
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
     exit;
 }
 ?>
 
-<h2>비밀번호 관리</h2>
-<a href="login.php">로그인</a> | 
-<a href="register.php">회원가입</a>
+<h2>등록 화면</h2>
+<p>안녕하세요, <?php echo htmlspecialchars($_SESSION['username']); ?>님!</p>
+
+<a href="logout.php">로그아웃</a>
