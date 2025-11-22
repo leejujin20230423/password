@@ -1,6 +1,10 @@
 <?php
 
+
 require_once __DIR__ . '/../connection/loader.php';
+
+
+
 
 $db = (new DBConnection())->getDB();
 $redis = (new RedisConnection())->getRedis();

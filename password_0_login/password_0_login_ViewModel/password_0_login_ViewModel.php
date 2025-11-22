@@ -19,4 +19,38 @@ if ($currentFile === 'password_0_login_View.php') {
     }
 }
 
+
+
+// <!-- password_login_0_route_session viewmodel
+class password_login_0_route_session_viewmodel_Module
+{
+    public function __construct()
+    {
+        // 생성자
+    }
+
+
+    // login 정보 세션 가져오기 viewmodel
+    function password_login_0_route_session_viewmodel() {
+    if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+        return "로그인된 사용자 ID: " . $_SESSION['user_id'];
+    } else {
+        return "사용자가 로그인하지 않았습니다.";
+    }
+
+
+
+}
+
+
+
+}
+function password_login_0_route_session_viewmodel() {
+    if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+        return "로그인된 사용자 ID: " . $_SESSION['user_id'];
+    } else {
+        return "사용자가 로그인하지 않았습니다.";
+    }
+}
+
 ?>
