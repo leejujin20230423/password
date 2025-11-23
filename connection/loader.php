@@ -1,6 +1,12 @@
 <?php
 
-// require_once __DIR__ . '/../vendor/autoload.php';
+$autoloadPath = __DIR__ . '/../vendor/autoload.php';
+if (file_exists($autoloadPath)) {
+    require_once $autoloadPath;
+}
+
+// 나머지 기존 코드들
+
 
 $envDir = __DIR__ . '/env';
 
