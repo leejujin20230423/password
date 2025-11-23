@@ -32,16 +32,20 @@ class password_login_0_route_session_viewmodel_Module
 
     // login 정보 세션 가져오기 viewmodel
     function password_login_0_route_session_viewmodel() {
-    if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
-        return "로그인된 사용자 ID: " . $_SESSION['user_id'];
-    } else {
-        return "사용자가 로그인하지 않았습니다.";
+        if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+            return "로그인된 사용자 ID: " . $_SESSION['user_id'];
+        } else {
+            return "사용자가 로그인하지 않았습니다.";
+        }
     }
 
-
-
-}
-
+    function password_login_0_route_session_viewmodel_사용자매장근무시간합계() {
+        if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+            return "로그인된 사용자 ID: " . $_SESSION['user_id'];
+        } else {
+            return "사용자가 로그인하지 않았습니다.";
+        }
+    }
 
 
 }
