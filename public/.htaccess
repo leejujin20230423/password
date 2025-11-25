@@ -1,45 +1,20 @@
 # -------------------------------
-# .htaccess - pass 프로젝트용 설정
+# .htaccess - pass 프로젝트용 설정 (정리 버전)
 # -------------------------------
 
-# mod_rewrite 엔진 켜기
-# (아파치가 URL을 다른 경로로 재작성할 수 있게 하는 스위치)
+# URL 재작성 엔진 켜기
 RewriteEngine On
 
+# -------------------------------------------------------------------
+# 1. 실제 파일/디렉터리는 그대로 접근
+# -------------------------------------------------------------------
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
 
 # -------------------------------------------------------------------
-# 1. 특정 URL을 password_0_login_route.php 로 연결하는 규칙
+# 2. 그 외 모든 요청은 index.php로 전달
 # -------------------------------------------------------------------
-# ^password_0_login/password_0_login_route/?$
-#   - 사이트 루트 기준으로
-#   - "password_0_login/password_0_login_route" 로 시작해서
-#   - 끝나는 요청만 매칭
-#   - 끝의 "/?$" 는 슬래시가 있어도 되고 없어도 된다는 뜻
-#
-# 오른쪽: password_0_login/password_0_login_route/password_0_login_route.php
-#   - 실제 실행시킬 PHP 파일 경로
-#
-# [L,QSA]
-#   - L : 이 규칙이 적용되면 여기서 재작성 종료(다른 RewriteRule 더 보지 않음)
-#   - QSA : 기존 쿼리스트링을 유지하여 뒤에 붙임 (?a=1 이런 것 유지)
-RewriteRule ^password_0_login/password_0_login_route/?$ password_0_login/password_0_login_route/password_0_login_route.php [L,QSA]
-
-
-# -------------------------------------------------------------------
-# 2. 그 외의 요청은 index.php로 보내는 공통 규칙
-#    (단, 실제 파일/폴더가 있을 때는 그대로 보여줌)
-# -------------------------------------------------------------------
-
-# 요청 경로가 실제 "파일(-f)"이 아닐 때만 아래 RewriteRule 적용
-# 예) /css/style.css 가 실제로 존재하면 이 조건은 false → index.php로 안 보냄
-RewriteCond %{REQUEST_FILENAME} !-f
-
-# 요청 경로가 실제 "디렉터리(-d)"가 아닐 때만 아래 RewriteRule 적용
-# 예) /images/ 폴더가 실제로 있으면 이 조건은 false → index.php로 안 보냄
-RewriteCond %{REQUEST_FILENAME} !-d
-
-# 위 두 조건을 모두 만족하는 경우(파일도 아니고 폴더도 아닌 URL)는
-# 모두 index.php 한 곳으로 모아서 처리
-# ^ 는 모든 경로를 의미
-# [L,QSA] : 위와 동일하게 마지막 규칙 + 쿼리스트링 유지
 RewriteRule ^ index.php [L,QSA]
