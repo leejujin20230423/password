@@ -21,5 +21,5 @@ require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/config/redis.php';
 
 // 4. (있다면) DBConnection / RedisConnection 클래스 로드
-// require_once __DIR__ . '/classes/DBConnection.php';
-// require_once __DIR__ . '/classes/RedisConnection.php';
+require_once __DIR__ . '/classes/DBConnection.php';
+require_once __DIR__ . '/classes/RedisConnection.php';

@@ -1,9 +1,8 @@
 <?php
 
-// .env 에서 읽어온 값은 $_ENV 에 들어 있다고 가정
 return [
-    "host" => $_ENV["DB_HOST"] ?? null,
-    "name" => $_ENV["DB_NAME"] ?? null,
-    "user" => $_ENV["DB_USER"] ?? null,
-    "pass" => $_ENV["DB_PASS"] ?? null,
+    'host' => $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: '49.247.29.76',
+    'name' => $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: 'password',   // 실제 DB 이름
+    'user' => $_ENV['DB_USER'] ?? getenv('DB_USER') ?: 'lokia',      // 실제 DB 계정
+    'pass' => $_ENV['DB_PASS'] ?? getenv('DB_PASS') ?: 'lokia0528**',// 실제 비밀번호
 ];
