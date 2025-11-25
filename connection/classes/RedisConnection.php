@@ -1,5 +1,5 @@
 <?php
-//여기 오류나고 있음"
+
 class RedisConnection
 {
     /** @var \Redis|null */
@@ -7,29 +7,35 @@ class RedisConnection
 
     public function __construct()
     {
-        // Redis 설정 로드
+        // Redis 확장이 아예 없으면 그냥 null 로 두고 빠져나감
+        if (!class_exists(\Redis::class)) {
+            // error_log 로만 남기고, 프로그램은 계속 진행
+            error_log('php-redis extension not loaded. RedisConnection will be null.');
+            $this->redis = null;
+            return;
+        }
+
         $config = require __DIR__ . '/../config/redis.php';
 
         try {
-            // 전역 네임스페이스의 Redis 클래스 사용
             $redis = new \Redis();
             $redis->connect($config['host'], $config['port']);
 
-            // 비밀번호가 설정돼 있을 때만 auth
             if (!empty($config['password'])) {
                 $redis->auth($config['password']);
             }
 
-            // ping 이 실패하면 그대로 중단
             if (!$redis->ping()) {
-                die('Redis 연결 실패');
+                error_log('Redis ping 실패');
+                $this->redis = null;
+                return;
             }
 
-            // 연결 성공 시에만 프로퍼티에 보관
             $this->redis = $redis;
 
-        } catch (\Throwable $e) {   // \Exception 대신 \Throwable 로 넓게
-            die('Redis 접속 실패: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            error_log('Redis 접속 실패: ' . $e->getMessage());
+            $this->redis = null;
         }
     }
 
