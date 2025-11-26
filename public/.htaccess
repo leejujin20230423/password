@@ -1,20 +1,14 @@
-# -------------------------------
-# .htaccess - pass 프로젝트용 설정 (정리 버전)
-# -------------------------------
+# public/.htaccess
 
-# URL 재작성 엔진 켜기
 RewriteEngine On
 
-# -------------------------------------------------------------------
-# 1. 실제 파일/디렉터리는 그대로 접근
-# -------------------------------------------------------------------
-RewriteCond %{REQUEST_FILENAME} -f
-RewriteRule ^ - [L]
+# 1) css/js/이미지/폰트 등은 그대로 파일로 보내기 (index.php로 안 보냄)
+RewriteRule \.(css|js|png|jpe?g|gif|ico|svg|woff2?|ttf|eot)$ - [L]
 
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
+# 2) 로그인 라우트 (필요하면 유지, 아니면 이마저도 삭제 가능)
+RewriteRule ^password_0_login/password_0_login_route/?$ password_0_login/password_0_login_route/password_0_login_route.php [L,QSA]
 
-# -------------------------------------------------------------------
-# 2. 그 외 모든 요청은 index.php로 전달
-# -------------------------------------------------------------------
+# 3) 그 외 "실제 파일/폴더가 없는" 요청만 index.php 로 모으기
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^ index.php [L,QSA]

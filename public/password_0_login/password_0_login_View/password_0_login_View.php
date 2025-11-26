@@ -1,6 +1,8 @@
  <?php
 // ViewModel 필요하면 유지, 아니면 삭제해도 무방
 // require_once '../password_0_login_ViewModel/password_0_login_ViewModel.php';
+
+
 ?>
 
 <!DOCTYPE html>
@@ -9,7 +11,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Password 관리자 로그인</title>
-    <link rel="stylesheet" href="password_0_login_View.css">
+    <link rel="stylesheet" href="/password_0_login/password_0_login_View/password_0_login_View.css">
+
+    
 </head>
 
 <body>

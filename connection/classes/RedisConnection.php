@@ -7,14 +7,6 @@ class RedisConnection
 
     public function __construct()
     {
-        // Redis 확장이 아예 없으면 그냥 null 로 두고 빠져나감
-        if (!class_exists(\Redis::class)) {
-            // error_log 로만 남기고, 프로그램은 계속 진행
-            error_log('php-redis extension not loaded. RedisConnection will be null.');
-            $this->redis = null;
-            return;
-        }
-
         $config = require __DIR__ . '/../config/redis.php';
 
         try {
@@ -39,9 +31,7 @@ class RedisConnection
         }
     }
 
-    /**
-     * @return \Redis|null
-     */
+    /** @return \Redis|null */
     public function getRedis()
     {
         return $this->redis;

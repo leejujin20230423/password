@@ -11,7 +11,7 @@ $redis = (new RedisConnection())->getRedis();
 // 1. 로그인 뷰 파일 경로 지정 (파일 시스템 기준)
 //    - public/ 바깥에 있는 뷰를 직접 include 해서 출력
 // ---------------------------------------------------------------------
-$loginViewFile = __DIR__ . '/../password_0_login/password_0_login_View/password_0_login_View.php';
+$loginViewFile = __DIR__ . '/password_0_login/password_0_login_View/password_0_login_View.php';
 
 // ---------------------------------------------------------------------
 // 2. 리다이렉트 없이 "항상" 뷰 파일을 직접 로드
