@@ -6,7 +6,7 @@ RewriteEngine On
 RewriteRule \.(css|js|png|jpe?g|gif|ico|svg|woff2?|ttf|eot)$ - [L]
 
 # 2) 로그인 라우트 (필요하면 유지, 아니면 이마저도 삭제 가능)
-RewriteRule ^password_0_login/password_0_login_route/?$ password_0_login/password_0_login_route/password_0_login_route.php [L,QSA]
+RewriteRule ^password_0_login/password_0_login_Route/?$ password_0_login/password_0_login_Route/password_0_login_Route.php [L,QSA]
 
 # 3) 그 외 "실제 파일/폴더가 없는" 요청만 index.php 로 모으기
 RewriteCond %{REQUEST_FILENAME} !-f

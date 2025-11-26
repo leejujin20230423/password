@@ -1,5 +1,5 @@
 <?php
-// password_0_login_route.php
+// password_0_login_Route.php
 
 // 1. 현재 요청된 URL에서 쿼리스트링을 제외한 "경로"만 가져옴
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);

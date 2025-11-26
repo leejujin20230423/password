@@ -46,8 +46,6 @@ class password_login_0_route_session_viewmodel_Module
             return "사용자가 로그인하지 않았습니다.";
         }
     }
-
-
 }
 function password_login_0_route_session_viewmodel() {
     if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
