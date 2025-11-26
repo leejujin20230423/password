@@ -1,17 +1,24 @@
 <?php
-// DB 연결 파일 불러오기
-require_once $_SERVER['DOCUMENT_ROOT'] . '/connection/connection.php';
 
-if (session_status() == PHP_SESSION_NONE) {
+// 1. 공통 로더 (env, DB, Redis 등 초기화)
+require_once __DIR__ . '/../../../connection/loader.php';
+
+if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// 로그인 Model 클래스
-class password_0_login_Model_Module extends password_connection
+// 로그인 Model 클래스 (옛날 password_connection 상속 ❌)
+class password_0_login_Model_Module
 {
+    /** @var PDO */
+    protected $db;
+
     public function __construct()
     {
-        parent::__construct();
+        // DB 연결 객체 생성
+        $this->db = (new DBConnection())->getDB();
+        // 필요하면 Redis 도 여기서 생성 가능:
+        // $this->redis = (new RedisConnection())->getRedis();
     }
 
     /**
@@ -24,7 +31,7 @@ class password_0_login_Model_Module extends password_connection
     {
         // users 테이블 조회
         $sql = "SELECT * FROM users WHERE userid = :userid LIMIT 1";
-        $stmt = $this->connection->prepare($sql);
+        $stmt = $this->db->prepare($sql);   // ← $this->connection → $this->db 로 변경
         $stmt->bindParam(":userid", $userid, PDO::PARAM_STR);
         $stmt->execute();
 
@@ -61,7 +68,5 @@ class password_0_login_Model_Module extends password_connection
     }
 }
 
-// 클래스 객체 생성
+// 클래스 객체 생성 (기존처럼 유지)
 $password_0_login_Model_Module = new password_0_login_Model_Module();
-
-?>
