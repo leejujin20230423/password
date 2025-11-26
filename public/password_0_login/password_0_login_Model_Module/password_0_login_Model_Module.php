@@ -43,7 +43,7 @@ class password_0_login_Model_Module
             if (password_verify($password, $user['password'])) {
 
                 // 세션값 저장
-                $_SESSION['user_id']   = $user['id'];
+                $_SESSION['user_no']   = $user['user_no'];
                 $_SESSION['userid']    = $user['userid'];
                 $_SESSION['username']  = $user['username'];
                 $_SESSION['user_type'] = $user['user_type'];
@@ -54,7 +54,7 @@ class password_0_login_Model_Module
             // 2) 혹시 평문 비번일 경우 대비
             if ($user['password'] === $password) {
 
-                $_SESSION['user_id']   = $user['id'];
+                $_SESSION['user_no']   = $user['user_no'];
                 $_SESSION['userid']    = $user['userid'];
                 $_SESSION['username']  = $user['username'];
                 $_SESSION['user_type'] = $user['user_type'];

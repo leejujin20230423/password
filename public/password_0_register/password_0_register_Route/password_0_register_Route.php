@@ -1,6 +1,4 @@
 <?php
-
-
 /**
  * password_0_register_Route.php
  * 
@@ -17,7 +15,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // 로그인 안 되어 있으면 바로 로그인 화면으로
-if (empty($_SESSION['user_id'])) {
+if (empty($_SESSION['user_no'])) {
     header('Location: /password_0_login/password_0_login_View/password_0_login_View.php');
     exit;
 }
@@ -31,7 +29,7 @@ if ($userType === null) {
         $db = (new DBConnection())->getDB();
 
         $stmt = $db->prepare("SELECT user_type FROM users WHERE id = :id LIMIT 1");
-        $stmt->bindValue(':id', $_SESSION['user_id'], PDO::PARAM_INT);
+        $stmt->bindValue(':id', $_SESSION['user_no'], PDO::PARAM_INT);
         $stmt->execute();
 
         if ($row = $stmt->fetch()) {

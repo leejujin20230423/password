@@ -10,8 +10,8 @@ $db = new Database();
 $pdo = $db->connect();
 
 // 현재 로그인한 유저의 등록 항목 조회
-$stmt = $pdo->prepare("SELECT * FROM pass_items WHERE user_id = :user_id ORDER BY created_at DESC");
-$stmt->execute([':user_id' => $_SESSION['user_id']]);
+$stmt = $pdo->prepare("SELECT * FROM pass_items WHERE user_no = :user_no ORDER BY created_at DESC");
+$stmt->execute([':user_nZo' => $_SESSION['user_no']]);
 $items = $stmt->fetchAll();
 ?>
 
@@ -29,7 +29,7 @@ $items = $stmt->fetchAll();
 <?php foreach($items as $item): ?>
     <li>
         <?php echo htmlspecialchars($item['item_name']); ?> 
-        [<a href="view_detail.php?id=<?php echo $item['id']; ?>">상세보기</a>]
+        [<a href="view_detail.php?id=<?php echo $item['user_no']; ?>">상세보기</a>]
     </li>
 <?php endforeach; ?>
 </ul>

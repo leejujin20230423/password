@@ -1,4 +1,3 @@
-
 <?php
 // 추후 세션 체크, 공통 헤더 include 등을 여기서 처리하면 됨.
 // require_once __DIR__ . '/../../../connection/loader.php';
@@ -10,12 +9,10 @@
     <meta charset="UTF-8">
     <title>Password 등록</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <!-- 이 파일과 같은 폴더에 css 둔다고 가정 -->
     <link rel="stylesheet" href="password_0_register_View_admin.css">
 </head>
 <body>
-
 <div class="layout">
 
     <!-- 상단 헤더 -->
@@ -24,6 +21,14 @@
         <div class="header-right">
             <!-- 나중에 로그인 사용자명, 로그아웃 버튼 등 배치 -->
             <span class="user-info">관리자</span>
+
+            <!-- ✅ 로그아웃 버튼 추가 -->
+            <!-- 실제 로그아웃 처리 PHP 경로에 맞게 href/onclick 수정해서 사용하세요 -->
+            <button type="button"
+                    class="logout-button"
+                    onclick="window.location.href='/password_9_logout/password_9_logout_Route/password_9_logout_Route.php';">
+                로그아웃
+            </button>
         </div>
     </header>
 
@@ -46,7 +51,6 @@
             <h2>비밀번호 등록</h2>
 
             <form id="passwordForm">
-
                 <div class="form-group">
                     <label for="category">구분</label>
                     <input type="text" id="category" name="category" required>
@@ -86,21 +90,36 @@
             <!-- JS에서 행을 추가해 줄 테이블 -->
             <table class="password-table" id="passwordTable">
                 <thead>
-                    <tr>
-                        <th>구분</th>
-                        <th>사이트 주소</th>
-                        <th>아이디</th>
-                        <th>메모</th>
-                    </tr>
+                <tr>
+                    <th>구분</th>
+                    <th>사이트 주소</th>
+                    <th>아이디</th>
+                    <th>메모</th>
+                    <!-- ✅ 보기/삭제 버튼용 동작 컬럼 추가 -->
+                    <th>동작</th>
+                </tr>
                 </thead>
                 <tbody>
-                    <!-- 처음에는 비어 있고, JS가 채움 -->
+                <!--
+                    처음에는 비어 있고, JS가 채움.
+                    예시) JS에서 이런 형태로 만들어 주면 됩니다.
+
+                    <tr>
+                        <td>은행</td>
+                        <td>https://bank.example.com</td>
+                        <td>myid</td>
+                        <td>주계좌</td>
+                        <td>
+                            <button type="button" class="btn-view">보기</button>
+                            <button type="button" class="btn-delete">삭제</button>
+                        </td>
+                    </tr>
+                -->
                 </tbody>
             </table>
         </aside>
 
     </div><!-- /.main -->
-
 </div><!-- /.layout -->
 
 <script src="password_0_register_View_admin.js"></script>
