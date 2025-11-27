@@ -619,71 +619,75 @@ $isEdit = !empty($editRow);
                     </form>
                 </div>
 
-                <table class="password-table" id="passwordTable">
-                    <thead>
-                        <tr>
-                            <th>순번</th>
-                            <th>구분</th>
-                            <th>사이트 주소</th>
-                            <th>아이디</th>
-                            <th>메모</th>
-                            <th>동작</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (!empty($passwordRows)): ?>
-                            <?php $seq = 1; ?>
-                            <?php foreach ($passwordRows as $row): ?>
-                                <tr>
-                                    <!-- ✅ 순번 (현재 정렬 기준에 따른 1,2,3...) -->
-                                    <td><?php echo $seq++; ?></td>
-
-                                    <td><?php echo htmlspecialchars($row['category'], ENT_QUOTES, 'UTF-8'); ?></td>
-
-                                    <td>
-                                        <div style="display:flex; gap:6px; align-items:center;">
-                                            <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                                                <?php echo htmlspecialchars($row['site_url'], ENT_QUOTES, 'UTF-8'); ?>
-                                            </span>
-                                            <!-- URL 이동 버튼 -->
-                                            <button type="button"
-                                                onclick="openUrl('<?php echo htmlspecialchars($row['site_url'], ENT_QUOTES, 'UTF-8'); ?>');">
-                                                이동
-                                            </button>
-                                        </div>
-                                    </td>
-
-                                    <td><?php echo htmlspecialchars($row['login_id'], ENT_QUOTES, 'UTF-8'); ?></td>
-                                    <td><?php echo htmlspecialchars($row['memo'], ENT_QUOTES, 'UTF-8'); ?></td>
-                                    <td>
-                                        <!-- 보기 (폼에 값 채우기) -->
-                                        <form method="post" action="" style="display:inline;">
-                                            <input type="hidden" name="action" value="view">
-                                            <input type="hidden" name="password_idno"
-                                                value="<?php echo (int)$row['password_idno']; ?>">
-                                            <button type="submit">보기</button>
-                                        </form>
-
-                                        <!-- 삭제 -->
-                                        <form method="post" action="" style="display:inline; margin-left:4px;">
-                                            <input type="hidden" name="action" value="delete">
-                                            <input type="hidden" name="password_idno"
-                                                value="<?php echo (int)$row['password_idno']; ?>">
-                                            <button type="submit" onclick="return confirm('정말 삭제할까요?');">
-                                                삭제
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
+                <!-- ✅ 테이블 가로 스크롤용 래퍼 추가 -->
+                <div class="table-wrapper">
+                    <table class="password-table" id="passwordTable">
+                        <thead>
                             <tr>
-                                <td colspan="6" style="text-align:center;">등록된 비밀번호가 없습니다.</td>
+                                <th>순번</th>
+                                <th>구분</th>
+                                <th>사이트 주소</th>
+                                <th>아이디</th>
+                                <th>메모</th>
+                                <th>동작</th>
                             </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($passwordRows)): ?>
+                                <?php $seq = 1; ?>
+                                <?php foreach ($passwordRows as $row): ?>
+                                    <tr>
+                                        <!-- ✅ 순번 (현재 정렬 기준에 따른 1,2,3...) -->
+                                        <td><?php echo $seq++; ?></td>
+
+                                        <td><?php echo htmlspecialchars($row['category'], ENT_QUOTES, 'UTF-8'); ?></td>
+
+                                        <td>
+                                            <div style="display:flex; gap:6px; align-items:center;">
+                                                <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                                    <?php echo htmlspecialchars($row['site_url'], ENT_QUOTES, 'UTF-8'); ?>
+                                                </span>
+                                                <!-- URL 이동 버튼 -->
+                                                <button type="button"
+                                                    onclick="openUrl('<?php echo htmlspecialchars($row['site_url'], ENT_QUOTES, 'UTF-8'); ?>');">
+                                                    이동
+                                                </button>
+                                            </div>
+                                        </td>
+
+                                        <td><?php echo htmlspecialchars($row['login_id'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td><?php echo htmlspecialchars($row['memo'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td>
+                                            <!-- 보기 (폼에 값 채우기) -->
+                                            <form method="post" action="" style="display:inline;">
+                                                <input type="hidden" name="action" value="view">
+                                                <input type="hidden" name="password_idno"
+                                                    value="<?php echo (int)$row['password_idno']; ?>">
+                                                <button type="submit">보기</button>
+                                            </form>
+
+                                            <!-- 삭제 -->
+                                            <form method="post" action="" style="display:inline; margin-left:4px;">
+                                                <input type="hidden" name="action" value="delete">
+                                                <input type="hidden" name="password_idno"
+                                                    value="<?php echo (int)$row['password_idno']; ?>">
+                                                <button type="submit" onclick="return confirm('정말 삭제할까요?');">
+                                                    삭제
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="6" style="text-align:center;">등록된 비밀번호가 없습니다.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </aside>
+
 
         </div><!-- /.main -->
     </div><!-- /.layout -->
