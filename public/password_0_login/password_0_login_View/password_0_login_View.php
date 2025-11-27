@@ -12,7 +12,7 @@
     <title>Password 로그인</title>
 
     <!-- ✅ PWA: manifest + theme-color -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/../manifest.json">
     <meta name="theme-color" content="#111827">
 
     <!-- 로그인 페이지 전용 CSS -->
