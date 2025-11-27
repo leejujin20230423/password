@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($password_0_login_Model_Module->adminLogin($userid, $password)) {
 
         // ✅ 로그인 성공 시 이동할 경로 (DocumentRoot = public 기준)
-        $redirectUrl = '/password_0_register/password_0_register_Route/password_0_register_Route.php';
+        $redirectUrl = '/password_5_register/password_5_register_Route/password_5_register_Route.php';
 
         // 화면에 echo 찍지 말고 바로 리다이렉트 (헤더 깨지지 않게)
         header('Location: ' . $redirectUrl);

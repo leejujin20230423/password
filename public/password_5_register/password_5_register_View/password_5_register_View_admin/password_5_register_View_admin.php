@@ -1,29 +1,72 @@
 <?php
+
+/**
+ * ==========================================================
+ *  세션 시작 및 로그인 사용자 확인
+ * ==========================================================
+ */
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-/* ==========================================================
+/**
+ * 이 페이지는 "로그인된 사용자 전용" 페이지로 가정한다.
+ * - users 테이블의 PK: user_no
+ * - password 테이블의 FK: user_no_Fk
+ * => 따라서 로그인 시 세션에 user_no 를 넣어두고,
+ *    여기서는 그 값을 가져다가 FK 로 사용한다.
+ *
+ *  예: 로그인 시
+ *      $_SESSION['user_no']  = $user['user_no'];
+ *      $_SESSION['userid']   = $user['userid'];
+ *      $_SESSION['username'] = $user['username'];
+ */
+
+if (empty($_SESSION['user_no'])) {
+    // 로그인 안 되어 있으면 로그인 페이지로 보냄
+    header('Location: /password_0_login/password_0_login_View/password_0_login_View.php');
+    exit;
+}
+
+// 현재 로그인한 사용자 PK (users.user_no)
+$currentUserNo = (int)$_SESSION['user_no'];
+
+
+/**
+ * ==========================================================
  * 0. AES 암호화/복호화 설정
- * ========================================================== */
+ *    - password.encrypted_password 컬럼과 연동
+ * ==========================================================
+ */
+
+// 사용할 암호화 알고리즘 (대칭키 방식)
 const PASSWORD_CIPHER_METHOD = 'AES-256-CBC';
 
-// ⚠ 실제 서비스에서는 .env / config 로 빼는 게 좋음
+// ⚠ 실제 서비스에서는 .env / 설정 파일로 분리하는 것이 안전함
+//   여기서는 예제이므로 하드코딩
 const PASSWORD_SECRET_KEY = 'change-this-to-your-own-strong-secret-key-32byte';
 const PASSWORD_SECRET_IV  = 'change-this-iv-16b';
 
 /**
- * 비밀번호 암호화 (평문 → 암호문 base64)
+ * 비밀번호 암호화 함수 (평문 → 암호문 base64 문자열)
+ *
+ * @param string $plain 사용자가 입력한 평문 비밀번호
+ * @return string base64 인코딩된 암호문
  */
 function encryptPasswordAES(string $plain): string
 {
+    // 빈 문자열이면 굳이 암호화하지 않고 빈 문자열 반환
     if ($plain === '') {
         return '';
     }
 
+    // 1) 키와 IV(초기화 벡터) 생성
+    //    - sha256 해시의 binary 결과(32바이트)를 키로 사용
     $key = hash('sha256', PASSWORD_SECRET_KEY, true);               // 32 bytes
+    //    - sha256 해시에서 앞 16바이트만 잘라서 IV 로 사용
     $iv  = substr(hash('sha256', PASSWORD_SECRET_IV, true), 0, 16); // 16 bytes
 
+    // 2) OPENSSL_RAW_DATA 옵션으로 "바이너리 암호문"을 얻는다.
     $cipherRaw = openssl_encrypt(
         $plain,
         PASSWORD_CIPHER_METHOD,
@@ -33,14 +76,20 @@ function encryptPasswordAES(string $plain): string
     );
 
     if ($cipherRaw === false) {
+        // 암호화 실패 시 빈 문자열 반환 (실제 서비스에서는 예외 처리 권장)
         return '';
     }
 
+    // 3) 바이너리 암호문을 그대로 DB에 넣기 어렵기 때문에
+    //    base64 문자열로 인코딩해서 저장한다.
     return base64_encode($cipherRaw);
 }
 
 /**
- * 비밀번호 복호화 (암호문 base64 → 평문)
+ * 비밀번호 복호화 함수 (암호문 base64 → 평문)
+ *
+ * @param string $encryptedBase64 DB에 저장된 base64 문자열
+ * @return string 복호화된 평문 비밀번호
  */
 function decryptPasswordAES(string $encryptedBase64): string
 {
@@ -48,14 +97,17 @@ function decryptPasswordAES(string $encryptedBase64): string
         return '';
     }
 
+    // 1) base64 를 다시 바이너리로 디코딩
     $cipherRaw = base64_decode($encryptedBase64, true);
     if ($cipherRaw === false) {
         return '';
     }
 
+    // 2) 암호화 때 사용한 것과 동일한 키/IV 재구성
     $key = hash('sha256', PASSWORD_SECRET_KEY, true);
     $iv  = substr(hash('sha256', PASSWORD_SECRET_IV, true), 0, 16);
 
+    // 3) 복호화 수행
     $plain = openssl_decrypt(
         $cipherRaw,
         PASSWORD_CIPHER_METHOD,
@@ -64,65 +116,102 @@ function decryptPasswordAES(string $encryptedBase64): string
         $iv
     );
 
+    // 실패 시 빈 문자열 반환
     return $plain === false ? '' : $plain;
 }
 
-/* ==========================================================
+/**
+ * ==========================================================
  * 1. 이 페이지에서 사용할 테이블명
- * ========================================================== */
+ *    - GenericCrud 가 이 테이블을 기준으로 동작
+ * ==========================================================
+ */
 $tableName = 'password';
 
-/* ==========================================================
+/**
+ * ==========================================================
  * 2. Generic CRUD 라이브러리 로드
- * ========================================================== */
+ *    - 내부에서 DBConnection, GetAllTableNameAutoload 를 사용
+ * ==========================================================
+ */
 require_once __DIR__ . '/../../../password_60_CRUD/password_60_CRUD.php';
 
-/* ==========================================================
+/**
+ * ==========================================================
  * 3. DB & Redis & 스키마 로더 생성
- * ========================================================== */
+ * ==========================================================
+ */
 $dbConnection = new DBConnection();
 $pdo          = $dbConnection->getDB();
 
-// Redis (선택)
+// (선택) Redis 연결
 $redis = null;
 try {
     if (class_exists('Redis')) {
         $redis = new Redis();
+        // 로컬 개발 환경 기준 127.0.0.1:6379
         $redis->connect('127.0.0.1', 6379, 0.5);
-        // $redis->auth('your_redis_password');
-        // $redis->select(0);
+        // $redis->auth('your_redis_password'); // 필요시
+        // $redis->select(0);                   // 필요시
     }
 } catch (Exception $e) {
+    // Redis 연결에 실패해도, 캐시 없이 DB만 이용하도록 null 로 둠
     $redis = null;
 }
 
 // 스키마 로더
-$schemaLoader = new GetAllTableNameAutoload($pdo, 'user_id', $redis);
+//  - 두 번째 인자 'user_no' 는 로그인 세션 키 이름
+//  - GetAllTableNameAutoload 내부에서 로그인 체크에 사용될 수 있음
+$schemaLoader = new GetAllTableNameAutoload($pdo, 'user_no', $redis);
 
-// CRUD 인스턴스
+// GenericCrud 인스턴스 생성
 $crud = new GenericCrud($pdo, $schemaLoader, $tableName, $redis);
 
-/* ==========================================================
- * 4. 화면에서 사용할 편집용 변수 + 검색어
- * ========================================================== */
-$editRow           = null;  // 보기(view) 눌렀을 때 읽어온 한 행
-$decryptedPassword = '';    // 복호화된 평문 비밀번호
+/**
+ * ==========================================================
+ * 4. 화면에서 사용할 변수들
+ * ==========================================================
+ */
 
-// 검색어 (사이트 주소 + 메모)
+// "보기" 버튼을 눌렀을 때 선택된 한 행 데이터
+$editRow = null;
+
+// 복호화된 평문 비밀번호 (보기 모드에서 "보기" 버튼 눌렀을 때 사용)
+$decryptedPassword = '';
+
+// 검색어: 사이트 주소 / 메모에 포함된 텍스트 검색
 $searchKeyword = trim($_GET['q'] ?? '');
 
-/* ==========================================================
- * 5. POST 처리 (등록/수정/삭제/보기)
- * ========================================================== */
+// 현재 폼이 수정 모드인지 여부를 나중에 판단하기 위해 사용
+$isEdit = false;
+
+
+/**
+ * ==========================================================
+ * 5. POST 처리 (등록 / 수정 / 삭제 / 보기)
+ *     - action 값 기준으로 분기
+ * ==========================================================
+ */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
+    /**
+     * -------------------------------
+     * 5-1) 신규 등록 (create)
+     * -------------------------------
+     */
     if ($action === 'create') {
 
+        // 1) 사용자가 입력한 평문 비밀번호
         $plainPassword = $_POST['encrypted_password'] ?? '';
-        $encrypted     = encryptPasswordAES($plainPassword);
 
+        // 2) AES로 암호화 (base64 문자열 반환)
+        $encrypted = encryptPasswordAES($plainPassword);
+
+        // 3) INSERT 에 사용할 데이터 배열 생성
+        //    - user_no_Fk 에 현재 로그인한 사용자 PK를 기록
         $data = [
+            'user_no_Fk'         => $currentUserNo,                  // FK: users.user_no
             'category'           => $_POST['category'] ?? '',
             'site_url'           => $_POST['site_url'] ?? '',
             'login_id'           => $_POST['login_id'] ?? '',
@@ -130,15 +219,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'memo'               => $_POST['memo'] ?? '',
         ];
 
+        // 4) GenericCrud 로 INSERT 실행
         $crud->insert($data);
 
+        // 5) F5 새로고침으로 인한 중복 POST 방지
         header('Location: ' . $_SERVER['REQUEST_URI']);
         exit;
-    } elseif ($action === 'update') {
+    }
 
+    /**
+     * -------------------------------
+     * 5-2) 수정 (update)
+     * -------------------------------
+     */
+    elseif ($action === 'update') {
+
+        // 어떤 레코드를 수정할지: PK (password_idno)
         $id = $_POST['password_idno'] ?? null;
 
         if ($id !== null && $id !== '') {
+            // 1) 기본 컬럼들 (카테고리, 사이트 주소, 아이디, 메모)
             $data = [
                 'category' => $_POST['category'] ?? '',
                 'site_url' => $_POST['site_url'] ?? '',
@@ -146,78 +246,140 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'memo'     => $_POST['memo'] ?? '',
             ];
 
-            // 새 비밀번호 입력값
+            // 2) 새 비밀번호 입력값
             $newPlain = $_POST['encrypted_password'] ?? '';
 
-            // 새 비번이 있으면 암호화해서 교체, 없으면 기존 유지
+            // 3) 새 비밀번호가 비어있지 않다면 → 기존 값 대신 교체
+            //    비어있다면 → 비밀번호는 그대로 두고 다른 필드만 수정
             if (trim($newPlain) !== '') {
                 $data['encrypted_password'] = encryptPasswordAES($newPlain);
             }
 
+            // 4) UPDATE 실행
             $crud->update($id, $data);
         }
 
         header('Location: ' . $_SERVER['REQUEST_URI']);
         exit;
-    } elseif ($action === 'delete') {
+    }
+
+    /**
+     * -------------------------------
+     * 5-3) 삭제 (delete)
+     * -------------------------------
+     */
+    elseif ($action === 'delete') {
 
         $id = $_POST['password_idno'] ?? null;
+
         if ($id !== null && $id !== '') {
+            // (필요하다면 여기서, 이 레코드의 user_no_Fk 가
+            //  $currentUserNo 와 같은지 확인 후 삭제하는 안전장치 추가 가능)
             $crud->delete($id);
         }
 
         header('Location: ' . $_SERVER['REQUEST_URI']);
         exit;
-    } elseif ($action === 'view') {
+    }
+
+    /**
+     * -------------------------------
+     * 5-4) 보기 (view)
+     *   - 이 경우에는 리다이렉트 없이 같은 페이지에서
+     *     $editRow, $decryptedPassword 를 채워서
+     *     폼에 값을 뿌려주고 "수정 모드" 로 전환하는 용도
+     * -------------------------------
+     */
+    elseif ($action === 'view') {
 
         $id = $_POST['password_idno'] ?? null;
+
         if ($id !== null && $id !== '') {
+            // 1) PK 기준으로 한 행 조회
             $editRow = $crud->getById($id);
 
+            // 2) 암호화된 비밀번호가 있다면 복호화해서 변수에 저장
             if (!empty($editRow) && isset($editRow['encrypted_password'])) {
                 $decryptedPassword = decryptPasswordAES($editRow['encrypted_password']);
             }
+
+            // 3) 이 아래에서 $isEdit 를 true 로 바꿔서
+            //    HTML 폼이 "수정 모드"로 보이게 만들 수 있음
+            $isEdit = true;
         }
-        // view 는 리다이렉트 없이 그대로 렌더링
+        // ※ view 는 리다이렉트 없이 그대로 HTML 렌더링
     }
 }
 
-/* ==========================================================
+
+/**
+ * ==========================================================
  * 6. 화면에 뿌릴 리스트 데이터
- *    - 검색어가 있으면 site_url, memo LIKE 검색
- *    - 없으면 category 기준 정렬 + 캐시 사용
- * ========================================================== */
-$pk      = $crud->getPrimaryKey();  // password_idno
-$listSource = null;
+ *    - 검색어(q)가 있으면: site_url / memo 에 LIKE 검색
+ *    - 없으면: 현재 사용자(user_no_Fk) 기준 전체 목록
+ *              (category ASC, 같은 category 안에서는 최근순)
+ * ==========================================================
+ */
+
+$pk = $crud->getPrimaryKey();  // password_idno (PK 컬럼명)
+
+// 리스트 데이터가 어디에서 왔는지 표시용 ('db', 'redis', 'db-search')
+$listSource   = null;
 $passwordRows = [];
 
 if ($searchKeyword !== '') {
-    // 🔎 검색 모드: site_url / memo 에 검색어 포함
+
+    /**
+     * 🔎 검색 모드
+     *  - 조건:
+     *      user_no_Fk = 현재 로그인 사용자
+     *      AND (site_url LIKE '%q%' OR memo LIKE '%q%')
+     */
+
     $like = '%' . $searchKeyword . '%';
 
     $sql = "SELECT *
             FROM `{$tableName}`
-            WHERE site_url LIKE :kw
-               OR memo     LIKE :kw
+            WHERE user_no_Fk = :user_no
+              AND (
+                    site_url LIKE :kw
+                 OR memo     LIKE :kw
+              )
             ORDER BY category ASC, {$pk} DESC";
 
     $stmt = $pdo->prepare($sql);
-    $stmt->bindParam(':kw', $like, PDO::PARAM_STR);
+    $stmt->bindValue(':user_no', $currentUserNo, PDO::PARAM_INT);
+    $stmt->bindValue(':kw',      $like,          PDO::PARAM_STR);
     $stmt->execute();
-    $passwordRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $listSource = 'db-search';
+    $passwordRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $listSource   = 'db-search';
 } else {
-    // 기본 정렬: 구분(category) 기준 정렬, 같은 구분 안에선 최신순
-    $orderBy      = 'category ASC' . ($pk ? ', ' . $pk . ' DESC' : '');
-    $passwordRows = $crud->getListCached([], $orderBy);
-    $listSource   = $crud->getLastListSource();
+
+    /**
+     * 기본 목록 모드
+     *  - 조건:
+     *      user_no_Fk = 현재 로그인 사용자
+     *  - 정렬:
+     *      category 오름차순
+     *      + 같은 category 안에서는 password_idno 내림차순(최근순)
+     *  - GenericCrud 의 getListCached() 를 사용하여
+     *    Redis 캐시를 우선 활용
+     */
+
+    $orderBy    = 'category ASC' . ($pk ? ', ' . $pk . ' DESC' : '');
+    $conditions = ['user_no_Fk' => $currentUserNo];
+
+    $passwordRows = $crud->getListCached($conditions, $orderBy);
+    $listSource   = $crud->getLastListSource();  // 'db' or 'redis'
 }
 
-// 폼이 수정 모드인지 여부
+// 위에서 view 액션이 실행되었다면 $isEdit 가 true 로 세팅됨
+// 그 값을 이용해서 HTML 폼에서 "등록" vs "수정" 버튼을 조건부로 바꿔줄 수 있다.
 $isEdit = !empty($editRow);
 
 ?>
+
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -225,7 +387,7 @@ $isEdit = !empty($editRow);
     <meta charset="UTF-8">
     <title>Password 등록</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="password_0_register_View_admin.css">
+    <link rel="stylesheet" href="password_5_register_View_admin.css">
     <style>
         /* 검색박스 살짝만 스타일 */
         .search-box {

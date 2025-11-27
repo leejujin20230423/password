@@ -1,7 +1,7 @@
 <?php
 
 /**
- * password_0_register_Route.php
+ * password_5_register_Route.php
  * 
  * 로그인 후 진입하는 라우터:
  *  - user_type === 'admin' → 관리자 등록 화면
@@ -49,17 +49,17 @@ if ($userType === null) {
 switch ($userType) {
     case 'master':
         // ✅ 마스터 전용 등록 화면
-        header('Location: /password_0_register/password_0_register_View/password_0_register_View_master/password_0_register_View_master.php');
+        header('Location: /password_5_register/password_5_register_View/password_5_register_View_master/password_5_register_View_master.php');
         exit;
 
     case 'admin':
         // ✅ 관리자 전용 등록 화면
-        header('Location: /password_0_register/password_0_register_View/password_0_register_View_admin/password_0_register_View_admin.php');
+        header('Location: /password_5_register/password_5_register_View/password_5_register_View_admin/password_5_register_View_admin.php');
         exit;
 
     case 'user':
         // ✅ 일반 사용자 전용 등록 화면
-        header('Location: /password_0_register/password_0_register_View/password_0_register_View_user/password_0_register_View_user.php');
+        header('Location: /password_5_register/password_5_register_View/password_5_register_View_user/password_5_register_View_user.php');
         exit;
 
     default:
