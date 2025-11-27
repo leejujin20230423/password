@@ -617,7 +617,8 @@ $isEdit = !empty($editRow);
                                 name="site_url"
                                 style="flex:1;"
                                 value="<?php echo htmlspecialchars($editRow['site_url'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                                required>
+                                required
+                                placeholder="사이트의 url 주소를 입력하세요.">
                             <!-- URL 이동 버튼 -->
                             <button type="button"
                                 onclick="openUrl(document.getElementById('site_url').value);">
@@ -627,14 +628,15 @@ $isEdit = !empty($editRow);
                     </div>
 
                     <div class="form-group">
-                        <label for="login_id">아이디</label>
+                        <label for="login_id">사이트 아이디</label>
                         <div style="display:flex; gap:8px; align-items:center;">
                             <input type="text"
                                 id="login_id"
                                 name="login_id"
                                 style="flex:1;"
                                 value="<?php echo htmlspecialchars($editRow['login_id'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                                required>
+                                required
+                                placeholder="사이트의 로그인 아이디를 입력해주세요.">
 
                             <?php if ($isEdit && !empty($editRow)): ?>
                                 <!-- 보기(수정) 모드에서만 아이디 복사 버튼 표시 -->
@@ -724,7 +726,7 @@ $isEdit = !empty($editRow);
                     </div>
 
                     <div class="form-group">
-                        <label for="memo">메모</label>
+                        <label for="memo">메모(특이사항을 입력해주세요.)</label>
                         <textarea id="memo" name="memo" rows="4"><?php
                                                                     echo htmlspecialchars($editRow['memo'] ?? '', ENT_QUOTES, 'UTF-8');
                                                                     ?></textarea>
