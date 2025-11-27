@@ -31,6 +31,9 @@ if (empty($_SESSION['user_no'])) {
 // 현재 로그인한 사용자 PK (users.user_no)
 $currentUserNo = (int)$_SESSION['user_no'];
 
+$sessionUsername = (string)$_SESSION['username'];
+
+
 
 /**
  * ==========================================================
@@ -216,8 +219,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'site_url'           => $_POST['site_url'] ?? '',
             'login_id'           => $_POST['login_id'] ?? '',
             'encrypted_password' => $encrypted,
+            'contact_phone'      => $_POST['contact_phone'] ?? '',   // ✅ 신규: 연락처
             'memo'               => $_POST['memo'] ?? '',
         ];
+
 
         // 4) GenericCrud 로 INSERT 실행
         $crud->insert($data);
@@ -240,11 +245,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($id !== null && $id !== '') {
             // 1) 기본 컬럼들 (카테고리, 사이트 주소, 아이디, 메모)
             $data = [
-                'category' => $_POST['category'] ?? '',
-                'site_url' => $_POST['site_url'] ?? '',
-                'login_id' => $_POST['login_id'] ?? '',
-                'memo'     => $_POST['memo'] ?? '',
+                'category'      => $_POST['category'] ?? '',
+                'site_url'      => $_POST['site_url'] ?? '',
+                'login_id'      => $_POST['login_id'] ?? '',
+                'contact_phone' => $_POST['contact_phone'] ?? '',    // ✅ 신규: 연락처
+                'memo'          => $_POST['memo'] ?? '',
             ];
+
 
             // 2) 새 비밀번호 입력값
             $newPlain = $_POST['encrypted_password'] ?? '';
@@ -427,7 +434,7 @@ $isEdit = !empty($editRow);
         <header class="header">
             <h1>Password 관리 시스템</h1>
             <div class="header-right">
-                <span class="user-info">관리자</span>
+                <span class="user-info">관리자: <?php echo htmlspecialchars($sessionUsername, ENT_QUOTES, 'UTF-8'); ?></span>
 
                 <button type="button"
                     class="logout-button"
@@ -525,20 +532,32 @@ $isEdit = !empty($editRow);
 
                     <div class="form-group">
                         <label for="login_id">아이디</label>
-                        <input type="text"
-                            id="login_id"
-                            name="login_id"
-                            value="<?php echo htmlspecialchars($editRow['login_id'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                            required>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input type="text"
+                                id="login_id"
+                                name="login_id"
+                                style="flex:1;"
+                                value="<?php echo htmlspecialchars($editRow['login_id'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                required>
+
+                            <?php if ($isEdit && !empty($editRow)): ?>
+                                <!-- ✅ 보기(수정) 모드에서만 아이디 복사 버튼 표시 -->
+                                <button type="button" id="copyLoginIdBtn">
+                                    복사
+                                </button>
+                            <?php endif; ?>
+                        </div>
                     </div>
 
+
+
                     <?php if ($isEdit && !empty($editRow)): ?>
-                        <!-- 저장된 비밀번호 (암호화 값 / 평문 토글용) -->
+                        <!-- 저장된 비밀번호 (암호화 값 / 평문 토글 + 복사) -->
                         <div class="form-group">
                             <label for="password_encrypted_view">
                                 저장된 비밀번호
                                 <span style="font-size:11px; color:#888;">
-                                    (기본은 암호화된 값, 버튼으로 평문 보기)
+                                    (기본은 암호화된 값, 버튼으로 평문 보기/복사)
                                 </span>
                             </label>
 
@@ -549,8 +568,13 @@ $isEdit = !empty($editRow);
                                     data-encrypted="<?php echo htmlspecialchars($editRow['encrypted_password'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                                     value="<?php echo htmlspecialchars($editRow['encrypted_password'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                                     style="flex:1;">
+                                <!-- ✅ 암호/평문 토글 버튼 -->
                                 <button type="button" id="togglePasswordView">
                                     암호 보기
+                                </button>
+                                <!-- ✅ 복호화된 비밀번호 복사 버튼 -->
+                                <button type="button" id="copyPasswordBtn">
+                                    복사
                                 </button>
                             </div>
 
@@ -560,6 +584,7 @@ $isEdit = !empty($editRow);
                                 value="<?php echo htmlspecialchars($decryptedPassword, ENT_QUOTES, 'UTF-8'); ?>">
                         </div>
                     <?php endif; ?>
+
 
                     <div class="form-group">
                         <label for="encrypted_password">
@@ -576,6 +601,16 @@ $isEdit = !empty($editRow);
                             name="encrypted_password"
                             value="">
                     </div>
+
+                    <div class="form-group">
+                        <label for="contact_phone">연락처(전화번호)</label>
+                        <input type="tel"
+                            id="contact_phone"
+                            name="contact_phone"
+                            placeholder="예: 010-1234-5678"
+                            value="<?php echo htmlspecialchars($editRow['contact_phone'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                    </div>
+
 
                     <div class="form-group">
                         <label for="memo">메모</label>
@@ -628,10 +663,12 @@ $isEdit = !empty($editRow);
                                 <th>구분</th>
                                 <th>사이트 주소</th>
                                 <th>아이디</th>
+                                <th>연락처</th>
                                 <th>메모</th>
                                 <th>동작</th>
                             </tr>
                         </thead>
+
                         <tbody>
                             <?php if (!empty($passwordRows)): ?>
                                 <?php $seq = 1; ?>
@@ -656,6 +693,30 @@ $isEdit = !empty($editRow);
                                         </td>
 
                                         <td><?php echo htmlspecialchars($row['login_id'], ENT_QUOTES, 'UTF-8'); ?></td>
+
+                                        <!-- ✅ 연락처 + 전화걸기 버튼 -->
+                                        <td>
+                                            <?php if (!empty($row['contact_phone'])): ?>
+                                                <div style="display:flex; gap:6px; align-items:center;">
+                                                    <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                                        <?php echo htmlspecialchars($row['contact_phone'], ENT_QUOTES, 'UTF-8'); ?>
+                                                    </span>
+                                                    <?php
+                                                    // 전화번호에서 숫자만 추출해서 tel 링크용으로 사용
+                                                    $telClean = preg_replace('/\D+/', '', $row['contact_phone']);
+                                                    ?>
+                                                    <?php if (!empty($telClean)): ?>
+                                                        <!-- 📱 휴대폰에서 누르면 전화 앱 실행 (tel:) -->
+                                                        <a href="tel:<?php echo htmlspecialchars($telClean, ENT_QUOTES, 'UTF-8'); ?>">
+                                                            <button type="button">전화</button>
+                                                        </a>
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php else: ?>
+                                                -
+                                            <?php endif; ?>
+                                        </td>
+                                        
                                         <td><?php echo htmlspecialchars($row['memo'], ENT_QUOTES, 'UTF-8'); ?></td>
                                         <td>
                                             <!-- 보기 (폼에 값 채우기) -->
@@ -680,7 +741,7 @@ $isEdit = !empty($editRow);
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="6" style="text-align:center;">등록된 비밀번호가 없습니다.</td>
+                                    <td colspan="7" style="text-align:center;">등록된 비밀번호가 없습니다.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
@@ -692,49 +753,7 @@ $isEdit = !empty($editRow);
         </div><!-- /.main -->
     </div><!-- /.layout -->
 
-    <script>
-        // ✅ URL 열기 공용 함수
-        function openUrl(raw) {
-            if (!raw) return;
-            var url = raw.trim();
-            if (!url) return;
-
-            // http/https 없으면 https:// 자동 붙이기
-            if (!/^https?:\/\//i.test(url)) {
-                url = 'https://' + url;
-            }
-            window.open(url, '_blank');
-        }
-
-        // 암호화 값 / 평문 토글
-        document.addEventListener('DOMContentLoaded', function() {
-            const encInput = document.getElementById('password_encrypted_view');
-            const plainHidden = document.getElementById('password_plain_hidden');
-            const toggleBtn = document.getElementById('togglePasswordView');
-
-            if (encInput && plainHidden && toggleBtn) {
-                let showingPlain = false;
-                const encryptedVal = encInput.dataset.encrypted || encInput.value;
-                const plainVal = plainHidden.value || '';
-
-                // 초기값: 암호화된 값
-                encInput.value = encryptedVal;
-
-                toggleBtn.addEventListener('click', function() {
-                    if (!showingPlain) {
-                        encInput.value = plainVal;
-                        showingPlain = true;
-                        toggleBtn.textContent = '암호화 값 보기';
-                    } else {
-                        encInput.value = encryptedVal;
-                        showingPlain = false;
-                        toggleBtn.textContent = '암호 보기';
-                    }
-                });
-            }
-        });
-    </script>
-
+    <script src="password_5_passwordRegister_View_admin.js?v=20251127"></script>
 </body>
 
 </html>
