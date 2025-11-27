@@ -55,6 +55,19 @@ class GenericCrud
     private $lastListSource = null;
 
     /**
+     * 🔧 Redis 캐시 설정
+     *  - REDIS_CACHE_TTL         : 개별 키 TTL (10분)
+     *  - REDIS_GLOBAL_FLUSH_KEY  : 마지막 전역 flush 시각을 저장하는 키
+     *  - REDIS_GLOBAL_FLUSH_SEC  : 전역 flush 주기 (10분)
+     *
+     * ⚠ 같은 Redis DB 를 다른 서비스(cash, foodzone, jayu 등)와 공유한다면
+     *    전역 flush(FLUSHALL)는 그쪽 캐시도 모두 지우니 주의!
+     */
+    private const REDIS_CACHE_TTL        = 600;                    // 10분 (초)
+    private const REDIS_GLOBAL_FLUSH_KEY = 'pass:global:last_flush';
+    private const REDIS_GLOBAL_FLUSH_SEC = 600;                    // 10분마다 전체 flush
+
+    /**
      * @param PDO                     $db            DB 커넥션
      * @param GetAllTableNameAutoload $schemaLoader  스키마 로더
      * @param string                  $table         사용할 테이블명
@@ -310,13 +323,16 @@ class GenericCrud
      *        "data":        [...]
      *      }
      *  - 사용 시:
-     *      1) 캐시가 1시간 이내 AND
+     *      1) 캐시가 REDIS_CACHE_TTL 이내 AND
      *      2) 동일 조건으로 SELECT COUNT(*) 한 결과 == row_count 이면
      *         → "추가 로우 없음"으로 보고 캐시 사용
      *      3) 아니면 DB 재조회 + 캐시 덮어쓰기
      *
      *  - INSERT / UPDATE / DELETE 후에는 invalidateListCaches()로
      *    이 테이블의 리스트 캐시를 전부 삭제
+     *
+     *  - 추가: maybeGlobalFlushEvery10Minutes() 에서
+     *    10분마다 Redis 전체 FLUSHALL 수행 (주의!)
      * ======================================================= */
     public function getListCached(
         array $conditions = [],
@@ -326,7 +342,10 @@ class GenericCrud
     ): array {
         $this->lastListSource = null;
 
-        // Redis가 없으면 그냥 DB 쿼리
+        // 🔔 1) 10분마다 Redis 전체 FLUSHALL 시도 (주의!)
+        $this->maybeGlobalFlushEvery10Minutes();
+
+        // 2) Redis가 없으면 그냥 DB 쿼리
         if (!($this->cache instanceof Redis)) {
             $this->lastListSource = 'db';
             return $this->getList($conditions, $orderBy, $limit, $offset);
@@ -345,7 +364,7 @@ class GenericCrud
         //   예) pass:crud:list:password:ab12cd34...
         $cacheKey = 'pass:crud:list:' . $this->table . ':' . md5(json_encode($cacheKeyData));
 
-        $maxAge = 3600; // 1시간
+        $maxAge = self::REDIS_CACHE_TTL; // 🔧 10분
         $cached = $this->cache->get($cacheKey);
 
         if ($cached !== false && $cached !== null) {
@@ -359,7 +378,7 @@ class GenericCrud
                 $generatedAt = (int)$payload['generated_at'];
                 $age         = time() - $generatedAt;
 
-                // 1시간 이내인 경우에만 row 수 비교
+                // TTL 이내인 경우에만 row 수 비교
                 if ($age >= 0 && $age < $maxAge) {
 
                     // 같은 조건으로 COUNT(*) 쿼리
@@ -405,7 +424,8 @@ class GenericCrud
         ];
 
         $json = json_encode($payload, JSON_UNESCAPED_UNICODE);
-        if ($json !== false) {
+        if ($json !== false && ($this->cache instanceof Redis)) {
+            // TTL 함께 설정
             $this->cache->set($cacheKey, $json);
             $this->cache->expire($cacheKey, $maxAge);
         }
@@ -441,6 +461,43 @@ class GenericCrud
             }
         } catch (Exception $e) {
             // 캐시 무효화는 실패해도 메인 로직은 계속 가도록 조용히 무시
+        }
+    }
+
+    /* =========================================================
+     * 🔥 10분마다 Redis 전체 FLUSHALL
+     *
+     *  - pass:global:last_flush 키에 마지막 실행 시각(UNIX timestamp) 저장
+     *  - 지금 시각 - 마지막 시각 >= 10분 이면:
+     *      1) FLUSHALL
+     *      2) pass:global:last_flush 에 지금 시각 다시 기록
+     *
+     * ⚠️ 주의: 같은 Redis DB 를 cash/foodzone/jayu 등과 공유하면
+     *    그쪽 캐시까지 전부 날아감. 가능하면 pass 전용 Redis DB 사용.
+     * ======================================================= */
+    private function maybeGlobalFlushEvery10Minutes(): void
+    {
+        if (!($this->cache instanceof Redis)) {
+            return;
+        }
+
+        try {
+            $now      = time();
+            $key      = self::REDIS_GLOBAL_FLUSH_KEY;
+            $interval = self::REDIS_GLOBAL_FLUSH_SEC;
+
+            $last = (int)$this->cache->get($key);
+
+            // 마지막 flush 기록이 없거나, 10분 이상 지났으면 전체 flush
+            if ($last === 0 || ($now - $last) >= $interval) {
+                // 모든 DB, 모든 키 삭제 (⚠)
+                $this->cache->flushAll();
+
+                // flush 후, 다시 마지막 시각 기록
+                $this->cache->set($key, (string)$now);
+            }
+        } catch (Exception $e) {
+            // 캐시 정리 실패해도 메인 로직은 그대로 진행
         }
     }
 }
