@@ -1,4 +1,5 @@
 <?php
+
 /**
  * password_0_register_Route.php
  * 
@@ -45,25 +46,26 @@ if ($userType === null) {
 }
 
 // 최종 분기
-if ($userType === 'master') {
-    // ✅ 마스터 전용 등록 화면
-    header('Location: /password_0_register/password_0_register_View/password_0_register_View_master/password_0_register_View_master.php');
-    exit;
+switch ($userType) {
+    case 'master':
+        // ✅ 마스터 전용 등록 화면
+        header('Location: /password_0_register/password_0_register_View/password_0_register_View_master/password_0_register_View_master.php');
+        exit;
 
-} elseif ($userType === 'admin') {
-    // ✅ 관리자 전용 등록 화면
-    header('Location: /password_0_register/password_0_register_View/password_0_register_View_admin/password_0_register_View_admin.php');
-    exit;
+    case 'admin':
+        // ✅ 관리자 전용 등록 화면
+        header('Location: /password_0_register/password_0_register_View/password_0_register_View_admin/password_0_register_View_admin.php');
+        exit;
 
-} elseif ($userType === 'user') {
-    // ✅ 일반 사용자 전용 등록 화면
-    header('Location: /password_0_register/password_0_register_View/password_0_register_View_user/password_0_register_View_user.php');
-    exit;
+    case 'user':
+        // ✅ 일반 사용자 전용 등록 화면
+        header('Location: /password_0_register/password_0_register_View/password_0_register_View_user/password_0_register_View_user.php');
+        exit;
 
-} else {
-    // 알 수 없는 권한이면 세션 정리 후 로그인 화면으로
-    session_unset();
-    session_destroy();
-    header('Location: /password_0_login/password_0_login_View/password_0_login_View.php?error=permission');
-    exit;
+    default:
+        // 알 수 없는 권한이면 세션 정리 후 로그인 화면으로
+        session_unset();
+        session_destroy();
+        header('Location: /password_0_login/password_0_login_View/password_0_login_View.php?error=permission');
+        exit;
 }

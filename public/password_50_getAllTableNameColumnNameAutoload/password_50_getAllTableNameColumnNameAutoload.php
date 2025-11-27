@@ -52,36 +52,32 @@ class GetAllTableNameAutoload
      * @param string $loginSessionKey 로그인 상태 확인할 세션 키 이름 (기본값: 'uid')
      * @param mixed  $cache           (옵션) Redis 같은 캐시 객체
      */
+   
     public function __construct(PDO $connection, $loginSessionKey = 'uid', $cache = null)
     {
         $this->connection      = $connection;
         $this->loginSessionKey = $loginSessionKey;
         $this->cache           = $cache;   // [REDIS] 캐시 객체 보관
 
-        // 생성 시점에 로그인 체크
-        $this->checkLogin();
+        // ❌ 여기서는 더 이상 로그인 체크를 자동으로 하지 않는다.
+        // $this->checkLogin();
     }
-
     /**
      * 세션으로 로그인 여부 확인
      * - 지정한 세션 키가 비어있으면 로그인 안 된 상태로 보고 리다이렉트
      */
-    private function checkLogin()
+    public function checkLogin()
     {
         if (
             !isset($_SESSION[$this->loginSessionKey]) ||
             $_SESSION[$this->loginSessionKey] === '' ||
             $_SESSION[$this->loginSessionKey] === null
         ) {
-            // ✅ 로그인 안 되어 있으면 보낼 경로 (원하는 페이지로 수정)
-            //  ⚠️ URL에 /public 은 절대 넣지 말 것 (DocumentRoot 가 이미 public 이기 때문에)
             $loginUrl = '/password_0_register/password_0_register_Route/password_0_register_Route.php';
-
             header('Location: ' . $loginUrl);
             exit;
         }
     }
-
     /**
      * 현재 선택된 DB의 전체 테이블 이름 배열로 가져오기
      *
