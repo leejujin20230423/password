@@ -469,8 +469,8 @@ $isEdit = !empty($editRow);
                 <nav>
                     <ul>
                         <li class="active">비밀번호 등록</li>
-                        <li>비밀번호 검색</li>
-                        <li>환경 설정</li>
+                        <!-- <li>비밀번호 검색</li>
+                        <li>환경 설정</li> -->
                     </ul>
                 </nav>
             </aside>
