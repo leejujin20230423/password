@@ -9,24 +9,11 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-
-
-
 /**
  * 이 페이지는 "로그인된 사용자 전용" 페이지로 가정한다.
  * - users 테이블의 PK: user_no
  * - password 테이블의 FK: user_no_Fk
- * => 따라서 로그인 시 세션에 user_no 를 넣어두고,
- *    여기서는 그 값을 가져다가 FK 로 사용한다.
- *
- *  예: 로그인 시
- *      $_SESSION['user_no']  = $user['user_no'];
- *      $_SESSION['userid']   = $user['userid'];
- *      $_SESSION['username'] = $user['username'];
  */
-
-
-
 
 if (empty($_SESSION['user_no'])) {
     // 로그인 안 되어 있으면 로그인 페이지로 보냄
@@ -35,9 +22,8 @@ if (empty($_SESSION['user_no'])) {
 }
 
 // 현재 로그인한 사용자 PK (users.user_no)
-$currentUserNo = (int)$_SESSION['user_no'];
-
-$sessionUsername = (string)$_SESSION['username'];
+$currentUserNo   = (int)$_SESSION['user_no'];
+$sessionUsername = isset($_SESSION['username']) ? (string)$_SESSION['username'] : '';
 
 /**
  * ==========================================================
@@ -50,28 +36,21 @@ $sessionUsername = (string)$_SESSION['username'];
 const PASSWORD_CIPHER_METHOD = 'AES-256-CBC';
 
 // ⚠ 실제 서비스에서는 .env / 설정 파일로 분리하는 것이 안전함
-//   여기서는 예제이므로 하드코딩
 const PASSWORD_SECRET_KEY = 'change-this-to-your-own-strong-secret-key-32byte';
 const PASSWORD_SECRET_IV  = 'change-this-iv-16b';
 
 /**
  * 비밀번호 암호화 함수 (평문 → 암호문 base64 문자열)
- *
- * @param string $plain 사용자가 입력한 평문 비밀번호
- * @return string base64 인코딩된 암호문
  */
 function encryptPasswordAES(string $plain): string
 {
-    // 빈 문자열이면 굳이 암호화하지 않고 빈 문자열 반환
     if ($plain === '') {
         return '';
     }
 
-    // 1) 키와 IV(초기화 벡터) 생성
     $key = hash('sha256', PASSWORD_SECRET_KEY, true);               // 32 bytes
     $iv  = substr(hash('sha256', PASSWORD_SECRET_IV, true), 0, 16); // 16 bytes
 
-    // 2) OPENSSL_RAW_DATA 옵션으로 "바이너리 암호문"을 얻는다.
     $cipherRaw = openssl_encrypt(
         $plain,
         PASSWORD_CIPHER_METHOD,
@@ -81,19 +60,14 @@ function encryptPasswordAES(string $plain): string
     );
 
     if ($cipherRaw === false) {
-        // 암호화 실패 시 빈 문자열 반환 (실제 서비스에서는 예외 처리 권장)
         return '';
     }
 
-    // 3) base64 문자열로 인코딩해서 저장
     return base64_encode($cipherRaw);
 }
 
 /**
  * 비밀번호 복호화 함수 (암호문 base64 → 평문)
- *
- * @param string $encryptedBase64 DB에 저장된 base64 문자열
- * @return string 복호화된 평문 비밀번호
  */
 function decryptPasswordAES(string $encryptedBase64): string
 {
@@ -101,17 +75,14 @@ function decryptPasswordAES(string $encryptedBase64): string
         return '';
     }
 
-    // 1) base64 를 다시 바이너리로 디코딩
     $cipherRaw = base64_decode($encryptedBase64, true);
     if ($cipherRaw === false) {
         return '';
     }
 
-    // 2) 암호화 때 사용한 것과 동일한 키/IV 재구성
     $key = hash('sha256', PASSWORD_SECRET_KEY, true);
     $iv  = substr(hash('sha256', PASSWORD_SECRET_IV, true), 0, 16);
 
-    // 3) 복호화 수행
     $plain = openssl_decrypt(
         $cipherRaw,
         PASSWORD_CIPHER_METHOD,
@@ -120,14 +91,12 @@ function decryptPasswordAES(string $encryptedBase64): string
         $iv
     );
 
-    // 실패 시 빈 문자열 반환
     return $plain === false ? '' : $plain;
 }
 
 /**
  * ==========================================================
  * 1. 이 페이지에서 사용할 테이블명
- *    - GenericCrud 가 이 테이블을 기준으로 동작
  * ==========================================================
  */
 $tableName = 'password';
@@ -135,7 +104,6 @@ $tableName = 'password';
 /**
  * ==========================================================
  * 2. Generic CRUD 라이브러리 로드
- *    - 내부에서 DBConnection, GetAllTableNameAutoload 를 사용
  * ==========================================================
  */
 require_once __DIR__ . '/../../../password_60_CRUD/password_60_CRUD.php';
@@ -159,12 +127,10 @@ try {
         // $redis->select(0);                   // 필요시
     }
 } catch (Exception $e) {
-    // Redis 연결에 실패해도, 캐시 없이 DB만 이용하도록 null 로 둠
     $redis = null;
 }
 
-// 스키마 로더
-//  - 두 번째 인자 'user_no' 는 로그인 세션 키 이름
+// 스키마 로더 (두 번째 인자 'user_no' 는 로그인 세션 키 이름)
 $schemaLoader = new GetAllTableNameAutoload($pdo, 'user_no', $redis);
 
 // GenericCrud 인스턴스 생성
@@ -179,8 +145,7 @@ $crud = new GenericCrud($pdo, $schemaLoader, $tableName, $redis);
 // "보기" 버튼을 눌렀을 때 선택된 한 행 데이터
 $editRow = null;
 
-// (예전에는 여기서 미리 복호화한 평문을 넣었지만,
-//  이제는 AJAX 재인증 후에만 복호화해서 내려줄 거라 사용 안 함)
+// 평문 비밀번호 (초기에는 비워둠, AJAX로 채움)
 $decryptedPassword = '';
 
 // 검색어: 사이트 주소 / 메모에 포함된 텍스트 검색
@@ -192,7 +157,6 @@ $isEdit = false;
 /**
  * ==========================================================
  * 5. POST 처리 (등록 / 수정 / 삭제 / 보기 / AJAX 복호화)
- *     - ajax 값 또는 action 값 기준으로 분기
  * ==========================================================
  */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -206,84 +170,146 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['ajax']) && $_POST['ajax'] === 'decrypt_password') {
         header('Content-Type: application/json; charset=utf-8');
 
+        // 1) 세션 로그인 체크
         if (empty($_SESSION['user_no'])) {
             echo json_encode([
                 'ok'  => false,
                 'msg' => '로그인이 필요합니다.'
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
-        $currentUserNo = (int)$_SESSION['user_no'];
-        $loginPassword = $_POST['login_password'] ?? '';
-        $passwordId    = (int)($_POST['password_idno'] ?? 0);
+        $currentUserNoAjax = (int)$_SESSION['user_no'];
+        $loginPassword     = $_POST['login_password'] ?? '';
+        $passwordId        = (int)($_POST['password_idno'] ?? 0);
 
+        // 2) 기본 유효성 검사
         if ($loginPassword === '' || $passwordId <= 0) {
             echo json_encode([
                 'ok'  => false,
                 'msg' => '잘못된 요청입니다.'
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
-        // 1) users 테이블에서 현재 로그인 사용자 비밀번호 해시 조회
-        // ⚠️ 실제 컬럼명에 맞게 user_pass 부분은 수정 가능
+        // 3) users 테이블에서 현재 로그인 사용자의 비밀번호 해시 조회
+        //    ⚠️ 비밀번호 컬럼명이 다르면 아래 password 를 실제 컬럼명으로 변경
         $sql = "SELECT password
-                FROM users 
+                FROM users
                 WHERE user_no = :user_no
                 LIMIT 1";
         $stmt = $pdo->prepare($sql);
-        $stmt->bindValue(':user_no', $currentUserNo, PDO::PARAM_INT);
+        $stmt->bindValue(':user_no', $currentUserNoAjax, PDO::PARAM_INT);
         $stmt->execute();
-        $userRow = $stmt->fetch(PDO::FETCH_ASSOC);
+        $userRow = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
 
-        if (
-            !$userRow ||
-            empty($userRow['password']) ||
-            !password_verify($loginPassword, $userRow['password'])
-        ) {
+        $hash = $userRow['password'] ?? null;
+        if (!$hash || !password_verify($loginPassword, $hash)) {
             echo json_encode([
                 'ok'  => false,
                 'msg' => '로그인 비밀번호가 일치하지 않습니다.'
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
-        // 2) password 테이블에서 해당 레코드 조회 (본인 소유인지 확인)
+        // 4) password 테이블에서 해당 레코드 조회 (본인 소유인지 확인)
         $row = $crud->getById($passwordId);
 
         if (
             !$row ||
-            (int)$row['user_no_Fk'] !== $currentUserNo
+            (int)($row['user_no_Fk'] ?? 0) !== $currentUserNoAjax
         ) {
             echo json_encode([
                 'ok'  => false,
                 'msg' => '해당 비밀번호를 찾을 수 없습니다.'
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
-        // 3) AES 복호화
+        // 5) AES 복호화
         $plain = decryptPasswordAES($row['encrypted_password'] ?? '');
 
         if ($plain === '') {
             echo json_encode([
                 'ok'  => false,
                 'msg' => '복호화에 실패했습니다.'
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        // 6) 정상 응답
+        echo json_encode([
+            'ok'    => true,
+            'plain' => $plain
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    /**
+     * 5-0-b) AJAX: 복사 버튼 전용
+     *   - 로그인 비밀번호 재확인 없이
+     *   - 세션 user_no 와 password.user_no_Fk 만 확인 후 복호화
+     */
+    if (isset($_POST['ajax']) && $_POST['ajax'] === 'decrypt_password_copy') {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if (empty($_SESSION['user_no'])) {
+            echo json_encode([
+                'ok'  => false,
+                'msg' => '로그인이 필요합니다.'
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        $currentUserNoAjax = (int)$_SESSION['user_no'];
+        $passwordId        = (int)($_POST['password_idno'] ?? 0);
+
+        if ($passwordId <= 0) {
+            echo json_encode([
+                'ok'  => false,
+                'msg' => '잘못된 요청입니다.'
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        // 해당 password 레코드 조회
+        $row = $crud->getById($passwordId);
+
+        // 본인 소유인지 확인
+        if (
+            !$row ||
+            (int)($row['user_no_Fk'] ?? 0) !== $currentUserNoAjax
+        ) {
+            echo json_encode([
+                'ok'  => false,
+                'msg' => '해당 비밀번호를 찾을 수 없습니다.'
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        // AES 복호화
+        $plain = decryptPasswordAES($row['encrypted_password'] ?? '');
+
+        if ($plain === '') {
+            echo json_encode([
+                'ok'  => false,
+                'msg' => '복호화에 실패했습니다.'
+            ], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
         echo json_encode([
             'ok'    => true,
-            'plain' => $plain,
-        ]);
+            'plain' => $plain
+        ], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
-    // -------------------------------
-    // 여기부터는 기존 create/update/delete/view 처리
-    // -------------------------------
+    /**
+     * -------------------------------
+     * 여기부터는 일반 폼 submit (create/update/delete/view)
+     * -------------------------------
+     */
     $action = $_POST['action'] ?? '';
 
     /**
@@ -374,7 +400,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     /**
      * -------------------------------
      * 5-4) 보기 (view)
-     *   - 이제는 "복호화된 평문"을 여기서 만들지 않는다.
+     *   - 여기서는 복호화하지 않고
      *   - 단지 $editRow 만 채워서 폼에 값 뿌리고 수정 모드로 전환.
      * -------------------------------
      */
@@ -385,10 +411,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($id !== null && $id !== '') {
             // 1) PK 기준으로 한 행 조회
             $editRow = $crud->getById($id);
-
-            // 2) 예전에는 여기서 복호화해서 $decryptedPassword 에 넣었지만,
-            //    이제는 AJAX 재인증 후에만 복호화할 것이므로 하지 않는다.
-            $isEdit = true;
+            $isEdit  = !empty($editRow);
         }
         // view 는 리다이렉트 없이 그대로 HTML 렌더링
     }
@@ -410,11 +433,7 @@ if ($searchKeyword !== '') {
 
     /**
      * 🔎 검색 모드
-     *  - 조건:
-     *      user_no_Fk = 현재 로그인 사용자
-     *      AND (site_url LIKE '%q%' OR memo LIKE '%q%')
      */
-
     $like = '%' . $searchKeyword . '%';
 
     $sql = "SELECT *
@@ -437,12 +456,7 @@ if ($searchKeyword !== '') {
 
     /**
      * 기본 목록 모드
-     *  - 조건:
-     *      user_no_Fk = 현재 로그인 사용자
-     *  - 정렬:
-     *      category 오름차순 + password_idno 내림차순(최근순)
      */
-
     $orderBy    = 'category ASC' . ($pk ? ', ' . $pk . ' DESC' : '');
     $conditions = ['user_no_Fk' => $currentUserNo];
 
@@ -454,7 +468,6 @@ if ($searchKeyword !== '') {
 $isEdit = !empty($editRow);
 
 ?>
-
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -502,7 +515,9 @@ $isEdit = !empty($editRow);
         <header class="header">
             <h1>Password 관리 시스템</h1>
             <div class="header-right">
-                <span class="user-info">관리자: <?php echo htmlspecialchars($sessionUsername, ENT_QUOTES, 'UTF-8'); ?></span>
+                <span class="user-info">관리자:
+                    <?php echo htmlspecialchars($sessionUsername, ENT_QUOTES, 'UTF-8'); ?>
+                </span>
 
                 <button type="button"
                     class="logout-button"
@@ -611,6 +626,7 @@ $isEdit = !empty($editRow);
                             <?php endif; ?>
                         </div>
                     </div>
+
                     <?php if ($isEdit && !empty($editRow)): ?>
                         <!-- 저장된 비밀번호 (암호화 값 / 평문 토글 + 복사) -->
                         <div class="form-group">
@@ -622,7 +638,7 @@ $isEdit = !empty($editRow);
                             </label>
 
                             <div style="display:flex; gap:8px; align-items:center;">
-                                <input type="text"
+                                <input type="password"
                                     id="password_encrypted_view"
                                     readonly
                                     data-encrypted="<?php echo htmlspecialchars($editRow['encrypted_password'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
@@ -647,8 +663,6 @@ $isEdit = !empty($editRow);
                         </div>
                     <?php endif; ?>
 
-
-
                     <div class="form-group">
                         <label for="encrypted_password">
                             <?php echo $isEdit ? '새 비밀번호' : '비밀번호'; ?>
@@ -670,7 +684,6 @@ $isEdit = !empty($editRow);
                         <label for="contact_phone">연락처(전화번호)</label>
 
                         <div style="display:flex; gap:8px; align-items:center;">
-                            <!-- 입력창 -->
                             <input
                                 type="tel"
                                 id="contact_phone"
@@ -681,11 +694,9 @@ $isEdit = !empty($editRow);
 
                             <?php if ($isEdit && !empty($editRow['contact_phone'])): ?>
                                 <?php
-                                // tel: 링크용으로 숫자만 추출
                                 $telCleanForm = preg_replace('/\D+/', '', $editRow['contact_phone']);
                                 ?>
                                 <?php if (!empty($telCleanForm)): ?>
-                                    <!-- 보기/수정 모드에서 연락처 옆 전화 버튼 -->
                                     <a href="tel:<?php echo htmlspecialchars($telCleanForm, ENT_QUOTES, 'UTF-8'); ?>">
                                         <button type="button">전화</button>
                                     </a>
@@ -697,8 +708,8 @@ $isEdit = !empty($editRow);
                     <div class="form-group">
                         <label for="memo">메모</label>
                         <textarea id="memo" name="memo" rows="4"><?php
-                                                                    echo htmlspecialchars($editRow['memo'] ?? '', ENT_QUOTES, 'UTF-8');
-                                                                    ?></textarea>
+                            echo htmlspecialchars($editRow['memo'] ?? '', ENT_QUOTES, 'UTF-8');
+                            ?></textarea>
                     </div>
 
                     <div class="form-actions">
@@ -782,7 +793,6 @@ $isEdit = !empty($editRow);
                                                         <?php echo htmlspecialchars($row['contact_phone'], ENT_QUOTES, 'UTF-8'); ?>
                                                     </span>
                                                     <?php
-                                                    // 전화번호에서 숫자만 추출해서 tel 링크용으로 사용
                                                     $telClean = preg_replace('/\D+/', '', $row['contact_phone']);
                                                     ?>
                                                     <?php if (!empty($telClean)): ?>
@@ -833,7 +843,7 @@ $isEdit = !empty($editRow);
         </div><!-- /.main -->
     </div><!-- /.layout -->
 
-    <script src="password_5_passwordRegister_View_admin.js?v=20251128_01"></script>
+    <script src="password_5_passwordRegister_View_admin.js?v=20251128_03"></script>
 
 </body>
 
