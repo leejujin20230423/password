@@ -9,6 +9,12 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+
+// 로그인 여부 체크 (한 번만 선언해두고 밑에서 사용)
+$isLoggedIn = isset($_SESSION['userid']) || isset($_SESSION['user_no']);
+
+
+
 /**
  * 이 페이지는 "로그인된 사용자 전용" 페이지로 가정한다.
  * - users 테이블의 PK: user_no
@@ -541,6 +547,7 @@ $isEdit = !empty($editRow);
 <body>
     <div class="layout">
 
+
         <!-- 상단 헤더 -->
         <header class="header">
             <h1>Password 관리 시스템</h1>
@@ -549,6 +556,13 @@ $isEdit = !empty($editRow);
                     <?php echo htmlspecialchars($sessionUsername, ENT_QUOTES, 'UTF-8'); ?>
                 </span>
 
+                <!-- ✅ 비밀번호 변경 버튼 (경로 수정) -->
+                <button type="button"
+                    onclick="window.location.href='/password_2_passwordChange/password_2_passwordChange_view/password_2_passwordChange_view_admin/password_2_passwordChange_view_admin.php';">
+                    비밀번호 변경
+                </button>
+
+
                 <button type="button"
                     class="logout-button"
                     onclick="window.location.href='/password_9_logout/password_9_logout_Route/password_9_logout_Route.php';">
@@ -556,6 +570,8 @@ $isEdit = !empty($editRow);
                 </button>
             </div>
         </header>
+
+
 
         <!-- (디버깅용) 리스트 데이터 출처 표시 -->
         <div style="padding:8px 16px; font-size:12px; color:#555;">
@@ -777,7 +793,7 @@ $isEdit = !empty($editRow);
             <!-- 우측 리스트 -->
             <aside class="list-panel">
                 <h2>등록된 비밀번호 목록</h2>
-                <span style="font-size: 14px; color: red;">(비밀번호를 보려면 보기버튼을 눌러주세요.)</span>
+                <span style="font-size: 14px; color: red;">(사이트의 비밀번호를 보려면 보기버튼을 눌러주세요.)</span>
                 <!-- 🔎 검색 박스: 사이트 주소 / 메모 검색 -->
                 <div class="search-box">
                     <form method="get" action="">
