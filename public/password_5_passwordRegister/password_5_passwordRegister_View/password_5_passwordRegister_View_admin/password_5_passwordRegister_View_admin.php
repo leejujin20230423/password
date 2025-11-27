@@ -468,7 +468,7 @@ $isEdit = !empty($editRow);
             <aside class="sidebar">
                 <nav>
                     <ul>
-                        <li class="active">비밀번호 등록/수정</li>
+                        <li class="active">비밀번호 등록</li>
                         <li>비밀번호 검색</li>
                         <li>환경 설정</li>
                     </ul>
@@ -590,7 +590,7 @@ $isEdit = !empty($editRow);
                         <label for="encrypted_password">
                             <?php echo $isEdit ? '새 비밀번호' : '비밀번호'; ?>
                             <?php if ($isEdit): ?>
-                                <span style="font-size:11px; color:#888;">
+                                <span style="font-size:11px; color:#888;" placeholder="비밀번호 변경시에만 사용">
                                     (변경 시에만 새 비밀번호를 입력하세요)
                                 </span>
                             <?php endif; ?>
