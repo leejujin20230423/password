@@ -387,7 +387,7 @@ $isEdit = !empty($editRow);
     <meta charset="UTF-8">
     <title>Password 등록</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="password_5_register_View_admin.css">
+    <link rel="stylesheet" href="password_5_passwordRegister_View_admin.css">
     <style>
         /* 검색박스 살짝만 스타일 */
         .search-box {

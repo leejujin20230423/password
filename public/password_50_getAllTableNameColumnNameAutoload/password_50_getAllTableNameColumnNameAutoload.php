@@ -73,7 +73,7 @@ class GetAllTableNameAutoload
             $_SESSION[$this->loginSessionKey] === '' ||
             $_SESSION[$this->loginSessionKey] === null
         ) {
-            $loginUrl = '/password_5_register/password_5_register_Route/password_5_register_Route.php';
+            $loginUrl = '/password_5_passwordRegister/password_5_passwordRegister_Route/password_5_passwordRegister_Route.php';
             header('Location: ' . $loginUrl);
             exit;
         }

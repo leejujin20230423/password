@@ -7,6 +7,13 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// 회원가입 완료 후 돌아올 때 사용할 메시지
+$registerMessage = '';
+if (isset($_GET['registered']) && $_GET['registered'] === '1') {
+    $registerMessage = '회원가입이 완료되었습니다. 가입한 아이디로 로그인해주세요.';
+}
+
+
 // 로그인 Model 클래스 (옛날 password_connection 상속 ❌)
 class password_0_login_Model_Module
 {
