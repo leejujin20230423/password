@@ -590,7 +590,7 @@ $isEdit = !empty($editRow);
                         <label for="encrypted_password">
                             <?php echo $isEdit ? '새 비밀번호' : '비밀번호'; ?>
                             <?php if ($isEdit): ?>
-                                <span style="font-size:11px; color:#888;" placeholder="비밀번호 변경시에만 사용">
+                                <span style="font-size:11px; color:#888;">
                                     (변경 시에만 새 비밀번호를 입력하세요)
                                 </span>
                             <?php endif; ?>
@@ -599,7 +599,7 @@ $isEdit = !empty($editRow);
                         <input type="password"
                             id="encrypted_password"
                             name="encrypted_password"
-                            value="">
+                            value="" placeholder="비밀번호 변경시에만 사용">
                     </div>
 
                     <div class="form-group">
