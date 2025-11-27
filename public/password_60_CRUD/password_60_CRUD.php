@@ -7,7 +7,7 @@
 //      1) DBConnection, GetAllTableNameAutoload, Redis 준비
 //      2) $crud = new GenericCrud($pdo, $schemaLoader, $tableName, $redis);
 //      3) $crud->insert()/update()/delete()/getListCached() 등 호출
-// --------------------------------------------------
+// -------------------------------------------------------
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
