@@ -9,6 +9,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+
+
+
 /**
  * 이 페이지는 "로그인된 사용자 전용" 페이지로 가정한다.
  * - users 테이블의 PK: user_no
@@ -22,6 +25,9 @@ if (session_status() === PHP_SESSION_NONE) {
  *      $_SESSION['username'] = $user['username'];
  */
 
+
+
+
 if (empty($_SESSION['user_no'])) {
     // 로그인 안 되어 있으면 로그인 페이지로 보냄
     header('Location: /password_0_login/password_0_login_View/password_0_login_View.php');
@@ -32,8 +38,6 @@ if (empty($_SESSION['user_no'])) {
 $currentUserNo = (int)$_SESSION['user_no'];
 
 $sessionUsername = (string)$_SESSION['username'];
-
-
 
 /**
  * ==========================================================
@@ -64,9 +68,7 @@ function encryptPasswordAES(string $plain): string
     }
 
     // 1) 키와 IV(초기화 벡터) 생성
-    //    - sha256 해시의 binary 결과(32바이트)를 키로 사용
     $key = hash('sha256', PASSWORD_SECRET_KEY, true);               // 32 bytes
-    //    - sha256 해시에서 앞 16바이트만 잘라서 IV 로 사용
     $iv  = substr(hash('sha256', PASSWORD_SECRET_IV, true), 0, 16); // 16 bytes
 
     // 2) OPENSSL_RAW_DATA 옵션으로 "바이너리 암호문"을 얻는다.
@@ -83,8 +85,7 @@ function encryptPasswordAES(string $plain): string
         return '';
     }
 
-    // 3) 바이너리 암호문을 그대로 DB에 넣기 어렵기 때문에
-    //    base64 문자열로 인코딩해서 저장한다.
+    // 3) base64 문자열로 인코딩해서 저장
     return base64_encode($cipherRaw);
 }
 
@@ -164,7 +165,6 @@ try {
 
 // 스키마 로더
 //  - 두 번째 인자 'user_no' 는 로그인 세션 키 이름
-//  - GetAllTableNameAutoload 내부에서 로그인 체크에 사용될 수 있음
 $schemaLoader = new GetAllTableNameAutoload($pdo, 'user_no', $redis);
 
 // GenericCrud 인스턴스 생성
@@ -179,23 +179,111 @@ $crud = new GenericCrud($pdo, $schemaLoader, $tableName, $redis);
 // "보기" 버튼을 눌렀을 때 선택된 한 행 데이터
 $editRow = null;
 
-// 복호화된 평문 비밀번호 (보기 모드에서 "보기" 버튼 눌렀을 때 사용)
+// (예전에는 여기서 미리 복호화한 평문을 넣었지만,
+//  이제는 AJAX 재인증 후에만 복호화해서 내려줄 거라 사용 안 함)
 $decryptedPassword = '';
 
 // 검색어: 사이트 주소 / 메모에 포함된 텍스트 검색
 $searchKeyword = trim($_GET['q'] ?? '');
 
-// 현재 폼이 수정 모드인지 여부를 나중에 판단하기 위해 사용
+// 현재 폼이 수정 모드인지 여부
 $isEdit = false;
-
 
 /**
  * ==========================================================
- * 5. POST 처리 (등록 / 수정 / 삭제 / 보기)
- *     - action 값 기준으로 분기
+ * 5. POST 처리 (등록 / 수정 / 삭제 / 보기 / AJAX 복호화)
+ *     - ajax 값 또는 action 값 기준으로 분기
  * ==========================================================
  */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    /**
+     * -------------------------------
+     * 5-0) AJAX: 로그인 비밀번호 검증 + 지정된 password 레코드 복호화
+     *      (암호 보기 버튼에서 사용)
+     * -------------------------------
+     */
+    if (isset($_POST['ajax']) && $_POST['ajax'] === 'decrypt_password') {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if (empty($_SESSION['user_no'])) {
+            echo json_encode([
+                'ok'  => false,
+                'msg' => '로그인이 필요합니다.'
+            ]);
+            exit;
+        }
+
+        $currentUserNo = (int)$_SESSION['user_no'];
+        $loginPassword = $_POST['login_password'] ?? '';
+        $passwordId    = (int)($_POST['password_idno'] ?? 0);
+
+        if ($loginPassword === '' || $passwordId <= 0) {
+            echo json_encode([
+                'ok'  => false,
+                'msg' => '잘못된 요청입니다.'
+            ]);
+            exit;
+        }
+
+        // 1) users 테이블에서 현재 로그인 사용자 비밀번호 해시 조회
+        // ⚠️ 실제 컬럼명에 맞게 user_pass 부분은 수정 가능
+        $sql = "SELECT password
+                FROM users 
+                WHERE user_no = :user_no
+                LIMIT 1";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindValue(':user_no', $currentUserNo, PDO::PARAM_INT);
+        $stmt->execute();
+        $userRow = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (
+            !$userRow ||
+            empty($userRow['password']) ||
+            !password_verify($loginPassword, $userRow['password'])
+        ) {
+            echo json_encode([
+                'ok'  => false,
+                'msg' => '로그인 비밀번호가 일치하지 않습니다.'
+            ]);
+            exit;
+        }
+
+        // 2) password 테이블에서 해당 레코드 조회 (본인 소유인지 확인)
+        $row = $crud->getById($passwordId);
+
+        if (
+            !$row ||
+            (int)$row['user_no_Fk'] !== $currentUserNo
+        ) {
+            echo json_encode([
+                'ok'  => false,
+                'msg' => '해당 비밀번호를 찾을 수 없습니다.'
+            ]);
+            exit;
+        }
+
+        // 3) AES 복호화
+        $plain = decryptPasswordAES($row['encrypted_password'] ?? '');
+
+        if ($plain === '') {
+            echo json_encode([
+                'ok'  => false,
+                'msg' => '복호화에 실패했습니다.'
+            ]);
+            exit;
+        }
+
+        echo json_encode([
+            'ok'    => true,
+            'plain' => $plain,
+        ]);
+        exit;
+    }
+
+    // -------------------------------
+    // 여기부터는 기존 create/update/delete/view 처리
+    // -------------------------------
     $action = $_POST['action'] ?? '';
 
     /**
@@ -212,17 +300,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $encrypted = encryptPasswordAES($plainPassword);
 
         // 3) INSERT 에 사용할 데이터 배열 생성
-        //    - user_no_Fk 에 현재 로그인한 사용자 PK를 기록
         $data = [
             'user_no_Fk'         => $currentUserNo,                  // FK: users.user_no
             'category'           => $_POST['category'] ?? '',
             'site_url'           => $_POST['site_url'] ?? '',
             'login_id'           => $_POST['login_id'] ?? '',
             'encrypted_password' => $encrypted,
-            'contact_phone'      => $_POST['contact_phone'] ?? '',   // ✅ 신규: 연락처
+            'contact_phone'      => $_POST['contact_phone'] ?? '',   // 연락처
             'memo'               => $_POST['memo'] ?? '',
         ];
-
 
         // 4) GenericCrud 로 INSERT 실행
         $crud->insert($data);
@@ -248,16 +334,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'category'      => $_POST['category'] ?? '',
                 'site_url'      => $_POST['site_url'] ?? '',
                 'login_id'      => $_POST['login_id'] ?? '',
-                'contact_phone' => $_POST['contact_phone'] ?? '',    // ✅ 신규: 연락처
+                'contact_phone' => $_POST['contact_phone'] ?? '',
                 'memo'          => $_POST['memo'] ?? '',
             ];
-
 
             // 2) 새 비밀번호 입력값
             $newPlain = $_POST['encrypted_password'] ?? '';
 
             // 3) 새 비밀번호가 비어있지 않다면 → 기존 값 대신 교체
-            //    비어있다면 → 비밀번호는 그대로 두고 다른 필드만 수정
             if (trim($newPlain) !== '') {
                 $data['encrypted_password'] = encryptPasswordAES($newPlain);
             }
@@ -280,8 +364,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = $_POST['password_idno'] ?? null;
 
         if ($id !== null && $id !== '') {
-            // (필요하다면 여기서, 이 레코드의 user_no_Fk 가
-            //  $currentUserNo 와 같은지 확인 후 삭제하는 안전장치 추가 가능)
             $crud->delete($id);
         }
 
@@ -292,9 +374,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     /**
      * -------------------------------
      * 5-4) 보기 (view)
-     *   - 이 경우에는 리다이렉트 없이 같은 페이지에서
-     *     $editRow, $decryptedPassword 를 채워서
-     *     폼에 값을 뿌려주고 "수정 모드" 로 전환하는 용도
+     *   - 이제는 "복호화된 평문"을 여기서 만들지 않는다.
+     *   - 단지 $editRow 만 채워서 폼에 값 뿌리고 수정 모드로 전환.
      * -------------------------------
      */
     elseif ($action === 'view') {
@@ -305,26 +386,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // 1) PK 기준으로 한 행 조회
             $editRow = $crud->getById($id);
 
-            // 2) 암호화된 비밀번호가 있다면 복호화해서 변수에 저장
-            if (!empty($editRow) && isset($editRow['encrypted_password'])) {
-                $decryptedPassword = decryptPasswordAES($editRow['encrypted_password']);
-            }
-
-            // 3) 이 아래에서 $isEdit 를 true 로 바꿔서
-            //    HTML 폼이 "수정 모드"로 보이게 만들 수 있음
+            // 2) 예전에는 여기서 복호화해서 $decryptedPassword 에 넣었지만,
+            //    이제는 AJAX 재인증 후에만 복호화할 것이므로 하지 않는다.
             $isEdit = true;
         }
-        // ※ view 는 리다이렉트 없이 그대로 HTML 렌더링
+        // view 는 리다이렉트 없이 그대로 HTML 렌더링
     }
 }
-
 
 /**
  * ==========================================================
  * 6. 화면에 뿌릴 리스트 데이터
- *    - 검색어(q)가 있으면: site_url / memo 에 LIKE 검색
- *    - 없으면: 현재 사용자(user_no_Fk) 기준 전체 목록
- *              (category ASC, 같은 category 안에서는 최근순)
  * ==========================================================
  */
 
@@ -368,10 +440,7 @@ if ($searchKeyword !== '') {
      *  - 조건:
      *      user_no_Fk = 현재 로그인 사용자
      *  - 정렬:
-     *      category 오름차순
-     *      + 같은 category 안에서는 password_idno 내림차순(최근순)
-     *  - GenericCrud 의 getListCached() 를 사용하여
-     *    Redis 캐시를 우선 활용
+     *      category 오름차순 + password_idno 내림차순(최근순)
      */
 
     $orderBy    = 'category ASC' . ($pk ? ', ' . $pk . ' DESC' : '');
@@ -381,8 +450,7 @@ if ($searchKeyword !== '') {
     $listSource   = $crud->getLastListSource();  // 'db' or 'redis'
 }
 
-// 위에서 view 액션이 실행되었다면 $isEdit 가 true 로 세팅됨
-// 그 값을 이용해서 HTML 폼에서 "등록" vs "수정" 버튼을 조건부로 바꿔줄 수 있다.
+// view 액션이 실행되었다면 $editRow 가 채워져 있을 것
 $isEdit = !empty($editRow);
 
 ?>
@@ -469,8 +537,6 @@ $isEdit = !empty($editRow);
                 <nav>
                     <ul>
                         <li class="active">비밀번호 등록</li>
-                        <!-- <li>비밀번호 검색</li>
-                        <li>환경 설정</li> -->
                     </ul>
                 </nav>
             </aside>
@@ -510,9 +576,6 @@ $isEdit = !empty($editRow);
                         </datalist>
                     </div>
 
-
-
-
                     <div class="form-group">
                         <label for="site_url">사이트 주소</label>
                         <div style="display:flex; gap:8px; align-items:center;">
@@ -522,7 +585,7 @@ $isEdit = !empty($editRow);
                                 style="flex:1;"
                                 value="<?php echo htmlspecialchars($editRow['site_url'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                                 required>
-                            <!-- ✅ 폼에서도 URL 이동 버튼 -->
+                            <!-- URL 이동 버튼 -->
                             <button type="button"
                                 onclick="openUrl(document.getElementById('site_url').value);">
                                 이동
@@ -541,16 +604,13 @@ $isEdit = !empty($editRow);
                                 required>
 
                             <?php if ($isEdit && !empty($editRow)): ?>
-                                <!-- ✅ 보기(수정) 모드에서만 아이디 복사 버튼 표시 -->
+                                <!-- 보기(수정) 모드에서만 아이디 복사 버튼 표시 -->
                                 <button type="button" id="copyLoginIdBtn">
                                     복사
                                 </button>
                             <?php endif; ?>
                         </div>
                     </div>
-
-
-
                     <?php if ($isEdit && !empty($editRow)): ?>
                         <!-- 저장된 비밀번호 (암호화 값 / 평문 토글 + 복사) -->
                         <div class="form-group">
@@ -568,22 +628,25 @@ $isEdit = !empty($editRow);
                                     data-encrypted="<?php echo htmlspecialchars($editRow['encrypted_password'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                                     value="<?php echo htmlspecialchars($editRow['encrypted_password'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                                     style="flex:1;">
+
                                 <!-- ✅ 암호/평문 토글 버튼 -->
                                 <button type="button" id="togglePasswordView">
                                     암호 보기
                                 </button>
-                                <!-- ✅ 복호화된 비밀번호 복사 버튼 -->
+
+                                <!-- ✅ 평문 비밀번호 복사 버튼 -->
                                 <button type="button" id="copyPasswordBtn">
                                     복사
                                 </button>
                             </div>
 
-                            <!-- 평문 비밀번호는 hidden에 숨겨두고 JS에서만 사용 -->
+                            <!-- ✅ 평문 비밀번호는 hidden에 숨겨두고 JS에서만 사용 -->
                             <input type="hidden"
                                 id="password_plain_hidden"
                                 value="<?php echo htmlspecialchars($decryptedPassword, ENT_QUOTES, 'UTF-8'); ?>">
                         </div>
                     <?php endif; ?>
+
 
 
                     <div class="form-group">
@@ -599,7 +662,8 @@ $isEdit = !empty($editRow);
                         <input type="password"
                             id="encrypted_password"
                             name="encrypted_password"
-                            value="" placeholder="비밀번호 변경시에만 사용">
+                            value=""
+                            placeholder="비밀번호 변경시에만 사용">
                     </div>
 
                     <div class="form-group">
@@ -621,7 +685,7 @@ $isEdit = !empty($editRow);
                                 $telCleanForm = preg_replace('/\D+/', '', $editRow['contact_phone']);
                                 ?>
                                 <?php if (!empty($telCleanForm)): ?>
-                                    <!-- 📱 보기/수정 모드에서 연락처 옆 전화 버튼 -->
+                                    <!-- 보기/수정 모드에서 연락처 옆 전화 버튼 -->
                                     <a href="tel:<?php echo htmlspecialchars($telCleanForm, ENT_QUOTES, 'UTF-8'); ?>">
                                         <button type="button">전화</button>
                                     </a>
@@ -629,8 +693,6 @@ $isEdit = !empty($editRow);
                             <?php endif; ?>
                         </div>
                     </div>
-
-
 
                     <div class="form-group">
                         <label for="memo">메모</label>
@@ -674,7 +736,7 @@ $isEdit = !empty($editRow);
                     </form>
                 </div>
 
-                <!-- ✅ 테이블 가로 스크롤용 래퍼 추가 -->
+                <!-- 테이블 가로 스크롤용 래퍼 -->
                 <div class="table-wrapper">
                     <table class="password-table" id="passwordTable">
                         <thead>
@@ -686,7 +748,6 @@ $isEdit = !empty($editRow);
                                 <th>연락처</th>
                                 <th>메모</th>
                                 <th class="col-actions">Action</th>
-
                             </tr>
                         </thead>
 
@@ -695,7 +756,6 @@ $isEdit = !empty($editRow);
                                 <?php $seq = 1; ?>
                                 <?php foreach ($passwordRows as $row): ?>
                                     <tr>
-                                        <!-- ✅ 순번 (현재 정렬 기준에 따른 1,2,3...) -->
                                         <td><?php echo $seq++; ?></td>
 
                                         <td><?php echo htmlspecialchars($row['category'], ENT_QUOTES, 'UTF-8'); ?></td>
@@ -705,7 +765,6 @@ $isEdit = !empty($editRow);
                                                 <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                                                     <?php echo htmlspecialchars($row['site_url'], ENT_QUOTES, 'UTF-8'); ?>
                                                 </span>
-                                                <!-- URL 이동 버튼 -->
                                                 <button type="button"
                                                     onclick="openUrl('<?php echo htmlspecialchars($row['site_url'], ENT_QUOTES, 'UTF-8'); ?>');">
                                                     이동
@@ -715,7 +774,7 @@ $isEdit = !empty($editRow);
 
                                         <td><?php echo htmlspecialchars($row['login_id'], ENT_QUOTES, 'UTF-8'); ?></td>
 
-                                        <!-- ✅ 연락처 + 전화걸기 버튼 -->
+                                        <!-- 연락처 + 전화걸기 버튼 -->
                                         <td>
                                             <?php if (!empty($row['contact_phone'])): ?>
                                                 <div style="display:flex; gap:6px; align-items:center;">
@@ -727,7 +786,6 @@ $isEdit = !empty($editRow);
                                                     $telClean = preg_replace('/\D+/', '', $row['contact_phone']);
                                                     ?>
                                                     <?php if (!empty($telClean)): ?>
-                                                        <!-- 📱 휴대폰에서 누르면 전화 앱 실행 (tel:) -->
                                                         <a href="tel:<?php echo htmlspecialchars($telClean, ENT_QUOTES, 'UTF-8'); ?>">
                                                             <button type="button">전화</button>
                                                         </a>
@@ -740,7 +798,7 @@ $isEdit = !empty($editRow);
 
                                         <td><?php echo htmlspecialchars($row['memo'], ENT_QUOTES, 'UTF-8'); ?></td>
 
-                                        <!-- 보기 (폼에 값 채우기) -->
+                                        <!-- 보기 / 삭제 -->
                                         <td class="col-actions">
                                             <!-- 보기 -->
                                             <form method="post" action="" style="display:inline;">
@@ -772,11 +830,11 @@ $isEdit = !empty($editRow);
                 </div>
             </aside>
 
-
         </div><!-- /.main -->
     </div><!-- /.layout -->
 
-    <script src="password_5_passwordRegister_View_admin.js?v=20251127"></script>
+    <script src="password_5_passwordRegister_View_admin.js?v=20251128_01"></script>
+
 </body>
 
 </html>
