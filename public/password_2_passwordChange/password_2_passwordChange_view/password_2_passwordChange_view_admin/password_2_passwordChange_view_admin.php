@@ -121,8 +121,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } catch (Exception $e) {
             // ⚠️ 디버깅용: 실제 원인 확인 위해 잠깐 에러 내용을 같이 띄워보자
-            $errorMessage = '비밀번호 변경 처리 중 오류가 발생했습니다. (DEBUG: ' 
-                          . $e->getMessage() . ')';
+            $errorMessage = '비밀번호 변경 처리 중 오류가 발생했습니다. (DEBUG: '
+                . $e->getMessage() . ')';
             // 실제 운영 시에는 위 줄 대신 다음 한 줄만 두는 걸 추천:
             // $errorMessage = '비밀번호 변경 처리 중 오류가 발생했습니다.';
         }
@@ -134,118 +134,126 @@ $currentUserid = isset($_SESSION['userid']) ? $_SESSION['userid'] : '';
 ?>
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <title>관리자 비밀번호 변경</title>
     <!-- 같은 폴더에 있는 CSS -->
     <link rel="stylesheet" href="password_2_passwordChange_view_admin.css?v=20251128">
 </head>
+
 <body>
 
-<div class="page-wrapper">
+    <div class="page-wrapper">
 
-    <div class="change-card">
+        <div class="change-card">
 
-        <h1 class="page-title">관리자 비밀번호 변경</h1>
+            <h1 class="page-title">관리자 비밀번호 변경</h1>
 
-        <?php if ($currentUserid !== ''): ?>
-            <p class="current-user">
-                현재 로그인 계정 :
-                <strong><?php echo htmlspecialchars($currentUserid, ENT_QUOTES, 'UTF-8'); ?></strong>
-            </p>
-        <?php endif; ?>
+            <?php if ($currentUserid !== ''): ?>
+                <p class="current-user">
+                    현재 로그인 계정 :
+                    <strong><?php echo htmlspecialchars($currentUserid, ENT_QUOTES, 'UTF-8'); ?></strong>
+                </p>
+            <?php endif; ?>
 
-        <!-- 에러 / 성공 메시지 영역 -->
-        <?php if ($errorMessage !== ''): ?>
-            <div class="alert alert-error">
-                <?php echo htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8'); ?>
-            </div>
-        <?php endif; ?>
+            <!-- 에러 / 성공 메시지 영역 -->
+            <?php if ($errorMessage !== ''): ?>
+                <div class="alert alert-error">
+                    <?php echo htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8'); ?>
+                </div>
+            <?php endif; ?>
 
-        <?php if ($successMessage !== ''): ?>
-            <div class="alert alert-success">
-                <?php echo htmlspecialchars($successMessage, ENT_QUOTES, 'UTF-8'); ?>
-            </div>
-        <?php endif; ?>
+            <?php if ($successMessage !== ''): ?>
+                <div class="alert alert-success">
+                    <?php echo htmlspecialchars($successMessage, ENT_QUOTES, 'UTF-8'); ?>
+                </div>
+            <?php endif; ?>
 
-        <form method="post" class="change-form" id="passwordChangeForm" autocomplete="off">
 
-            <!-- 현재 비밀번호 -->
-            <div class="form-group">
-                <label for="current_password">현재 비밀번호</label>
-                <div class="password-input-wrapper">
-                    <input
-                        type="password"
-                        id="current_password"
-                        name="current_password"
-                        required
-                        placeholder="현재 비밀번호를 입력하세요">
-                    <button type="button"
+            <form method="post"ㅌ
+                class="change-form"
+                id="passwordChangeForm"
+                autocomplete="off">
+
+
+                <!-- 현재 비밀번호 -->
+                <div class="form-group">
+                    <label for="current_password">현재 비밀번호</label>
+                    <div class="password-input-wrapper">
+                        <input
+                            type="password"
+                            id="current_password"
+                            name="current_password"
+                            required
+                            placeholder="현재 비밀번호를 입력하세요">
+                        <button type="button"
                             class="toggle-password-btn"
                             data-target="current_password">
-                        보기
-                    </button>
+                            보기
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <!-- 새 비밀번호 -->
-            <div class="form-group">
-                <label for="new_password">새 비밀번호</label>
-                <div class="password-input-wrapper">
-                    <input
-                        type="password"
-                        id="new_password"
-                        name="new_password"
-                        required
-                        placeholder="새 비밀번호 (최소 8자)">
-                    <button type="button"
+                <!-- 새 비밀번호 -->
+                <div class="form-group">
+                    <label for="new_password">새 비밀번호</label>
+                    <div class="password-input-wrapper">
+                        <input
+                            type="password"
+                            id="new_password"
+                            name="new_password"
+                            required
+                            placeholder="새 비밀번호 (최소 8자)">
+                        <button type="button"
                             class="toggle-password-btn"
                             data-target="new_password">
-                        보기
-                    </button>
+                            보기
+                        </button>
+                    </div>
+                    <small class="help-text">
+                        영문/숫자/특수문자를 조합하면 더 안전합니다.
+                    </small>
                 </div>
-                <small class="help-text">
-                    영문/숫자/특수문자를 조합하면 더 안전합니다.
-                </small>
-            </div>
 
-            <!-- 새 비밀번호 확인 -->
-            <div class="form-group">
-                <label for="new_password_confirm">새 비밀번호 확인</label>
-                <div class="password-input-wrapper">
-                    <input
-                        type="password"
-                        id="new_password_confirm"
-                        name="new_password_confirm"
-                        required
-                        placeholder="새 비밀번호를 다시 입력하세요">
-                    <button type="button"
+                <!-- 새 비밀번호 확인 -->
+                <div class="form-group">
+                    <label for="new_password_confirm">새 비밀번호 확인</label>
+                    <div class="password-input-wrapper">
+                        <input
+                            type="password"
+                            id="new_password_confirm"
+                            name="new_password_confirm"
+                            required
+                            placeholder="새 비밀번호를 다시 입력하세요">
+                        <button type="button"
                             class="toggle-password-btn"
                             data-target="new_password_confirm">
-                        보기
-                    </button>
+                            보기
+                        </button>
+                    </div>
+                    <small id="passwordMatchMessage" class="help-text"></small>
                 </div>
-                <small id="passwordMatchMessage" class="help-text"></small>
-            </div>
 
-            <!-- 버튼 영역 -->
-            <div class="form-actions">
-                <button type="submit" class="btn-primary">
-                    비밀번호 변경
-                </button>
+                <!-- 버튼 영역 -->
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        비밀번호 변경
+                    </button>
 
-                <button type="button"
+                    <button type="button"
                         class="btn-secondary"
                         onclick="window.location.href='/index.php';">
-                    메인으로
-                </button>
-            </div>
-        </form>
+                        메인으로
+                    </button>
+                </div>
+            </form>
+        </div>
+
     </div>
 
-</div>
-
-<!-- 같은 폴더의 JS -->
-<script src="password_2_passwordChange_view_admin.js?v=20251128"></script>
+    <!-- 같은 폴더의 JS -->
+    <script src="password_2_passwordChange_view_admin.js?v=20251128"></script>
 </body>
+
 </html>
