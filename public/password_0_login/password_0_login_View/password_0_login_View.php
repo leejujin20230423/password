@@ -132,7 +132,7 @@
         // Service Worker 등록
         if ("serviceWorker" in navigator) {
             window.addEventListener('load', function () {
-                navigator.serviceWorker.register("/sw.js")
+                navigator.serviceWorker.register("/serviceWorker.js")
                     .then(() => console.log("Service Worker 등록 완료"))
                     .catch(err => console.error("Service Worker 등록 실패:", err));
             });
