@@ -1,13 +1,15 @@
-// sw.js
 const CACHE_NAME = 'pass-pw-cache-v1';
 
-// 오프라인에서도 열어주고 싶은 기본 파일들
 const URLS_TO_CACHE = [
   '/',
   '/password_0_login/password_0_login_View/password_0_login_View.php',
-  '/password_5_passwordRegister/password_5_passwordRegister_View/password_5_passwordRegister_View_admin.php',
-  '/password_5_passwordRegister/password_5_passwordRegister_View/password_5_passwordRegister_View_admin.css',
-  '/password_5_passwordRegister/password_5_passwordRegister_View/password_5_passwordRegister_View_admin.js'
+
+  // ✅ 관리자 페이지 PHP
+  '/password_5_passwordRegister/password_5_passwordRegister_View/password_5_passwordRegister_View_admin/password_5_passwordRegister_View_admin.php',
+
+  // ✅ 관리자 CSS / JS (실제 위치 기준)
+  '/password_5_passwordRegister/password_5_passwordRegister_View/password_5_passwordRegister_View_admin/password_5_passwordRegister_View_admin.css',
+  '/password_5_passwordRegister/password_5_passwordRegister_View/password_5_passwordRegister_View_admin/password_5_passwordRegister_View_admin.js'
 ];
 
 self.addEventListener('install', (event) => {
