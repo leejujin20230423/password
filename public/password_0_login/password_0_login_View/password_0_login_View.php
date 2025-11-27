@@ -33,19 +33,19 @@
          로그인 폼
          =============================== -->
         <form action="/password_0_login/password_0_login_API/password_0_login_API.php"
-              method="POST">
+            method="POST">
 
             <input type="text"
-                   id="password_admin_userid"
-                   name="password_admin_userid"
-                   placeholder="관리자 아이디"
-                   required>
+                id="password_admin_userid"
+                name="password_admin_userid"
+                placeholder="관리자 아이디"
+                required>
 
             <input type="password"
-                   id="password_admin_pass"
-                   name="password_admin_pass"
-                   placeholder="관리자 비밀번호"
-                   required>
+                id="password_admin_pass"
+                name="password_admin_pass"
+                placeholder="관리자 비밀번호"
+                required>
 
             <button type="submit">로그인</button>
         </form>
@@ -59,23 +59,25 @@
 
         <div style="text-align:center; margin-top:8px;">
             <button type="button"
-                    style="padding:9px 18px; border:none; border-radius:6px;
+                style="padding:9px 18px; border:none; border-radius:6px;
                            background:#4b5563; color:#fff; cursor:pointer; font-size:14px;"
-                    onclick="window.location.href='/password_1_usersRegister/password_1_usersRegister_view/password_1_usersRegister_view_admin/password_1_usersRegister_view_admin.php';">
+                onclick="window.location.href='/password_1_usersRegister/password_1_usersRegister_view/password_1_usersRegister_view_admin/password_1_usersRegister_view_admin.php';">
                 회원가입
             </button>
         </div>
 
         <!-- ===============================
-         ✅ PWA 설치 버튼 영역 (로그인 화면에 표시)
+              PWA 설치 / 홈 화면 안내 버튼
          =============================== -->
+        <!-- PWA 설치 / 홈 화면 안내 버튼 -->
         <div style="text-align:center; margin-top:20px;">
             <button id="installBtn"
-                    style="display:none; padding:10px 20px; background:#0070f3;
-                           color:#fff; border:none; border-radius:6px; cursor:pointer;">
-                앱 설치하기
+                style="display:none; padding:10px 20px; background:#0070f3;
+               color:#fff; border:none; border-radius:6px; cursor:pointer;">
+                앱 설치 / 홈 화면 추가
             </button>
         </div>
+
 
         <!-- (선택) iOS 안내 문구 등 넣고 싶으면 여기에 -->
         <!-- <p style="font-size:12px; color:#888; text-align:center; margin-top:8px;">
@@ -84,60 +86,112 @@
 
     </div>
 
-    <!-- ===============================
-     ✅ PWA, Service Worker Script
+       <!-- ===============================
+     ✅ PWA, Service Worker Script (통합 버전)
      =============================== -->
     <script>
-        let deferredPrompt = null;
-        const installBtn = document.getElementById('installBtn');
+        document.addEventListener('DOMContentLoaded', function () {
 
-        // 브라우저가 PWA 설치 가능 상태가 되었을 때
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // 기본 설치 배너 막기
-            e.preventDefault();
-            // 나중에 사용할 수 있도록 이벤트 저장
-            deferredPrompt = e;
+            const installBtn = document.getElementById('installBtn');
+            let deferredPrompt = null;
 
-            // 로그인 화면의 "앱 설치하기" 버튼 보이기
-            if (installBtn) {
-                installBtn.style.display = 'inline-block';
+            // 버튼이 없으면 더 이상 진행할 필요 없음 (그래도 SW는 등록)
+            const ua = navigator.userAgent.toLowerCase();
+            const isIos      = /iphone|ipad|ipod/.test(ua);
+            const isAndroid  = /android/.test(ua);
+            const isStandalone =
+                window.matchMedia('(display-mode: standalone)').matches ||
+                ('standalone' in navigator && navigator.standalone);
+
+            // -----------------------------
+            // 1) 안드로이드 / PC 크롬: beforeinstallprompt 이벤트 사용
+            // -----------------------------
+            if (!isIos) {
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    // 기본 설치 배너 막기
+                    e.preventDefault();
+                    // 나중에 쓸 수 있게 이벤트 저장
+                    deferredPrompt = e;
+
+                    // "앱 설치 / 홈 화면 추가" 버튼 보이게
+                    if (installBtn) {
+                        installBtn.style.display = 'inline-block';
+                        installBtn.textContent   = '앱 설치 / 홈 화면 추가';
+                    }
+                });
             }
-        });
 
-        // "앱 설치하기" 버튼 클릭 시 실제 설치 다이얼로그 표시
-        if (installBtn) {
-            installBtn.addEventListener('click', async () => {
-                if (!deferredPrompt) {
-                    // 아직 설치 이벤트가 준비 안 된 경우
-                    alert('현재 브라우저에서는 설치가 지원되지 않습니다.');
-                    return;
-                }
+            // -----------------------------
+            // 2) iOS (아이폰/아이패드): beforeinstallprompt 없음
+            //    → 우리가 직접 "홈 화면 추가 방법" 안내용 버튼만 보여줌
+            // -----------------------------
+            if (installBtn && isIos && !isStandalone) {
+                installBtn.style.display = 'inline-block';
+                installBtn.textContent   = '홈 화면에 추가하는 방법';
+            }
 
-                // 설치 다이얼로그 띄우기
-                deferredPrompt.prompt();
-                const result = await deferredPrompt.userChoice;
+            // -----------------------------
+            // 3) 버튼 클릭 시 동작
+            // -----------------------------
+            if (installBtn) {
+                installBtn.addEventListener('click', async () => {
 
-                if (result.outcome === 'accepted') {
-                    console.log('PWA 설치 성공');
-                } else {
-                    console.log('PWA 설치 취소');
-                }
+                    // (1) 안드/PC 크롬에서 설치 프롬프트 준비되어 있으면 먼저 사용
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const result = await deferredPrompt.userChoice;
 
-                // 한 번 사용하면 이벤트는 비워 주기
-                deferredPrompt = null;
-                installBtn.style.display = 'none';
-            });
-        }
+                        if (result.outcome === 'accepted') {
+                            console.log('PWA 설치 성공');
+                            // 설치 후 버튼 숨겨도 됨
+                            installBtn.style.display = 'none';
+                        } else {
+                            console.log('PWA 설치 취소');
+                        }
 
-        // Service Worker 등록
-        if ("serviceWorker" in navigator) {
-            window.addEventListener('load', function () {
+                        // 한 번 사용하면 이벤트는 비움
+                        deferredPrompt = null;
+                        return;
+                    }
+
+                    // (2) 그 외에는 각 환경별로 "홈 화면 추가" 방법 안내
+                    if (isAndroid) {
+                        alert(
+                            '안드로이드 크롬에서 홈 화면에 추가하는 방법\n\n' +
+                            '1. 오른쪽 위 ⋮(세 점) 메뉴를 누릅니다.\n' +
+                            '2. "앱 설치" 또는 "홈 화면에 추가" 메뉴를 선택합니다.\n' +
+                            '3. 안내에 따라 "설치" / "추가"를 누르면 홈 화면에 아이콘이 생깁니다.'
+                        );
+                    } else if (isIos) {
+                        alert(
+                            'iPhone Safari에서 홈 화면에 추가하는 방법\n\n' +
+                            '1. 반드시 Safari로 이 사이트에 접속합니다.\n' +
+                            '2. 화면 아래 중앙의 네모 + 화살표 아이콘(공유 버튼)을 누릅니다.\n' +
+                            '3. 아래로 스크롤해서 "홈 화면에 추가"를 선택합니다.\n' +
+                            '4. 이름을 확인한 뒤, 오른쪽 위 "추가"를 누르면 홈 화면에 아이콘이 생깁니다.'
+                        );
+                    } else {
+                        alert(
+                            'PC 크롬에서 앱 설치하는 방법\n\n' +
+                            '1. 주소창 오른쪽에 보이는 "컴퓨터+휴대폰" 모양 아이콘(앱 설치 아이콘)을 클릭합니다.\n' +
+                            '2. "설치" 버튼을 누르면 바탕화면/앱 목록에 아이콘이 추가됩니다.'
+                        );
+                    }
+                });
+            }
+
+            // -----------------------------
+            // 4) Service Worker 등록
+            // -----------------------------
+            if ("serviceWorker" in navigator) {
                 navigator.serviceWorker.register("/serviceWorker.js")
                     .then(() => console.log("Service Worker 등록 완료"))
                     .catch(err => console.error("Service Worker 등록 실패:", err));
-            });
-        }
+            }
+
+        });
     </script>
+
 
 </body>
 
