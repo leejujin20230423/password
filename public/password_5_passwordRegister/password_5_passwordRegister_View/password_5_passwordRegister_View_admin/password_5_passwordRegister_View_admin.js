@@ -240,7 +240,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .writeText(text)
         .then(function () {
           // 조용히 복사만; 필요하면 alert 추가 가능
-          // alert("비밀번호(평문)가 클립보드에 복사되었습니다.");
+          alert("비밀번호가 복사되었습니다.");
         })
         .catch(function () {
           alert("비밀번호 복사에 실패했습니다. 브라우저 권한을 확인해 주세요.");
