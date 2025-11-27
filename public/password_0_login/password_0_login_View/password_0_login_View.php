@@ -18,7 +18,7 @@
 
 <div class="login-container">
 
-    <h1>Password 관리자 로그인</h1>
+    <h1>Password 로그인</h1>
 
     <?php if (isset($_GET['error'])): ?>
         <p style="color:#d9534f; text-align:center;">아이디 또는 비밀번호가 잘못되었습니다.</p>
@@ -58,7 +58,7 @@
         <button type="button"
                 style="padding:9px 18px; border:none; border-radius:6px;
                        background:#4b5563; color:#fff; cursor:pointer; font-size:14px;"
-                onclick="window.location.href='/password_1_usersRegister/password_1_usersRegister_view/password_1_usersRegister_view_user/password_1_usersRegister_view_user.php';">
+                onclick="window.location.href='/password_1_usersRegister/password_1_usersRegister_view/password_1_usersRegister_view_admin/password_1_usersRegister_view_admin.php';">
             회원가입
         </button>
     </div>

@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 //      - user_no (PK, AUTO_INCREMENT) → INSERT 목록에서 제외
                 //      - userid, username, password, email, phone, birthdate, gender, status, user_type
                 $status   = 1;        // 기본: 활성 계정
-                $userType = 'user';   // 일반 사용자
+                $userType = 'admin';   // 관리자
 
                 $sql = "
                     INSERT INTO users (
