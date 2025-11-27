@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password 관리자 로그인 윤서는 왕바보다!!!!</title>
+    <title>Password 관리자 로그인</title>
 
     <!-- 로그인 페이지 전용 CSS -->
     <link rel="stylesheet" href="/password_0_login/password_0_login_View/password_0_login_View.css">
