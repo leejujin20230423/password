@@ -747,8 +747,8 @@ $isEdit = !empty($editRow);
 
             <!-- 우측 리스트 -->
             <aside class="list-panel">
-                <h2>등록된 비밀번호 목록(비밀번호를 보려면 보기버튼을 눌러주세요.)</h2>
-
+                <h2>등록된 비밀번호 목록</h2>
+                <span style="font-size: 14px;">(비밀번호를 보려면 보기버튼을 눌러주세요.)</span>
                 <!-- 🔎 검색 박스: 사이트 주소 / 메모 검색 -->
                 <div class="search-box">
                     <form method="get" action="">
