@@ -481,6 +481,20 @@ $isEdit = !empty($editRow);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="password_5_passwordRegister_View_admin.css">
     <style>
+        /* ✅ 수정하기 버튼(수정 모드) 전용 색상 */
+        .form-actions button.btn-update {
+            background-color: #e86060ff;
+            /* 연한 빨강 */
+            border: 1px solid #c33030ff;
+            color: #ffffff;
+        }
+
+        .form-actions button.btn-update:hover {
+            background-color: #e7a8a8ff;
+            /* 살짝 더 진한 빨강 */
+            border-color: #d72121ff;
+        }
+
         /* 검색박스 살짝만 스타일 */
         .search-box {
             padding: 8px 0 12px 0;
@@ -504,7 +518,19 @@ $isEdit = !empty($editRow);
             border-radius: 4px;
             border: none;
             cursor: pointer;
+            background-color: #dfdadaff;
+            /* 기본 연한 회색 */
+            color: #333;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
         }
+
+        /* 마우스 올렸을 때 */
+        .search-box button:hover {
+            background-color: #cfc9c9;
+            /* 살짝 더 진한 회색 */
+            box-shadow: 0 0 3px rgba(0, 0, 0, 0.15);
+        }
+
 
         .search-reset-btn {
             background: #eee;
@@ -697,7 +723,7 @@ $isEdit = !empty($editRow);
                             id="encrypted_password"
                             name="encrypted_password"
                             value=""
-                            placeholder="이곳은 사이트의 저장된 비밀번호를 변경하는 곳입니다.">
+                            placeholder="사이트의 변경된 비밀번호를 입력후 수정하기 클릭하세요.">
                     </div>
 
                     <div class="form-group">
@@ -733,7 +759,9 @@ $isEdit = !empty($editRow);
                     </div>
 
                     <div class="form-actions">
-                        <button type="submit">
+                        <button
+                            type="submit"
+                            class="<?php echo $isEdit ? 'btn-update' : ''; ?>">
                             <?php echo $isEdit ? '수정하기' : '등록'; ?>
                         </button>
 
@@ -742,13 +770,14 @@ $isEdit = !empty($editRow);
                             새로 작성
                         </button>
                     </div>
+
                 </form>
             </section>
 
             <!-- 우측 리스트 -->
             <aside class="list-panel">
                 <h2>등록된 비밀번호 목록</h2>
-                <span style="font-size: 14px;">(비밀번호를 보려면 보기버튼을 눌러주세요.)</span>
+                <span style="font-size: 14px; color: red;">(비밀번호를 보려면 보기버튼을 눌러주세요.)</span>
                 <!-- 🔎 검색 박스: 사이트 주소 / 메모 검색 -->
                 <div class="search-box">
                     <form method="get" action="">
