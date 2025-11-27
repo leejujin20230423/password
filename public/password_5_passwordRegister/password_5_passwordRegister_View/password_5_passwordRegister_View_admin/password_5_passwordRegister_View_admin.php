@@ -604,12 +604,32 @@ $isEdit = !empty($editRow);
 
                     <div class="form-group">
                         <label for="contact_phone">연락처(전화번호)</label>
-                        <input type="tel"
-                            id="contact_phone"
-                            name="contact_phone"
-                            placeholder="예: 010-1234-5678"
-                            value="<?php echo htmlspecialchars($editRow['contact_phone'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <!-- 입력창 -->
+                            <input
+                                type="tel"
+                                id="contact_phone"
+                                name="contact_phone"
+                                style="flex:1;"
+                                placeholder="예: 010-1234-5678"
+                                value="<?php echo htmlspecialchars($editRow['contact_phone'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+
+                            <?php if ($isEdit && !empty($editRow['contact_phone'])): ?>
+                                <?php
+                                // tel: 링크용으로 숫자만 추출
+                                $telCleanForm = preg_replace('/\D+/', '', $editRow['contact_phone']);
+                                ?>
+                                <?php if (!empty($telCleanForm)): ?>
+                                    <!-- 📱 보기/수정 모드에서 연락처 옆 전화 버튼 -->
+                                    <a href="tel:<?php echo htmlspecialchars($telCleanForm, ENT_QUOTES, 'UTF-8'); ?>">
+                                        <button type="button">전화</button>
+                                    </a>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
                     </div>
+
 
 
                     <div class="form-group">
@@ -716,7 +736,7 @@ $isEdit = !empty($editRow);
                                                 -
                                             <?php endif; ?>
                                         </td>
-                                        
+
                                         <td><?php echo htmlspecialchars($row['memo'], ENT_QUOTES, 'UTF-8'); ?></td>
                                         <td>
                                             <!-- 보기 (폼에 값 채우기) -->
