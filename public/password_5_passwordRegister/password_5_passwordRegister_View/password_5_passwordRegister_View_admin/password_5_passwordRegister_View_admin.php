@@ -663,7 +663,7 @@ $isEdit = !empty($editRow);
                             id="encrypted_password"
                             name="encrypted_password"
                             value=""
-                            placeholder="비밀번호 변경시에만 사용">
+                            placeholder="이곳은 사이트의 저장된 비밀번호를 변경하는 곳입니다.">
                     </div>
 
                     <div class="form-group">
