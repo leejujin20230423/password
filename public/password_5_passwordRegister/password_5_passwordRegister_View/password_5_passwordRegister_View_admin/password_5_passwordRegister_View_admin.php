@@ -328,6 +328,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 3) INSERT 에 사용할 데이터 배열 생성
         $data = [
             'user_no_Fk'         => $currentUserNo,                  // FK: users.user_no
+            'storename'          => $_POST['storename'] ?? '',       // ✅ 매장명 추가
             'category'           => $_POST['category'] ?? '',
             'site_url'           => $_POST['site_url'] ?? '',
             'login_id'           => $_POST['login_id'] ?? '',
@@ -357,6 +358,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($id !== null && $id !== '') {
             // 1) 기본 컬럼들 (카테고리, 사이트 주소, 아이디, 메모)
             $data = [
+                'storename'     => $_POST['storename'] ?? '',   // ✅ 매장명 추가
                 'category'      => $_POST['category'] ?? '',
                 'site_url'      => $_POST['site_url'] ?? '',
                 'login_id'      => $_POST['login_id'] ?? '',
@@ -437,13 +439,15 @@ if ($searchKeyword !== '') {
     $like = '%' . $searchKeyword . '%';
 
     $sql = "SELECT *
-            FROM `{$tableName}`
-            WHERE user_no_Fk = :user_no
-              AND (
-                    site_url LIKE :kw
-                 OR memo     LIKE :kw
-              )
-            ORDER BY category ASC, {$pk} DESC";
+        FROM `{$tableName}`
+        WHERE user_no_Fk = :user_no
+          AND (
+                site_url  LIKE :kw
+             OR memo      LIKE :kw
+             OR storename LIKE :kw 
+          )
+        ORDER BY category ASC, {$pk} DESC";
+
 
     $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':user_no', $currentUserNo, PDO::PARAM_INT);
@@ -591,6 +595,20 @@ $isEdit = !empty($editRow);
                         </datalist>
                     </div>
 
+
+                    <div class="form-group">
+                        <label for="storename">매장명</label>
+                        <input
+                            type="text"
+                            id="storename"
+                            name="storename"
+                            value="<?php echo htmlspecialchars($editRow['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                            placeholder="예: BHC 경안점 또는 매장용이 아닐때는 공란으로 두세요."
+                            required
+                            onfocus="this.select();"
+                            onclick="this.select();">
+                    </div>
+
                     <div class="form-group">
                         <label for="site_url">사이트 주소</label>
                         <div style="display:flex; gap:8px; align-items:center;">
@@ -708,8 +726,8 @@ $isEdit = !empty($editRow);
                     <div class="form-group">
                         <label for="memo">메모</label>
                         <textarea id="memo" name="memo" rows="4"><?php
-                            echo htmlspecialchars($editRow['memo'] ?? '', ENT_QUOTES, 'UTF-8');
-                            ?></textarea>
+                                                                    echo htmlspecialchars($editRow['memo'] ?? '', ENT_QUOTES, 'UTF-8');
+                                                                    ?></textarea>
                     </div>
 
                     <div class="form-actions">
@@ -734,7 +752,7 @@ $isEdit = !empty($editRow);
                     <form method="get" action="">
                         <input type="text"
                             name="q"
-                            placeholder="사이트 주소 또는 메모에서 검색"
+                            placeholder="매장명 / 사이트 주소 / 메모에서 검색"
                             value="<?php echo htmlspecialchars($searchKeyword, ENT_QUOTES, 'UTF-8'); ?>">
                         <button type="submit">검색</button>
                         <?php if ($searchKeyword !== ''): ?>
@@ -754,6 +772,7 @@ $isEdit = !empty($editRow);
                             <tr>
                                 <th>순번</th>
                                 <th>구분</th>
+                                <th>매장명</th>
                                 <th>사이트 주소</th>
                                 <th>아이디</th>
                                 <th>연락처</th>
@@ -770,6 +789,9 @@ $isEdit = !empty($editRow);
                                         <td><?php echo $seq++; ?></td>
 
                                         <td><?php echo htmlspecialchars($row['category'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td>
+                                            <?php echo htmlspecialchars($row['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
+                                        </td>
 
                                         <td>
                                             <div style="display:flex; gap:6px; align-items:center;">
