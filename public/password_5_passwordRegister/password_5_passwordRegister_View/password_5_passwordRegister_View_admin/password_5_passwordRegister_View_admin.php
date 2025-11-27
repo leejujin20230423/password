@@ -685,7 +685,8 @@ $isEdit = !empty($editRow);
                                 <th>아이디</th>
                                 <th>연락처</th>
                                 <th>메모</th>
-                                <th>동작</th>
+                                <th class="col-actions">Action</th>
+
                             </tr>
                         </thead>
 
@@ -738,8 +739,10 @@ $isEdit = !empty($editRow);
                                         </td>
 
                                         <td><?php echo htmlspecialchars($row['memo'], ENT_QUOTES, 'UTF-8'); ?></td>
-                                        <td>
-                                            <!-- 보기 (폼에 값 채우기) -->
+
+                                        <!-- 보기 (폼에 값 채우기) -->
+                                        <td class="col-actions">
+                                            <!-- 보기 -->
                                             <form method="post" action="" style="display:inline;">
                                                 <input type="hidden" name="action" value="view">
                                                 <input type="hidden" name="password_idno"
