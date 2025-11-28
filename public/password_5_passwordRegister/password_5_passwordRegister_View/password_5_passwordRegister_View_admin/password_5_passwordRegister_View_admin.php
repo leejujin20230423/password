@@ -510,357 +510,359 @@ $isEdit = !empty($editRow);
     <div class="layout">
 
 
+        <div class="layout">
 
-
-        <!-- 상단 헤더 있던곳-->
-        <?php
-        require_once $_SERVER['DOCUMENT_ROOT'] . '/password_3_header/password_3_header_view/password_3_header_view_admin/password_3_header_view_admin.php';
-        ?>
-
-
-        <div class="main">
-
+            <!-- 상단 헤더 있던곳-->
             <?php
-            // 헤더, 사이드바 include
-            require_once $_SERVER['DOCUMENT_ROOT'] . '/password_4_sidebar/password_4_sidebar_view/password_4_sidebar_view_admin/password_4_sidebar_view_admin.php';
+            require_once $_SERVER['DOCUMENT_ROOT'] . '/password_3_header/password_3_header_view/password_3_header_view_admin/password_3_header_view_admin.php';
             ?>
 
+            <!-- ✅ 모바일에서 사이드바 열렸을 때 바탕 클릭용 오버레이 -->
+            <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+            <div class="main">
+
+                <?php
+                // 헤더, 사이드바 include
+                require_once $_SERVER['DOCUMENT_ROOT'] . '/password_4_sidebar/password_4_sidebar_view/password_4_sidebar_view_admin/password_4_sidebar_view_admin.php';
+                ?>
 
 
-            <!-- 가운데 등록 / 수정 폼 -->
-            <section class="content">
-                <h2>비밀번호 <?php echo $isEdit ? '수정' : '등록'; ?></h2>
+
+                <!-- 가운데 등록 / 수정 폼 -->
+                <section class="content">
+                    <h2>비밀번호 <?php echo $isEdit ? '수정' : '등록'; ?></h2>
 
 
 
-                <form id="passwordForm" method="post" action="">
-                    <!-- 모드: create / update -->
-                    <input type="hidden" name="action"
-                        value="<?php echo $isEdit ? 'update' : 'create'; ?>">
+                    <form id="passwordForm" method="post" action="">
+                        <!-- 모드: create / update -->
+                        <input type="hidden" name="action"
+                            value="<?php echo $isEdit ? 'update' : 'create'; ?>">
 
-                    <!-- PK -->
-                    <input type="hidden" name="password_idno" id="password_idno"
-                        value="<?php echo htmlspecialchars($editRow['password_idno'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                        <!-- PK -->
+                        <input type="hidden" name="password_idno" id="password_idno"
+                            value="<?php echo htmlspecialchars($editRow['password_idno'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
 
-                    <div class="form-group">
-                        <label for="category">구분</label>
-
-                        <input
-                            type="text"
-                            id="category"
-                            name="category"
-                            list="category_list"
-                            value="<?php echo htmlspecialchars($editRow['category'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                            placeholder="개발용 / 개인용 / 업무용 / 매장관리 / 세무관리 (직접 입력도 가능)"
-                            required
-                            onfocus="this.select();"
-                            onclick="this.select();">
-
-                        <datalist id="category_list">
-                            <option value="매장관리">매장관리</option>
-                            <option value="세무관리">세무관리</option>
-                            <option value="개발용">개발용</option>
-                            <option value="개인용">개인용</option>
-                            <option value="업무용">업무용</option>
-                        </datalist>
-                    </div>
-
-
-                    <div class="form-group">
-                        <label for="storename">매장명</label>
-                        <input
-                            type="text"
-                            id="storename"
-                            name="storename"
-                            value="<?php echo htmlspecialchars($editRow['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                            placeholder="예: BHC 경안점 또는 매장용이 아닐때는 구분과 동일입력."
-                            required
-                            onfocus="this.select();"
-                            onclick="this.select();">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="site_url">사이트 주소</label>
-                        <div style="display:flex; gap:8px; align-items:center;">
-                            <input type="text"
-                                id="site_url"
-                                name="site_url"
-                                style="flex:1;"
-                                value="<?php echo htmlspecialchars($editRow['site_url'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                                required
-                                placeholder="사이트의 url 주소를 입력하세요.">
-                            <!-- URL 이동 버튼 -->
-                            <button type="button"
-                                onclick="openUrl(document.getElementById('site_url').value);">
-                                이동
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="login_id">사이트 아이디</label>
-                        <div style="display:flex; gap:8px; align-items:center;">
-                            <input type="text"
-                                id="login_id"
-                                name="login_id"
-                                style="flex:1;"
-                                value="<?php echo htmlspecialchars($editRow['login_id'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                                required
-                                placeholder="사이트의 로그인 아이디를 입력해주세요.">
-
-                            <?php if ($isEdit && !empty($editRow)): ?>
-                                <!-- 보기(수정) 모드에서만 아이디 복사 버튼 표시 -->
-                                <button type="button" id="copyLoginIdBtn">
-                                    복사
-                                </button>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-
-                    <?php if ($isEdit && !empty($editRow)): ?>
-                        <!-- 저장된 비밀번호 (암호화 값 / 평문 토글 + 복사) -->
                         <div class="form-group">
-                            <label for="password_encrypted_view">
-                                저장된 비밀번호
-                                <span style="font-size:11px; color:#888;">
-                                    (기본은 암호화된 값, 버튼으로 평문 보기/복사)
-                                </span>
-                            </label>
+                            <label for="category">구분</label>
 
+                            <input
+                                type="text"
+                                id="category"
+                                name="category"
+                                list="category_list"
+                                value="<?php echo htmlspecialchars($editRow['category'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                placeholder="개발용 / 개인용 / 업무용 / 매장관리 / 세무관리 (직접 입력도 가능)"
+                                required
+                                onfocus="this.select();"
+                                onclick="this.select();">
+
+                            <datalist id="category_list">
+                                <option value="매장관리">매장관리</option>
+                                <option value="세무관리">세무관리</option>
+                                <option value="개발용">개발용</option>
+                                <option value="개인용">개인용</option>
+                                <option value="업무용">업무용</option>
+                            </datalist>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label for="storename">매장명</label>
+                            <input
+                                type="text"
+                                id="storename"
+                                name="storename"
+                                value="<?php echo htmlspecialchars($editRow['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                placeholder="예: BHC 경안점 또는 매장용이 아닐때는 구분과 동일입력."
+                                required
+                                onfocus="this.select();"
+                                onclick="this.select();">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="site_url">사이트 주소</label>
                             <div style="display:flex; gap:8px; align-items:center;">
-                                <input type="password"
-                                    id="password_encrypted_view"
-                                    readonly
-                                    data-encrypted="<?php echo htmlspecialchars($editRow['encrypted_password'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                                    value="<?php echo htmlspecialchars($editRow['encrypted_password'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                                    style="flex:1;">
-
-                                <!-- ✅ 암호/평문 토글 버튼 -->
-                                <button type="button" id="togglePasswordView">
-                                    암호 보기
-                                </button>
-
-                                <!-- ✅ 평문 비밀번호 복사 버튼 -->
-                                <button type="button" id="copyPasswordBtn">
-                                    복사
+                                <input type="text"
+                                    id="site_url"
+                                    name="site_url"
+                                    style="flex:1;"
+                                    value="<?php echo htmlspecialchars($editRow['site_url'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                    required
+                                    placeholder="사이트의 url 주소를 입력하세요.">
+                                <!-- URL 이동 버튼 -->
+                                <button type="button"
+                                    onclick="openUrl(document.getElementById('site_url').value);">
+                                    이동
                                 </button>
                             </div>
-
-                            <!-- ✅ 평문 비밀번호는 hidden에 숨겨두고 JS에서만 사용 -->
-                            <input type="hidden"
-                                id="password_plain_hidden"
-                                value="<?php echo htmlspecialchars($decryptedPassword, ENT_QUOTES, 'UTF-8'); ?>">
                         </div>
-                    <?php endif; ?>
 
-                    <div class="form-group">
-                        <label for="encrypted_password">
-                            <?php echo $isEdit ? '새 비밀번호' : '비밀번호'; ?>
-                            <?php if ($isEdit): ?>
-                                <span style="font-size:11px; color:#888;">
-                                    (변경 시에만 새 비밀번호를 입력하세요)
-                                </span>
-                            <?php endif; ?>
-                        </label>
-                        <!-- 새 비밀번호 입력칸: 평문 입력 → 서버에서 AES 암호화 후 저장 -->
-                        <input type="password"
-                            id="encrypted_password"
-                            name="encrypted_password"
-                            value=""
-                            <?php if ($isEdit): ?>
-                            placeholder="사이트의 변경된 비밀번호를 입력후 수정하기 클릭하세요."
-                            <?php endif; ?>>
-                    </div>
-                    <div class="form-group">
-                        <label for="contact_phone">연락처(전화번호)</label>
+                        <div class="form-group">
+                            <label for="login_id">사이트 아이디</label>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <input type="text"
+                                    id="login_id"
+                                    name="login_id"
+                                    style="flex:1;"
+                                    value="<?php echo htmlspecialchars($editRow['login_id'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                    required
+                                    placeholder="사이트의 로그인 아이디를 입력해주세요.">
 
-                        <div style="display:flex; gap:8px; align-items:center;">
-                            <input
-                                type="tel"
-                                id="contact_phone"
-                                name="contact_phone"
-                                style="flex:1;"
-                                placeholder="예: 010-1234-5678"
-                                value="<?php echo htmlspecialchars($editRow['contact_phone'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
-
-                            <?php if ($isEdit && !empty($editRow['contact_phone'])): ?>
-                                <?php
-                                $telCleanForm = preg_replace('/\D+/', '', $editRow['contact_phone']);
-                                ?>
-                                <?php if (!empty($telCleanForm)): ?>
-                                    <a href="tel:<?php echo htmlspecialchars($telCleanForm, ENT_QUOTES, 'UTF-8'); ?>">
-                                        <button type="button">전화</button>
-                                    </a>
+                                <?php if ($isEdit && !empty($editRow)): ?>
+                                    <!-- 보기(수정) 모드에서만 아이디 복사 버튼 표시 -->
+                                    <button type="button" id="copyLoginIdBtn">
+                                        복사
+                                    </button>
                                 <?php endif; ?>
-                            <?php endif; ?>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label for="memo">메모(특이사항을 입력해주세요.)</label>
-                        <textarea id="memo" name="memo" rows="4"><?php
-                                                                    echo htmlspecialchars($editRow['memo'] ?? '', ENT_QUOTES, 'UTF-8');
-                                                                    ?></textarea>
-                    </div>
+                        <?php if ($isEdit && !empty($editRow)): ?>
+                            <!-- 저장된 비밀번호 (암호화 값 / 평문 토글 + 복사) -->
+                            <div class="form-group">
+                                <label for="password_encrypted_view">
+                                    저장된 비밀번호
+                                    <span style="font-size:11px; color:#888;">
+                                        (기본은 암호화된 값, 버튼으로 평문 보기/복사)
+                                    </span>
+                                </label>
 
-                    <div class="form-actions">
-                        <button
-                            type="submit"
-                            class="<?php echo $isEdit ? 'btn-update' : ''; ?>">
-                            <?php echo $isEdit ? '수정하기' : '등록'; ?>
-                        </button>
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <input type="password"
+                                        id="password_encrypted_view"
+                                        readonly
+                                        data-encrypted="<?php echo htmlspecialchars($editRow['encrypted_password'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                        value="<?php echo htmlspecialchars($editRow['encrypted_password'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                        style="flex:1;">
 
-                        <button type="button" class="btn-secondary"
-                            onclick="window.location.href='<?php echo htmlspecialchars(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), ENT_QUOTES, 'UTF-8'); ?>';">
-                            새로 작성
-                        </button>
-                    </div>
+                                    <!-- ✅ 암호/평문 토글 버튼 -->
+                                    <button type="button" id="togglePasswordView">
+                                        암호 보기
+                                    </button>
 
-                </form>
-            </section>
+                                    <!-- ✅ 평문 비밀번호 복사 버튼 -->
+                                    <button type="button" id="copyPasswordBtn">
+                                        복사
+                                    </button>
+                                </div>
 
-            <!-- 우측 리스트 -->
-            <aside class="list-panel">
-                <h2 style="display: flex;">등록된 비밀번호 목록
-                    <div style="margin-left:auto; vertical-align: top; padding:0px 16px; font-size:18px; color:#555;">
-                        List Source:
-                        <strong>
-                            <?php
-                            if ($searchKeyword !== '') {
-                                echo 'Database search';
-                            } elseif ($listSource === 'redis') {
-                                echo 'Redis cache';
-                            } elseif ($listSource === 'db') {
-                                echo 'Database query';
-                            } else {
-                                echo 'Unknown';
-                            }
-                            ?>
-                        </strong>
-                    </div>
-                </h2>
-                <span style="font-size: 14px; color: red;">(사이트의 비밀번호를 보려면 보기버튼을 눌러주세요.)
-                    <!-- (디버깅용) 리스트 데이터 출처 표시 -->
-
-                </span>
-                <!-- 🔎 검색 박스: 사이트 주소 / 메모 검색 -->
-                <div class="search-box">
-                    <form method="get" action="">
-                        <input type="text"
-                            name="q"
-                            placeholder="매장명 / 사이트 주소 / 메모에서 검색"
-                            value="<?php echo htmlspecialchars($searchKeyword, ENT_QUOTES, 'UTF-8'); ?>">
-                        <button type="submit">검색</button>
-                        <?php if ($searchKeyword !== ''): ?>
-                            <button type="button"
-                                class="search-reset-btn"
-                                onclick="window.location.href='<?php echo htmlspecialchars(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), ENT_QUOTES, 'UTF-8'); ?>';">
-                                초기화
-                            </button>
+                                <!-- ✅ 평문 비밀번호는 hidden에 숨겨두고 JS에서만 사용 -->
+                                <input type="hidden"
+                                    id="password_plain_hidden"
+                                    value="<?php echo htmlspecialchars($decryptedPassword, ENT_QUOTES, 'UTF-8'); ?>">
+                            </div>
                         <?php endif; ?>
+
+                        <div class="form-group">
+                            <label for="encrypted_password">
+                                <?php echo $isEdit ? '새 비밀번호' : '비밀번호'; ?>
+                                <?php if ($isEdit): ?>
+                                    <span style="font-size:11px; color:#888;">
+                                        (변경 시에만 새 비밀번호를 입력하세요)
+                                    </span>
+                                <?php endif; ?>
+                            </label>
+                            <!-- 새 비밀번호 입력칸: 평문 입력 → 서버에서 AES 암호화 후 저장 -->
+                            <input type="password"
+                                id="encrypted_password"
+                                name="encrypted_password"
+                                value=""
+                                <?php if ($isEdit): ?>
+                                placeholder="사이트의 변경된 비밀번호를 입력후 수정하기 클릭하세요."
+                                <?php endif; ?>>
+                        </div>
+                        <div class="form-group">
+                            <label for="contact_phone">연락처(전화번호)</label>
+
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <input
+                                    type="tel"
+                                    id="contact_phone"
+                                    name="contact_phone"
+                                    style="flex:1;"
+                                    placeholder="예: 010-1234-5678"
+                                    value="<?php echo htmlspecialchars($editRow['contact_phone'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+
+                                <?php if ($isEdit && !empty($editRow['contact_phone'])): ?>
+                                    <?php
+                                    $telCleanForm = preg_replace('/\D+/', '', $editRow['contact_phone']);
+                                    ?>
+                                    <?php if (!empty($telCleanForm)): ?>
+                                        <a href="tel:<?php echo htmlspecialchars($telCleanForm, ENT_QUOTES, 'UTF-8'); ?>">
+                                            <button type="button">전화</button>
+                                        </a>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="memo">메모(특이사항을 입력해주세요.)</label>
+                            <textarea id="memo" name="memo" rows="4"><?php
+                                                                        echo htmlspecialchars($editRow['memo'] ?? '', ENT_QUOTES, 'UTF-8');
+                                                                        ?></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button
+                                type="submit"
+                                class="<?php echo $isEdit ? 'btn-update' : ''; ?>">
+                                <?php echo $isEdit ? '수정하기' : '등록'; ?>
+                            </button>
+
+                            <button type="button" class="btn-secondary"
+                                onclick="window.location.href='<?php echo htmlspecialchars(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), ENT_QUOTES, 'UTF-8'); ?>';">
+                                새로 작성
+                            </button>
+                        </div>
+
                     </form>
-                </div>
+                </section>
 
-                <!-- 테이블 가로 스크롤용 래퍼 -->
-                <div class="table-wrapper">
-                    <table class="password-table" id="passwordTable">
-                        <thead>
-                            <tr>
-                                <th>순번</th>
-                                <th>구분</th>
-                                <th>매장명</th>
-                                <th>사이트 주소</th>
-                                <th>아이디</th>
-                                <th>연락처</th>
-                                <th>메모</th>
-                                <th class="col-actions">Action</th>
-                            </tr>
-                        </thead>
+                <!-- 우측 리스트 -->
+                <aside class="list-panel">
+                    <h2 style="display: flex;">등록된 비밀번호 목록
+                        <div style="margin-left:auto; vertical-align: top; padding:0px 16px; font-size:18px; color:#555;">
+                            List Source:
+                            <strong>
+                                <?php
+                                if ($searchKeyword !== '') {
+                                    echo 'Database search';
+                                } elseif ($listSource === 'redis') {
+                                    echo 'Redis cache';
+                                } elseif ($listSource === 'db') {
+                                    echo 'Database query';
+                                } else {
+                                    echo 'Unknown';
+                                }
+                                ?>
+                            </strong>
+                        </div>
+                    </h2>
+                    <span style="font-size: 14px; color: red;">(사이트의 비밀번호를 보려면 보기버튼을 눌러주세요.)
+                        <!-- (디버깅용) 리스트 데이터 출처 표시 -->
 
-                        <tbody>
-                            <?php if (!empty($passwordRows)): ?>
-                                <?php $seq = 1; ?>
-                                <?php foreach ($passwordRows as $row): ?>
-                                    <tr>
-                                        <td><?php echo $seq++; ?></td>
+                    </span>
+                    <!-- 🔎 검색 박스: 사이트 주소 / 메모 검색 -->
+                    <div class="search-box">
+                        <form method="get" action="">
+                            <input type="text"
+                                name="q"
+                                placeholder="매장명 / 사이트 주소 / 메모에서 검색"
+                                value="<?php echo htmlspecialchars($searchKeyword, ENT_QUOTES, 'UTF-8'); ?>">
+                            <button type="submit">검색</button>
+                            <?php if ($searchKeyword !== ''): ?>
+                                <button type="button"
+                                    class="search-reset-btn"
+                                    onclick="window.location.href='<?php echo htmlspecialchars(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), ENT_QUOTES, 'UTF-8'); ?>';">
+                                    초기화
+                                </button>
+                            <?php endif; ?>
+                        </form>
+                    </div>
 
-                                        <td><?php echo htmlspecialchars($row['category'], ENT_QUOTES, 'UTF-8'); ?></td>
-                                        <td>
-                                            <?php echo htmlspecialchars($row['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                                        </td>
+                    <!-- 테이블 가로 스크롤용 래퍼 -->
+                    <div class="table-wrapper">
+                        <table class="password-table" id="passwordTable">
+                            <thead>
+                                <tr>
+                                    <th>순번</th>
+                                    <th>구분</th>
+                                    <th>매장명</th>
+                                    <th>사이트 주소</th>
+                                    <th>아이디</th>
+                                    <th>연락처</th>
+                                    <th>메모</th>
+                                    <th class="col-actions">Action</th>
+                                </tr>
+                            </thead>
 
-                                        <td>
-                                            <div style="display:flex; gap:6px; align-items:center;">
-                                                <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                                                    <?php echo htmlspecialchars($row['site_url'], ENT_QUOTES, 'UTF-8'); ?>
-                                                </span>
-                                                <button type="button"
-                                                    onclick="openUrl('<?php echo htmlspecialchars($row['site_url'], ENT_QUOTES, 'UTF-8'); ?>');">
-                                                    이동
-                                                </button>
-                                            </div>
-                                        </td>
+                            <tbody>
+                                <?php if (!empty($passwordRows)): ?>
+                                    <?php $seq = 1; ?>
+                                    <?php foreach ($passwordRows as $row): ?>
+                                        <tr>
+                                            <td><?php echo $seq++; ?></td>
 
-                                        <td><?php echo htmlspecialchars($row['login_id'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                            <td><?php echo htmlspecialchars($row['category'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                            <td>
+                                                <?php echo htmlspecialchars($row['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
+                                            </td>
 
-                                        <!-- 연락처 + 전화걸기 버튼 -->
-                                        <td>
-                                            <?php if (!empty($row['contact_phone'])): ?>
+                                            <td>
                                                 <div style="display:flex; gap:6px; align-items:center;">
                                                     <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                                                        <?php echo htmlspecialchars($row['contact_phone'], ENT_QUOTES, 'UTF-8'); ?>
+                                                        <?php echo htmlspecialchars($row['site_url'], ENT_QUOTES, 'UTF-8'); ?>
                                                     </span>
-                                                    <?php
-                                                    $telClean = preg_replace('/\D+/', '', $row['contact_phone']);
-                                                    ?>
-                                                    <?php if (!empty($telClean)): ?>
-                                                        <a href="tel:<?php echo htmlspecialchars($telClean, ENT_QUOTES, 'UTF-8'); ?>">
-                                                            <button type="button">전화</button>
-                                                        </a>
-                                                    <?php endif; ?>
+                                                    <button type="button"
+                                                        onclick="openUrl('<?php echo htmlspecialchars($row['site_url'], ENT_QUOTES, 'UTF-8'); ?>');">
+                                                        이동
+                                                    </button>
                                                 </div>
-                                            <?php else: ?>
-                                                -
-                                            <?php endif; ?>
-                                        </td>
+                                            </td>
 
-                                        <td><?php echo htmlspecialchars($row['memo'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                            <td><?php echo htmlspecialchars($row['login_id'], ENT_QUOTES, 'UTF-8'); ?></td>
 
-                                        <!-- 보기 / 삭제 -->
-                                        <td class="col-actions">
-                                            <!-- 보기 -->
-                                            <form method="post" action="" style="display:inline;">
-                                                <input type="hidden" name="action" value="view">
-                                                <input type="hidden" name="password_idno"
-                                                    value="<?php echo (int)$row['password_idno']; ?>">
-                                                <button type="submit">보기</button>
-                                            </form>
+                                            <!-- 연락처 + 전화걸기 버튼 -->
+                                            <td>
+                                                <?php if (!empty($row['contact_phone'])): ?>
+                                                    <div style="display:flex; gap:6px; align-items:center;">
+                                                        <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                                            <?php echo htmlspecialchars($row['contact_phone'], ENT_QUOTES, 'UTF-8'); ?>
+                                                        </span>
+                                                        <?php
+                                                        $telClean = preg_replace('/\D+/', '', $row['contact_phone']);
+                                                        ?>
+                                                        <?php if (!empty($telClean)): ?>
+                                                            <a href="tel:<?php echo htmlspecialchars($telClean, ENT_QUOTES, 'UTF-8'); ?>">
+                                                                <button type="button">전화</button>
+                                                            </a>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                <?php else: ?>
+                                                    -
+                                                <?php endif; ?>
+                                            </td>
 
-                                            <!-- 삭제 -->
-                                            <form method="post" action="" style="display:inline; margin-left:4px;">
-                                                <input type="hidden" name="action" value="delete">
-                                                <input type="hidden" name="password_idno"
-                                                    value="<?php echo (int)$row['password_idno']; ?>">
-                                                <button type="submit" onclick="return confirm('정말 삭제할까요?');">
-                                                    삭제
-                                                </button>
-                                            </form>
-                                        </td>
+                                            <td><?php echo htmlspecialchars($row['memo'], ENT_QUOTES, 'UTF-8'); ?></td>
+
+                                            <!-- 보기 / 삭제 -->
+                                            <td class="col-actions">
+                                                <!-- 보기 -->
+                                                <form method="post" action="" style="display:inline;">
+                                                    <input type="hidden" name="action" value="view">
+                                                    <input type="hidden" name="password_idno"
+                                                        value="<?php echo (int)$row['password_idno']; ?>">
+                                                    <button type="submit">보기</button>
+                                                </form>
+
+                                                <!-- 삭제 -->
+                                                <form method="post" action="" style="display:inline; margin-left:4px;">
+                                                    <input type="hidden" name="action" value="delete">
+                                                    <input type="hidden" name="password_idno"
+                                                        value="<?php echo (int)$row['password_idno']; ?>">
+                                                    <button type="submit" onclick="return confirm('정말 삭제할까요?');">
+                                                        삭제
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="7" style="text-align:center;">등록된 비밀번호가 없습니다.</td>
                                     </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="7" style="text-align:center;">등록된 비밀번호가 없습니다.</td>
-                                </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </aside>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </aside>
 
-        </div><!-- /.main -->
-    </div><!-- /.layout -->
-
+            </div><!-- /.main -->
+        </div><!-- /.layout -->
+    </div>
     <script src="password_5_passwordRegister_View_admin.js?v=20251128_03"></script>
 
 </body>

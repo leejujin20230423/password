@@ -47,25 +47,47 @@ $listSourceSafe    = isset($listSource) ? $listSource : '';
     </div>
 </header>
 <script>
-    // ✅ 사이드바 열고 닫기
+    // ✅ 사이드바 열고 닫기 + 오버레이 제어
     function toggleSidebar() {
         var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebarOverlay');
         if (!sidebar) return;
-        sidebar.classList.toggle('open');
+
+        var willOpen = !sidebar.classList.contains('open');
+
+        if (willOpen) {
+            sidebar.classList.add('open');
+            if (overlay) overlay.classList.add('open');
+        } else {
+            sidebar.classList.remove('open');
+            if (overlay) overlay.classList.remove('open');
+        }
     }
 
-    // ✅ (선택) 모바일에서 메뉴 항목 클릭하면 자동으로 닫기
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         var sidebar = document.getElementById('sidebar');
-        if (!sidebar) return;
+        var overlay = document.getElementById('sidebarOverlay');
 
-        var menuItems = sidebar.querySelectorAll('li');
-        menuItems.forEach(function (item) {
-            item.addEventListener('click', function () {
-                if (window.innerWidth <= 900) {
-                    sidebar.classList.remove('open');
-                }
+        // ✅ 모바일에서 메뉴 항목 클릭 시 자동 닫기
+        if (sidebar) {
+            var menuItems = sidebar.querySelectorAll('li');
+            menuItems.forEach(function(item) {
+                item.addEventListener('click', function() {
+                    if (window.innerWidth <= 900) {
+                        sidebar.classList.remove('open');
+                        if (overlay) overlay.classList.remove('open');
+                    }
+                });
             });
-        });
+        }
+
+        // ✅ 오버레이 클릭 시 사이드바 닫기
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                if (!sidebar) return;
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+            });
+        }
     });
 </script>
