@@ -485,128 +485,53 @@ $isEdit = !empty($editRow);
     <meta charset="UTF-8">
     <title>Password 등록</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="password_5_passwordRegister_View_admin.css">
-    <style>
-        /* ✅ 수정하기 버튼(수정 모드) 전용 색상 */
-        .form-actions button.btn-update {
-            background-color: #e86060ff;
-            /* 연한 빨강 */
-            border: 1px solid #c33030ff;
-            color: #ffffff;
-        }
-
-        .form-actions button.btn-update:hover {
-            background-color: #e7a8a8ff;
-            /* 살짝 더 진한 빨강 */
-            border-color: #d72121ff;
-        }
-
-        /* 검색박스 살짝만 스타일 */
-        .search-box {
-            padding: 8px 0 12px 0;
-        }
-
-        .search-box form {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .search-box input[type="text"] {
-            flex: 1;
-            padding: 6px 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        .search-box button {
-            padding: 6px 10px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            background-color: #dfdadaff;
-            /* 기본 연한 회색 */
-            color: #333;
-            transition: background-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        /* 마우스 올렸을 때 */
-        .search-box button:hover {
-            background-color: #cfc9c9;
-            /* 살짝 더 진한 회색 */
-            box-shadow: 0 0 3px rgba(0, 0, 0, 0.15);
-        }
+    <!-- <link rel="stylesheet" href="password_5_passwordRegister_View_admin.css"> -->
 
 
-        .search-reset-btn {
-            background: #eee;
-        }
-    </style>
+
+
+    <!-- ✅ 헤더 전용 CSS -->
+    <link rel="stylesheet"
+        href="/password_3_header/password_3_header_view/password_3_header_view_admin/password_3_header_view_admin.css">
+
+    <!-- ✅ 사이드바 전용 CSS -->
+    <link rel="stylesheet"
+        href="/password_4_sidebar/password_4_sidebar_view/password_4_sidebar_view_admin/password_4_sidebar_view_admin.css">
+
+    <!-- ✅ 비밀번호 등록 화면 전용 CSS -->
+    <link rel="stylesheet"
+        href="/password_5_passwordRegister/password_5_passwordRegister_View/password_5_passwordRegister_View_admin/password_5_passwordRegister_View_admin.css">
 </head>
+
+
+
 
 <body>
     <div class="layout">
 
 
-        <!-- 상단 헤더 -->
-        <header class="header">
-            <h1>Password 관리 시스템</h1>
-            <div class="header-right">
-                <span class="user-info">관리자:
-                    <?php echo htmlspecialchars($sessionUsername, ENT_QUOTES, 'UTF-8'); ?>
-                </span>
-
-                <!-- ✅ 비밀번호 변경 버튼 (경로 수정) -->
-                <button type="button"
-                    onclick="window.location.href='/password_2_passwordChange/password_2_passwordChange_view/password_2_passwordChange_view_admin/password_2_passwordChange_view_admin.php';">
-                    비밀번호 변경
-                </button>
 
 
-                <button type="button"
-                    class="logout-button"
-                    onclick="window.location.href='/password_9_logout/password_9_logout_Route/password_9_logout_Route.php';">
-                    로그아웃
-                </button>
-            </div>
-        </header>
+        <!-- 상단 헤더 있던곳-->
+        <?php
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/password_3_header/password_3_header_view/password_3_header_view_admin/password_3_header_view_admin.php';
+        ?>
 
-
-
-        <!-- (디버깅용) 리스트 데이터 출처 표시 -->
-        <div style="padding:8px 16px; font-size:12px; color:#555;">
-            List Source:
-            <strong>
-                <?php
-                if ($searchKeyword !== '') {
-                    echo 'Database search';
-                } elseif ($listSource === 'redis') {
-                    echo 'Redis cache';
-                } elseif ($listSource === 'db') {
-                    echo 'Database query';
-                } else {
-                    echo 'Unknown';
-                }
-                ?>
-            </strong>
-        </div>
 
         <div class="main">
 
-            <!-- 좌측 사이드바 -->
-            <aside class="sidebar">
-                <nav>
-                    <ul>
-                        <li class="active">비밀번호 등록하기</li>
-                        <li class="active">비밀번호 공유하기</li>
-                        <li class="active">비밀번호 공유현황</li>
-                    </ul>
-                </nav>
-            </aside>
+            <?php
+            // 헤더, 사이드바 include
+            require_once $_SERVER['DOCUMENT_ROOT'] . '/password_4_sidebar/password_4_sidebar_view/password_4_sidebar_view_admin/password_4_sidebar_view_admin.php';
+            ?>
+
+
 
             <!-- 가운데 등록 / 수정 폼 -->
             <section class="content">
                 <h2>비밀번호 <?php echo $isEdit ? '수정' : '등록'; ?></h2>
+
+
 
                 <form id="passwordForm" method="post" action="">
                     <!-- 모드: create / update -->
@@ -705,7 +630,7 @@ $isEdit = !empty($editRow);
                             <div style="display:flex; gap:8px; align-items:center;">
                                 <input type="password"
                                     id="password_encrypted_view"
-                                    readonly                                    
+                                    readonly
                                     data-encrypted="<?php echo htmlspecialchars($editRow['encrypted_password'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                                     value="<?php echo htmlspecialchars($editRow['encrypted_password'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                                     style="flex:1;">
@@ -796,8 +721,28 @@ $isEdit = !empty($editRow);
 
             <!-- 우측 리스트 -->
             <aside class="list-panel">
-                <h2>등록된 비밀번호 목록</h2>
-                <span style="font-size: 14px; color: red;">(사이트의 비밀번호를 보려면 보기버튼을 눌러주세요.)</span>
+                <h2 style="display: flex;">등록된 비밀번호 목록
+                    <div style="vertical-align: top; padding:0px 16px; font-size:18px; color:#555;">
+                        List Source:
+                        <strong>
+                            <?php
+                            if ($searchKeyword !== '') {
+                                echo 'Database search';
+                            } elseif ($listSource === 'redis') {
+                                echo 'Redis cache';
+                            } elseif ($listSource === 'db') {
+                                echo 'Database query';
+                            } else {
+                                echo 'Unknown';
+                            }
+                            ?>
+                        </strong>
+                    </div>
+                </h2>
+                <span style="font-size: 14px; color: red;">(사이트의 비밀번호를 보려면 보기버튼을 눌러주세요.)
+                    <!-- (디버깅용) 리스트 데이터 출처 표시 -->
+
+                </span>
                 <!-- 🔎 검색 박스: 사이트 주소 / 메모 검색 -->
                 <div class="search-box">
                     <form method="get" action="">
