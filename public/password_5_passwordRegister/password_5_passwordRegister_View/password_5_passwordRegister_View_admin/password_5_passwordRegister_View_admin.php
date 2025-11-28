@@ -630,10 +630,11 @@ $isEdit = !empty($editRow);
                             onclick="this.select();">
 
                         <datalist id="category_list">
+                            <option value="매장관리">매장관리</option>
+                            <option value="세무관리">세무관리</option>
                             <option value="개발용">개발용</option>
                             <option value="개인용">개인용</option>
                             <option value="업무용">업무용</option>
-                            <option value="매장관리">매장관리</option>
                         </datalist>
                     </div>
 
@@ -739,9 +740,10 @@ $isEdit = !empty($editRow);
                             id="encrypted_password"
                             name="encrypted_password"
                             value=""
-                            placeholder="사이트의 변경된 비밀번호를 입력후 수정하기 클릭하세요.">
+                            <?php if ($isEdit): ?>
+                            placeholder="사이트의 변경된 비밀번호를 입력후 수정하기 클릭하세요."
+                            <?php endif; ?>>
                     </div>
-
                     <div class="form-group">
                         <label for="contact_phone">연락처(전화번호)</label>
 
