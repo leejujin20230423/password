@@ -46,7 +46,6 @@ $listSourceSafe    = isset($listSource) ? $listSource : '';
         </button>
     </div>
 </header>
-
 <script>
     // ✅ 사이드바 열고 닫기
     function toggleSidebar() {
@@ -55,15 +54,15 @@ $listSourceSafe    = isset($listSource) ? $listSource : '';
         sidebar.classList.toggle('open');
     }
 
-    // (선택) 모바일에서 메뉴 항목 클릭하면 자동으로 닫기
-    document.addEventListener('DOMContentLoaded', function() {
+    // ✅ (선택) 모바일에서 메뉴 항목 클릭하면 자동으로 닫기
+    document.addEventListener('DOMContentLoaded', function () {
         var sidebar = document.getElementById('sidebar');
         if (!sidebar) return;
 
         var menuItems = sidebar.querySelectorAll('li');
-        menuItems.forEach(function(item) {
-            item.addEventListener('click', function() {
-                if (window.innerWidth <= 768) {
+        menuItems.forEach(function (item) {
+            item.addEventListener('click', function () {
+                if (window.innerWidth <= 900) {
                     sidebar.classList.remove('open');
                 }
             });
