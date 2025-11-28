@@ -722,7 +722,7 @@ $isEdit = !empty($editRow);
             <!-- 우측 리스트 -->
             <aside class="list-panel">
                 <h2 style="display: flex;">등록된 비밀번호 목록
-                    <div style="vertical-align: top; padding:0px 16px; font-size:18px; color:#555;">
+                    <div style="margin-left:auto; vertical-align: top; padding:0px 16px; font-size:18px; color:#555;">
                         List Source:
                         <strong>
                             <?php
