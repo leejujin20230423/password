@@ -597,7 +597,9 @@ $isEdit = !empty($editRow);
             <aside class="sidebar">
                 <nav>
                     <ul>
-                        <li class="active">비밀번호 등록</li>
+                        <li class="active">비밀번호 등록등록</li>
+                        <li class="active">비밀번호 공유하기</li>
+                        <li class="active">비밀번호 공유현황</li>
                     </ul>
                 </nav>
             </aside>
