@@ -626,7 +626,7 @@ $isEdit = !empty($editRow);
                             name="category"
                             list="category_list"
                             value="<?php echo htmlspecialchars($editRow['category'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                            placeholder="개발용 / 개인용 / 업무용 / 매장관리 (직접 입력도 가능)"
+                            placeholder="개발용 / 개인용 / 업무용 / 매장관리 / 세무관리 (직접 입력도 가능)"
                             required
                             onfocus="this.select();"
                             onclick="this.select();">
@@ -648,7 +648,7 @@ $isEdit = !empty($editRow);
                             id="storename"
                             name="storename"
                             value="<?php echo htmlspecialchars($editRow['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                            placeholder="예: BHC 경안점 또는 매장용이 아닐때는 공란으로 두세요."
+                            placeholder="예: BHC 경안점 또는 매장용이 아닐때는 구분과 동일입력."
                             required
                             onfocus="this.select();"
                             onclick="this.select();">
@@ -705,7 +705,7 @@ $isEdit = !empty($editRow);
                             <div style="display:flex; gap:8px; align-items:center;">
                                 <input type="password"
                                     id="password_encrypted_view"
-                                    readonly
+                                    readonly                                    
                                     data-encrypted="<?php echo htmlspecialchars($editRow['encrypted_password'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                                     value="<?php echo htmlspecialchars($editRow['encrypted_password'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                                     style="flex:1;">
