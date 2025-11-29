@@ -20,7 +20,7 @@
             <li
                 class="active"
                 onclick="window.location.href='/password_5_passwordRegister/password_5_passwordRegister_View/password_5_passwordRegister_View_admin/password_5_passwordRegister_View_admin.php';">
-                비밀번호 등록하기
+                비밀번호 등록/삭제
             </li>
 
             <!-- 비밀번호 공유하기 -->
