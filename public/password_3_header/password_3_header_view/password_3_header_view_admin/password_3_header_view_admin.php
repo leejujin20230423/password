@@ -38,23 +38,23 @@ if (!empty($listSourceSafe)) {
         </button>
 
         <div class="header-title-wrap">
-            <h1 style="display:flex;" class="header-title">
-                Password 관리 시스템
+            <h1 style="display:flex;" class="header-title"></h1>
+                Password
 
                 <?php if (!empty($listSourceLabel)): ?>
                     <!-- ✅ 리스트 소스를 제목 옆에 표시 (db → DBQuery로 매핑된 값) -->
-                    <div style="display:flex; font-size:18px; padding:0 8px;" class="list-source-label">
-                        List Source:
+                    <div style="text-align: left; display:flex; font-size:10px;" class="list-source-label">
+                        Source:
                         <?php echo htmlspecialchars($listSourceLabel, ENT_QUOTES, 'UTF-8'); ?>
                     </div>
                 <?php endif; ?>
-            </h1>
+            
         </div>
     </div>
 
     <div class="header-right">
         <span class="user-info">
-            관리자:
+            
             <?php echo htmlspecialchars($sessionUsername, ENT_QUOTES, 'UTF-8'); ?>
         </span>
 
