@@ -13,13 +13,15 @@ if (!isset($_SESSION['is_logged_in']) || $_SESSION['is_logged_in'] !== true) {
 
 $sessionUsername = isset($_SESSION['username']) ? $_SESSION['username'] : '알 수 없음';
 
-// 공지 이후 이동할 비밀번호 등록 페이지 (세션에 저장된 값 사용)
-$targetUrl = isset($_SESSION['after_notice_url'])
-    ? $_SESSION['after_notice_url']
-    : '/password_0_register/password_0_register_View/password_0_register_View_admin/password_0_register_View_admin.php'; // 기본값: admin
+// ✅ 공지 이후 이동 페이지를 "공유현황(관리자)" 으로 고정
+$targetUrl = '/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.php';
+
+// 혹시 전에 저장된 after_notice_url 이 있어도 항상 공유현황으로 덮어쓰기
+$_SESSION['after_notice_url'] = $targetUrl;
 ?>
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <title>Password 사용 안내 (관리자)</title>
@@ -88,7 +90,7 @@ $targetUrl = isset($_SESSION['after_notice_url'])
             max-width: 720px;
             width: 100%;
             border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
             padding: 24px 28px;
         }
 
@@ -182,6 +184,7 @@ $targetUrl = isset($_SESSION['after_notice_url'])
         }
     </style>
 </head>
+
 <body>
 
     <!-- 상단 헤더 -->
@@ -266,8 +269,12 @@ $targetUrl = isset($_SESSION['after_notice_url'])
                     onclick="window.location.href='<?php echo htmlspecialchars($targetUrl, ENT_QUOTES, 'UTF-8'); ?>';">
                     사용 방법 확인했습니다. 비밀번호 등록하러 가기
                 </button>
+                <!-- 필요하면 문구도 이렇게 바꿀 수 있음:
+                사용 방법 확인했습니다. 공유현황으로 이동
+                -->
             </div>
         </section>
     </main>
 </body>
+
 </html>

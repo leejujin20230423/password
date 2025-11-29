@@ -9,6 +9,13 @@
 
     <nav>
         <ul>
+               <!-- 비밀번호 공유현황 -->
+            <li
+                class="active"
+                onclick="window.location.href='/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.php';">
+                비밀번호 공유현황
+            </li>
+            
             <!-- 비밀번호 등록하기 -->
             <li
                 class="active"
@@ -23,12 +30,7 @@
                 비밀번호 공유하기
             </li>
 
-            <!-- 비밀번호 공유현황 -->
-            <li
-                class="active"
-                onclick="window.location.href='/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.php';">
-                비밀번호 공유현황
-            </li>
+         
 
         </ul>
     </nav>
