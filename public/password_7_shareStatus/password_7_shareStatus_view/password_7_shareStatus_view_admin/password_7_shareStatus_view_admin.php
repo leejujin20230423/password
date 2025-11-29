@@ -20,73 +20,62 @@ $sessionUsername = isset($_SESSION['username']) ? (string)$_SESSION['username'] 
 
 /**
  * ==========================================================
- * AES-256-CBC 복호화 헬퍼 함수
+ * 2. AES-256-CBC 복호화 설정
+ *    - 비밀번호 등록 페이지와 동일한 키/IV 사용
+ *    - DB의 password.encrypted_password 를 복호화해서
+ *      화면에는 ●●●● 로, 복사 버튼에는 평문으로 사용
  * ==========================================================
  */
-if (!function_exists('decryptPasswordForView')) {
-    function decryptPasswordForView(?string $cipherText): string
+
+// 등록 페이지에서 사용하던 상수랑 맞춰야 함
+if (!defined('PASSWORD_CIPHER_METHOD')) {
+    define('PASSWORD_CIPHER_METHOD', 'AES-256-CBC');
+}
+if (!defined('PASSWORD_SECRET_KEY')) {
+    // ✅ 비밀번호 등록 페이지에 정의한 값과 반드시 동일해야 함
+    define('PASSWORD_SECRET_KEY', 'change-this-to-your-own-strong-secret-key-32byte');
+}
+if (!defined('PASSWORD_SECRET_IV')) {
+    // ✅ 비밀번호 등록 페이지에 정의한 값과 반드시 동일해야 함
+    define('PASSWORD_SECRET_IV', 'change-this-iv-16b');
+}
+
+/**
+ * 암호화된 비밀번호(base64) → 평문 비밀번호
+ */
+if (!function_exists('decryptPasswordAES')) {
+    function decryptPasswordAES(?string $encryptedBase64): string
     {
-        if ($cipherText === null || $cipherText === '') {
+        if ($encryptedBase64 === null || $encryptedBase64 === '') {
             return '';
         }
 
-        // 키/IV 상수가 정의되어 있지 않으면 그냥 빈 문자열 반환
-        if (!defined('PASS_AES_KEY') || !defined('PASS_AES_IV')) {
+        // base64 → raw binary
+        $cipherRaw = base64_decode($encryptedBase64, true);
+        if ($cipherRaw === false) {
             return '';
         }
 
-        $keyConfig = constant('PASS_AES_KEY');
-        $ivConfig  = constant('PASS_AES_IV');
+        // 등록 페이지와 동일한 방식으로 key/iv 생성
+        $key = hash('sha256', PASSWORD_SECRET_KEY, true);               // 32 bytes
+        $iv  = substr(hash('sha256', PASSWORD_SECRET_IV, true), 0, 16); // 16 bytes
 
-        // 키/IV가 16진수 문자열이면 hex2bin 처리
-        if (is_string($keyConfig) && ctype_xdigit($keyConfig) && (strlen($keyConfig) % 2 === 0)) {
-            $key = hex2bin($keyConfig);
-        } else {
-            $key = $keyConfig;
-        }
+        $plain = openssl_decrypt(
+            $cipherRaw,
+            PASSWORD_CIPHER_METHOD,
+            $key,
+            OPENSSL_RAW_DATA,
+            $iv
+        );
 
-        if (is_string($ivConfig) && ctype_xdigit($ivConfig) && (strlen($ivConfig) % 2 === 0)) {
-            $iv = hex2bin($ivConfig);
-        } else {
-            $iv = $ivConfig;
-        }
-
-        if (!is_string($key) || !is_string($iv)) {
-            return '';
-        }
-
-        $plain = false;
-
-        // (1) RAW_DATA + base64 인코딩 방식
-        $cipherRaw = base64_decode($cipherText, true);
-        if ($cipherRaw !== false) {
-            $plain = openssl_decrypt(
-                $cipherRaw,
-                'AES-256-CBC',
-                $key,
-                OPENSSL_RAW_DATA,
-                $iv
-            );
-        }
-
-        // (2) 기본 옵션(0) 문자열 방식 (저장 형식이 다를 경우 대비)
-        if ($plain === false || $plain === null) {
-            $plain = openssl_decrypt(
-                $cipherText,
-                'AES-256-CBC',
-                $key,
-                0,
-                $iv
-            );
-        }
-
-        return $plain === false || $plain === null ? '' : $plain;
+        return $plain === false ? '' : $plain;
     }
 }
 
 /**
  * ==========================================================
- * 2. DB 연결
+ * 3. DB 연결 (password_60_CRUD 에서 DBConnection 사용)
+ *    - 여기서는 JOIN을 위해 직접 SQL 사용
  * ==========================================================
  */
 require_once $_SERVER['DOCUMENT_ROOT'] . '/password_60_CRUD/password_60_CRUD.php';
@@ -95,18 +84,19 @@ $dbConnection = new DBConnection();
 $pdo          = $dbConnection->getDB();
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-// 헤더용
-$listSource    = 'db';
-$searchKeyword = '';
+// ✅ 헤더에서 사용할 리스트 소스 / 검색어 변수
+$listSource    = 'db';     // header 에서 DBQuery 로 표시
+$searchKeyword = '';       // 이 화면은 별도 검색 없음
 
 /**
  * ==========================================================
- * 3. 내가 "공유해 준" 비밀번호 목록
+ * 4. 내가 "공유해 준" 비밀번호 목록
+ *    - password_share.owner_user_no_Fk = 현재 로그인 user_no
  * ==========================================================
  */
 $sqlSharedByMe = <<<SQL
 SELECT
-    ps.share_id,
+    ps.share_id,                    -- 공유 PK
     ps.owner_user_no_Fk,
     ps.target_user_no_Fk,
     ps.password_idno_Fk,
@@ -138,12 +128,13 @@ $sharedByMeRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 /**
  * ==========================================================
- * 4. 내가 "공유받은" 비밀번호 목록
+ * 5. 내가 "공유받은" 비밀번호 목록
+ *    - password_share.target_user_no_Fk = 현재 로그인 user_no
  * ==========================================================
  */
 $sqlSharedToMe = <<<SQL
 SELECT
-    ps.share_id,
+    ps.share_id,                    -- 공유 PK
     ps.owner_user_no_Fk,
     ps.target_user_no_Fk,
     ps.password_idno_Fk,
@@ -181,11 +172,15 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
     <title>Password 공유현황 (관리자)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- 헤더 / 사이드바 / 레이아웃 CSS -->
+    <!-- ✅ 헤더 전용 CSS -->
     <link rel="stylesheet"
         href="/password_3_header/password_3_header_view/password_3_header_view_admin/password_3_header_view_admin.css">
+
+    <!-- ✅ 사이드바 전용 CSS -->
     <link rel="stylesheet"
         href="/password_4_sidebar/password_4_sidebar_view/password_4_sidebar_view_admin/password_4_sidebar_view_admin.css">
+
+    <!-- ✅ 공유현황 전용 레이아웃 CSS (공유하기와 동일 + 삭제 버튼 스타일) -->
     <link rel="stylesheet"
         href="/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.css">
 </head>
@@ -193,14 +188,14 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 <body>
     <div class="layout">
 
-        <!-- 상단 헤더 -->
+        <!-- ========================== 상단 헤더 include ========================== -->
         <?php
         require_once $_SERVER['DOCUMENT_ROOT']
             . '/password_3_header/password_3_header_view/password_3_header_view_admin/password_3_header_view_admin.php';
         ?>
 
         <div class="main">
-            <!-- 좌측 사이드바 -->
+            <!-- ========================== 좌측 사이드바 include ========================== -->
             <?php
             require_once $_SERVER['DOCUMENT_ROOT']
                 . '/password_4_sidebar/password_4_sidebar_view/password_4_sidebar_view_admin/password_4_sidebar_view_admin.php';
@@ -222,7 +217,7 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                         에서 다른 사용자에게 공유 중인 비밀번호 목록입니다.
                     </p>
 
-                    <!-- 검색 -->
+                    <!-- 🔍 공유 대상 / 사이트 / 매장명 / 메모 기반 검색 -->
                     <div class="search-box" style="margin-bottom:10px; display:flex; gap:8px;">
                         <input
                             type="text"
@@ -236,6 +231,7 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                         </button>
                     </div>
 
+                    <!-- ✅ 스크롤과 분리된 상단 우측 삭제 버튼 -->
                     <div class="table-actions">
                         <button type="submit" class="btn-danger">
                             선택 삭제
@@ -246,6 +242,7 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                         <table class="password-table">
                             <thead>
                                 <tr>
+                                    <!-- 체크박스 전체 선택 -->
                                     <th style="width:40px; text-align:center;">
                                         <input type="checkbox" id="byMeCheckAll">
                                     </th>
@@ -267,6 +264,7 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                                     <?php $idx = 1; ?>
                                     <?php foreach ($sharedByMeRows as $row): ?>
                                         <?php
+                                        // 검색용 텍스트 (공유대상, 사이트, 매장명, 메모들)
                                         $searchPieces = [
                                             $row['target_username'] ?? '',
                                             $row['storename'] ?? '',
@@ -276,22 +274,16 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                                         ];
                                         $searchText = trim(implode(' ', $searchPieces));
 
+                                        // 암호화된 비밀번호 및 복호화된 평문
                                         $encryptedPassword = isset($row['encrypted_password'])
                                             ? (string)$row['encrypted_password']
                                             : '';
-
-                                        // 서버에서 미리 복호화
-                                        $plainPassword = '';
-                                        if ($encryptedPassword !== '') {
-                                            $plainPassword = decryptPasswordForView($encryptedPassword);
-                                        }
-
-                                        // 복사 버튼에 넣을 값 (복호화 성공 시 평문, 실패 시 암호문)
-                                        $copyPassword = $plainPassword !== '' ? $plainPassword : $encryptedPassword;
+                                        $plainPassword = decryptPasswordAES($encryptedPassword);
 
                                         $siteUrl = isset($row['site_url']) ? (string)$row['site_url'] : '';
                                         ?>
                                         <tr data-search="<?php echo htmlspecialchars($searchText, ENT_QUOTES, 'UTF-8'); ?>">
+                                            <!-- 개별 선택 체크박스 -->
                                             <td style="text-align:center;">
                                                 <input
                                                     type="checkbox"
@@ -314,7 +306,6 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                                                 <?php echo htmlspecialchars($row['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
                                             </td>
 
-                                            <!-- 사이트 주소: 텍스트 + 이동 버튼 -->
                                             <td class="site-cell">
                                                 <?php if ($siteUrl !== ''): ?>
                                                     <span class="site-url">
@@ -333,13 +324,19 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                                                 <?php echo htmlspecialchars($row['login_id'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
                                             </td>
 
-                                            <!-- 비밀번호: 값이 있으면 *** + 복사 버튼, 없으면 '-' -->
+                                            <!-- ✅ 비밀번호: 평문을 복호화해서 password input에 넣고, 복사 버튼은 평문을 data-password로 사용 -->
                                             <td>
-                                                <?php if ($encryptedPassword !== ''): ?>
-                                                    <span class="masked-password">***</span>
+                                                <?php if ($plainPassword !== ''): ?>
+                                                    <input
+                                                        type="password"
+                                                        class="password-display"
+                                                        value="<?php echo htmlspecialchars($plainPassword, ENT_QUOTES, 'UTF-8'); ?>"
+                                                        readonly
+                                                        style="width:140px; border:none; background:transparent; font-size:12px; padding:2px 4px;">
+
                                                     <button type="button"
                                                         class="btn-copy-password"
-                                                        data-password="<?php echo htmlspecialchars($copyPassword, ENT_QUOTES, 'UTF-8'); ?>"
+                                                        data-password="<?php echo htmlspecialchars($plainPassword, ENT_QUOTES, 'UTF-8'); ?>"
                                                         onclick="copyPassword(this);"
                                                         style="margin-left:6px; padding:2px 6px; font-size:11px; border-radius:4px; border:1px solid #ddd; cursor:pointer;">
                                                         복사
@@ -352,7 +349,9 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                                             <td>
                                                 <?php echo htmlspecialchars($row['share_memo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
                                             </td>
-                                            <td>보기 전용</td>
+                                            <td>
+                                                보기 전용
+                                            </td>
                                             <td>
                                                 <?php echo htmlspecialchars($row['created_at'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
                                             </td>
@@ -367,7 +366,7 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                                 <?php endif; ?>
                             </tbody>
                         </table>
-                    </div>
+                    </div><!-- /.table-wrapper -->
                 </form>
             </section>
 
@@ -385,6 +384,7 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                         다른 사용자 계정에서 이 계정으로 공유해 준 비밀번호 목록입니다.
                     </p>
 
+                    <!-- 🔍 공유해 준 사람 / 사이트 / 매장명 / 메모 기반 검색 -->
                     <div class="search-box" style="margin-bottom:10px; display:flex; gap:8px;">
                         <input
                             type="text"
@@ -398,6 +398,7 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                         </button>
                     </div>
 
+                    <!-- ✅ 스크롤과 분리된 상단 우측 삭제 버튼 -->
                     <div class="table-actions">
                         <button type="submit" class="btn-danger">
                             선택 삭제
@@ -408,6 +409,7 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                         <table class="password-table">
                             <thead>
                                 <tr>
+                                    <!-- 체크박스 전체 선택 -->
                                     <th style="width:40px; text-align:center;">
                                         <input type="checkbox" id="toMeCheckAll">
                                     </th>
@@ -429,6 +431,7 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                                     <?php $idx2 = 1; ?>
                                     <?php foreach ($sharedToMeRows as $row): ?>
                                         <?php
+                                        // 검색용 텍스트 (공유해 준 사람, 사이트, 매장명, 메모들)
                                         $searchPieces2 = [
                                             $row['owner_username'] ?? '',
                                             $row['storename'] ?? '',
@@ -438,20 +441,16 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                                         ];
                                         $searchText2 = trim(implode(' ', $searchPieces2));
 
+                                        // 암호화된 비밀번호 및 복호화된 평문
                                         $encryptedPassword2 = isset($row['encrypted_password'])
                                             ? (string)$row['encrypted_password']
                                             : '';
-
-                                        $plainPassword2 = '';
-                                        if ($encryptedPassword2 !== '') {
-                                            $plainPassword2 = decryptPasswordForView($encryptedPassword2);
-                                        }
-
-                                        $copyPassword2 = $plainPassword2 !== '' ? $plainPassword2 : $encryptedPassword2;
+                                        $plainPassword2 = decryptPasswordAES($encryptedPassword2);
 
                                         $siteUrl2 = isset($row['site_url']) ? (string)$row['site_url'] : '';
                                         ?>
                                         <tr data-search="<?php echo htmlspecialchars($searchText2, ENT_QUOTES, 'UTF-8'); ?>">
+                                            <!-- 개별 선택 체크박스 -->
                                             <td style="text-align:center;">
                                                 <input
                                                     type="checkbox"
@@ -492,12 +491,19 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                                                 <?php echo htmlspecialchars($row['login_id'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
                                             </td>
 
+                                            <!-- ✅ 비밀번호: 평문을 복호화해서 password input에 넣고, 복사 버튼은 평문을 data-password로 사용 -->
                                             <td>
-                                                <?php if ($encryptedPassword2 !== ''): ?>
-                                                    <span class="masked-password">***</span>
+                                                <?php if ($plainPassword2 !== ''): ?>
+                                                    <input
+                                                        type="password"
+                                                        class="password-display"
+                                                        value="<?php echo htmlspecialchars($plainPassword2, ENT_QUOTES, 'UTF-8'); ?>"
+                                                        readonly
+                                                        style="width:140px; border:none; background:transparent; font-size:12px; padding:2px 4px;">
+
                                                     <button type="button"
                                                         class="btn-copy-password"
-                                                        data-password="<?php echo htmlspecialchars($copyPassword2, ENT_QUOTES, 'UTF-8'); ?>"
+                                                        data-password="<?php echo htmlspecialchars($plainPassword2, ENT_QUOTES, 'UTF-8'); ?>"
                                                         onclick="copyPassword(this);"
                                                         style="margin-left:6px; padding:2px 6px; font-size:11px; border-radius:4px; border:1px solid #ddd; cursor:pointer;">
                                                         복사
@@ -510,7 +516,9 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                                             <td>
                                                 <?php echo htmlspecialchars($row['share_memo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
                                             </td>
-                                            <td>보기 전용</td>
+                                            <td>
+                                                보기 전용
+                                            </td>
                                             <td>
                                                 <?php echo htmlspecialchars($row['created_at'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
                                             </td>
@@ -525,12 +533,13 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                                 <?php endif; ?>
                             </tbody>
                         </table>
-                    </div>
+                    </div><!-- /.table-wrapper -->
                 </form>
             </aside>
-        </div>
-    </div>
+        </div><!-- /.main -->
+    </div><!-- /.layout -->
 
+    <!-- 공유현황 전용 JS (openUrl, copyPassword, 검색/체크박스 로직 포함) -->
     <script src="/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.js"></script>
 </body>
 
