@@ -163,7 +163,49 @@ $stmt2 = $pdo->prepare($sqlSharedToMe);
 $stmt2->bindValue(':currentUserNo', $currentUserNo, PDO::PARAM_INT);
 $stmt2->execute();
 $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+
+/**
+ * ==========================================================
+ * 6. 내가 "공유하지 않은" 비밀번호 목록
+ *    - password_share.share_id IS NULL
+ * ==========================================================
+ */
+/**
+ * ==========================================================
+ * 6. 내가 "공유하지 않은" 비밀번호 목록
+ *    - password_share.share_id IS NULL (공유되지 않은 비밀번호만 가져오기)
+ * ==========================================================
+ *//**
+ * ==========================================================
+ * 6. 내가 "공유하지 않은" 비밀번호 목록
+ *    - password_share.share_id IS NULL (공유되지 않은 비밀번호만 가져오기)
+ * ==========================================================
+ */
+
+$sqlUnsharedPasswords = <<<SQL
+SELECT 
+    p.password_idno,
+    p.category,
+    p.storename,
+    p.site_url,
+    p.login_id,
+    p.memo,
+    u.username AS owner_username,
+    u.phone AS owner_phone
+FROM password p
+LEFT JOIN password_share ps ON p.password_idno = ps.password_idno_Fk
+LEFT JOIN users u ON p.user_no_Fk = u.user_no  -- user_no_Fk로 수정
+WHERE ps.share_id IS NULL AND p.user_no_Fk = :currentUserNo  -- user_no_Fk 사용
+ORDER BY p.created_at DESC
+SQL;
+
+$stmtUnshared = $pdo->prepare($sqlUnsharedPasswords);
+$stmtUnshared->bindValue(':currentUserNo', $currentUserNo, PDO::PARAM_INT);
+$stmtUnshared->execute();
+$unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
+
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -182,7 +224,7 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- ✅ 공유현황 전용 레이아웃 CSS (공유하기와 동일 + 삭제 버튼 스타일) -->
     <link rel="stylesheet"
-      href="/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.css?v=20251129_01">
+        href="/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.css?v=20251129_01">
 
 </head>
 
@@ -221,7 +263,7 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                             에서 다른 사용자에게 공유 중인 비밀번호 목록입니다.
                         </p>
 
-                        <!-- 🔍 공유 대상 / 사이트 / 매장명 / 메모 기반 검색 -->
+                        <!-- 🔍 검색 -->
                         <div class="search-box" style="margin-bottom:10px; display:flex; gap:8px;">
                             <input
                                 type="text"
@@ -235,20 +277,18 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                             </button>
                         </div>
 
-                        <!-- ✅ 스크롤과 분리된 상단 우측 삭제 버튼 -->
+                        <!-- ✅ 삭제 버튼 -->
                         <div class="table-actions">
                             <button type="submit" class="btn-danger">
                                 선택 삭제
                             </button>
                         </div>
 
-                        <!-- ✅ 이 부분에 스크롤 고정 높이 적용 -->
+                        <!-- 테이블 목록 -->
                         <div class="table-wrapper" style="max-height:260px; overflow-y:auto; overflow-x:auto;">
-
                             <table class="password-table">
                                 <thead>
                                     <tr>
-                                        <!-- 체크박스 전체 선택 -->
                                         <th style="width:40px; text-align:center;">
                                             <input type="checkbox" id="byMeCheckAll">
                                         </th>
@@ -269,106 +309,24 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                                     <?php if (!empty($sharedByMeRows)): ?>
                                         <?php $idx = 1; ?>
                                         <?php foreach ($sharedByMeRows as $row): ?>
-                                            <?php
-                                            // 검색용 텍스트 (공유대상, 사이트, 매장명, 메모들)
-                                            $searchPieces = [
-                                                $row['target_username'] ?? '',
-                                                $row['storename'] ?? '',
-                                                $row['site_url'] ?? '',
-                                                $row['share_memo'] ?? '',
-                                                $row['password_memo'] ?? '',
-                                            ];
-                                            $searchText = trim(implode(' ', $searchPieces));
-
-                                            // 암호화된 비밀번호 및 복호화된 평문
-                                            $encryptedPassword = isset($row['encrypted_password'])
-                                                ? (string)$row['encrypted_password']
-                                                : '';
-                                            $plainPassword = decryptPasswordAES($encryptedPassword);
-
-                                            $siteUrl = isset($row['site_url']) ? (string)$row['site_url'] : '';
-                                            ?>
-                                            <tr data-search="<?php echo htmlspecialchars($searchText, ENT_QUOTES, 'UTF-8'); ?>">
-                                                <!-- 개별 선택 체크박스 -->
+                                            <tr>
                                                 <td style="text-align:center;">
-                                                    <input
-                                                        type="checkbox"
-                                                        name="share_ids[]"
-                                                        value="<?php echo (int)$row['share_id']; ?>">
+                                                    <input type="checkbox" name="share_ids[]" value="<?php echo (int)$row['share_id']; ?>">
                                                 </td>
-                                                <td style="text-align:center;">
-                                                    <?php echo $idx++; ?>
-                                                </td>
-                                                <td>
-                                                    <?php echo htmlspecialchars($row['target_username'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                                                </td>
-                                                <td>
-                                                    <?php echo htmlspecialchars($row['target_phone'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                                                </td>
-                                                <td>
-                                                    <?php echo htmlspecialchars($row['category'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                                                </td>
-                                                <td>
-                                                    <?php echo htmlspecialchars($row['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                                                </td>
-
-                                                <td class="site-cell">
-                                                    <?php if ($siteUrl !== ''): ?>
-                                                        <span class="site-url">
-                                                            <?php echo htmlspecialchars($siteUrl, ENT_QUOTES, 'UTF-8'); ?>
-                                                        </span>
-                                                        <button
-                                                            type="button"
-                                                            class="btn-go-site"
-                                                            onclick="openUrl('<?php echo htmlspecialchars($siteUrl, ENT_QUOTES, 'UTF-8'); ?>');">
-                                                            이동
-                                                        </button>
-                                                    <?php endif; ?>
-                                                </td>
-
-                                                <td>
-                                                    <?php echo htmlspecialchars($row['login_id'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                                                </td>
-
-                                                <!-- ✅ 비밀번호: 평문을 복호화해서 password input에 넣고, 복사 버튼은 평문을 data-password로 사용 -->
-                                                <td>
-                                                    <?php if ($plainPassword !== ''): ?>
-                                                        <input
-                                                            type="password"
-                                                            class="password-display"
-                                                            value="<?php echo htmlspecialchars($plainPassword, ENT_QUOTES, 'UTF-8'); ?>"
-                                                            readonly
-                                                            style="width:70px; border:none; background:transparent; font-size:12px; padding:2px 4px;">
-
-                                                        <button type="button"
-                                                            class="btn-copy-password"
-                                                            data-password="<?php echo htmlspecialchars($plainPassword, ENT_QUOTES, 'UTF-8'); ?>"
-                                                            onclick="copyPassword(this);"
-                                                            style="margin-left:6px; padding:2px 6px; font-size:11px; border-radius:4px; border:1px solid #ddd; cursor:pointer;">
-                                                            복사
-                                                        </button>
-                                                    <?php else: ?>
-                                                        <span style="color:#9ca3af; font-size:12px;">-</span>
-                                                    <?php endif; ?>
-                                                </td>
-
-                                                <td>
-                                                    <?php echo htmlspecialchars($row['share_memo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                                                </td>
-                                                <td>
-                                                    보기 전용
-                                                </td>
-                                                <td>
-                                                    <?php echo htmlspecialchars($row['created_at'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                                                </td>
+                                                <td style="text-align:center;"><?php echo $idx++; ?></td>
+                                                <td><?php echo htmlspecialchars($row['target_username'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td><?php echo htmlspecialchars($row['target_phone'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td><?php echo htmlspecialchars($row['category'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td><?php echo htmlspecialchars($row['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td><?php echo htmlspecialchars($row['site_url'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td><?php echo htmlspecialchars($row['login_id'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td><?php echo htmlspecialchars($row['share_memo'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td>보기 전용</td>
+                                                <td><?php echo htmlspecialchars($row['created_at'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php else: ?>
-                                        <tr>
-                                            <td colspan="12" style="text-align:center;">
-                                                현재 다른 사람에게 공유 중인 비밀번호가 없습니다.
-                                            </td>
-                                        </tr>
+                                        <tr><td colspan="12" style="text-align:center;">공유한 비밀번호가 없습니다.</td></tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
@@ -376,8 +334,8 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                     </form>
                 </section>
 
-                <!-- ========================== 아래: 내가 공유받은 비밀번호 목록 ========================== -->
-                <aside class="list-panel">
+                <!-- ========================== 중간: 내가 공유받은 비밀번호 목록 ========================== -->
+                <section class="content">
                     <form
                         id="sharedToMeForm"
                         method="post"
@@ -390,7 +348,7 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                             다른 사용자 계정에서 이 계정으로 공유해 준 비밀번호 목록입니다.
                         </p>
 
-                        <!-- 🔍 공유해 준 사람 / 사이트 / 매장명 / 메모 기반 검색 -->
+                        <!-- 🔍 검색 -->
                         <div class="search-box" style="margin-bottom:10px; display:flex; gap:8px;">
                             <input
                                 type="text"
@@ -404,20 +362,18 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                             </button>
                         </div>
 
-                        <!-- ✅ 스크롤과 분리된 상단 우측 삭제 버튼 -->
+                        <!-- ✅ 삭제 버튼 -->
                         <div class="table-actions">
                             <button type="submit" class="btn-danger">
                                 선택 삭제
                             </button>
                         </div>
 
-                        <!-- ✅ 이 테이블도 스크롤 고정 높이 적용 -->
-                        <div class="table-wrapper"
-                            style="max-height:260px; overflow-y:auto; overflow-x:auto;">
+                        <!-- 테이블 목록 -->
+                        <div class="table-wrapper" style="max-height:260px; overflow-y:auto; overflow-x:auto;">
                             <table class="password-table">
                                 <thead>
                                     <tr>
-                                        <!-- 체크박스 전체 선택 -->
                                         <th style="width:40px; text-align:center;">
                                             <input type="checkbox" id="toMeCheckAll">
                                         </th>
@@ -438,112 +394,96 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                                     <?php if (!empty($sharedToMeRows)): ?>
                                         <?php $idx2 = 1; ?>
                                         <?php foreach ($sharedToMeRows as $row): ?>
-                                            <?php
-                                            // 검색용 텍스트 (공유해 준 사람, 사이트, 매장명, 메모들)
-                                            $searchPieces2 = [
-                                                $row['owner_username'] ?? '',
-                                                $row['storename'] ?? '',
-                                                $row['site_url'] ?? '',
-                                                $row['share_memo'] ?? '',
-                                                $row['password_memo'] ?? '',
-                                            ];
-                                            $searchText2 = trim(implode(' ', $searchPieces2));
-
-                                            // 암호화된 비밀번호 및 복호화된 평문
-                                            $encryptedPassword2 = isset($row['encrypted_password'])
-                                                ? (string)$row['encrypted_password']
-                                                : '';
-                                            $plainPassword2 = decryptPasswordAES($encryptedPassword2);
-
-                                            $siteUrl2 = isset($row['site_url']) ? (string)$row['site_url'] : '';
-                                            ?>
-                                            <tr data-search="<?php echo htmlspecialchars($searchText2, ENT_QUOTES, 'UTF-8'); ?>">
-                                                <!-- 개별 선택 체크박스 -->
+                                            <tr>
                                                 <td style="text-align:center;">
-                                                    <input
-                                                        type="checkbox"
-                                                        name="share_ids[]"
-                                                        value="<?php echo (int)$row['share_id']; ?>">
+                                                    <input type="checkbox" name="share_ids[]" value="<?php echo (int)$row['share_id']; ?>">
                                                 </td>
-                                                <td style="text-align:center;">
-                                                    <?php echo $idx2++; ?>
-                                                </td>
-                                                <td>
-                                                    <?php echo htmlspecialchars($row['owner_username'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                                                </td>
-                                                <td>
-                                                    <?php echo htmlspecialchars($row['owner_phone'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                                                </td>
-                                                <td>
-                                                    <?php echo htmlspecialchars($row['category'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                                                </td>
-                                                <td>
-                                                    <?php echo htmlspecialchars($row['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                                                </td>
-
-                                                <td class="site-cell">
-                                                    <?php if ($siteUrl2 !== ''): ?>
-                                                        <span class="site-url">
-                                                            <?php echo htmlspecialchars($siteUrl2, ENT_QUOTES, 'UTF-8'); ?>
-                                                        </span>
-                                                        <button
-                                                            type="button"
-                                                            class="btn-go-site"
-                                                            onclick="openUrl('<?php echo htmlspecialchars($siteUrl2, ENT_QUOTES, 'UTF-8'); ?>');">
-                                                            이동
-                                                        </button>
-                                                    <?php endif; ?>
-                                                </td>
-
-                                                <td>
-                                                    <?php echo htmlspecialchars($row['login_id'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                                                </td>
-
-                                                <!-- ✅ 비밀번호: 평문을 복호화해서 password input에 넣고, 복사 버튼은 평문을 data-password로 사용 -->
-                                                <td>
-                                                    <?php if ($plainPassword2 !== ''): ?>
-                                                        <input
-                                                            type="password"
-                                                            class="password-display"
-                                                            value="<?php echo htmlspecialchars($plainPassword2, ENT_QUOTES, 'UTF-8'); ?>"
-                                                            readonly
-                                                            style="width:70px; border:none; background:transparent; font-size:12px; padding:2px 4px;">
-
-                                                        <button type="button"
-                                                            class="btn-copy-password"
-                                                            data-password="<?php echo htmlspecialchars($plainPassword2, ENT_QUOTES, 'UTF-8'); ?>"
-                                                            onclick="copyPassword(this);"
-                                                            style="margin-left:6px; padding:2px 6px; font-size:11px; border-radius:4px; border:1px solid #ddd; cursor:pointer;">
-                                                            복사
-                                                        </button>
-                                                    <?php else: ?>
-                                                        <span style="color:#9ca3af; font-size:12px;">-</span>
-                                                    <?php endif; ?>
-                                                </td>
-
-                                                <td>
-                                                    <?php echo htmlspecialchars($row['share_memo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                                                </td>
-                                                <td>
-                                                    보기 전용
-                                                </td>
-                                                <td>
-                                                    <?php echo htmlspecialchars($row['created_at'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                                                </td>
+                                                <td style="text-align:center;"><?php echo $idx2++; ?></td>
+                                                <td><?php echo htmlspecialchars($row['owner_username'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td><?php echo htmlspecialchars($row['owner_phone'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td><?php echo htmlspecialchars($row['category'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td><?php echo htmlspecialchars($row['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td><?php echo htmlspecialchars($row['site_url'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td><?php echo htmlspecialchars($row['login_id'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td><?php echo htmlspecialchars($row['share_memo'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td>보기 전용</td>
+                                                <td><?php echo htmlspecialchars($row['created_at'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php else: ?>
-                                        <tr>
-                                            <td colspan="12" style="text-align:center;">
-                                                현재 다른 사람으로부터 공유받은 비밀번호가 없습니다.
-                                            </td>
-                                        </tr>
+                                        <tr><td colspan="12" style="text-align:center;">공유받은 비밀번호가 없습니다.</td></tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
                         </div><!-- /.table-wrapper -->
                     </form>
-                </aside>
+                </section>
+
+                <!-- ========================== 아래: 내가 공유하지 않은 비밀번호 목록 ========================== -->
+                <section class="content">
+                    <form
+                        id="unsharedPasswordsForm"
+                        method="post"
+                        action="/password_7_shareStatus/password_7_shareStatus_route/password_7_shareStatus_delete_admin.php">
+
+                        <input type="hidden" name="mode" value="unshared">
+
+                        <h2>내가 공유하지 않은 비밀번호</h2>
+                        <p style="margin-top:0; margin-bottom:12px; font-size:13px; color:#6b7280;">
+                            현재 계정에 대해 공유하지 않은 비밀번호 목록입니다.
+                        </p>
+
+                        <!-- ✅ 삭제 버튼 -->
+                        <div class="table-actions">
+                            <button type="submit" class="btn-danger">
+                                선택 삭제
+                            </button>
+                        </div>
+
+                        <!-- 테이블 목록 -->
+                        <div class="table-wrapper" style="max-height:260px; overflow-y:auto; overflow-x:auto;">
+                            <table class="password-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:40px; text-align:center;">
+                                            <input type="checkbox" id="unsharedCheckAll">
+                                        </th>
+                                        <th style="width:50px; text-align:center;">No</th>
+                                        <th>구분</th>
+                                        <th>매장명</th>
+                                        <th>사이트 주소</th>
+                                        <th>아이디</th>
+                                        <th>비밀번호</th>
+                                        <th>메모</th>
+                                        <th>소유자</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (!empty($unsharedPasswordsRows)): ?>
+                                        <?php $idx3 = 1; ?>
+                                        <?php foreach ($unsharedPasswordsRows as $row): ?>
+                                            <tr>
+                                                <td style="text-align:center;">
+                                                    <input type="checkbox" name="password_ids[]" value="<?php echo (int)$row['password_idno']; ?>">
+                                                </td>
+                                                <td style="text-align:center;"><?php echo $idx3++; ?></td>
+                                                <td><?php echo htmlspecialchars($row['category'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td><?php echo htmlspecialchars($row['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td><?php echo htmlspecialchars($row['site_url'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td><?php echo htmlspecialchars($row['login_id'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td>-</td> <!-- 비밀번호는 표시하지 않음 -->
+                                                <td><?php echo htmlspecialchars($row['memo'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                <td><?php echo htmlspecialchars($row['owner_username'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr><td colspan="9" style="text-align:center;">공유하지 않은 비밀번호가 없습니다.</td></tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div><!-- /.table-wrapper -->
+                    </form>
+                </section>
 
             </div><!-- /.share-container -->
         </div><!-- /.main -->
