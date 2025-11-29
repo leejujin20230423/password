@@ -1,90 +1,10 @@
-// ========================================================
-// 0. 공통 유틸: 사이트 이동 / 비밀번호 복사
-// ========================================================
-
-// URL 새 창으로 열기 (다른 곳에서 이미 정의되어 있어도 문제 없음)
-if (typeof openUrl !== "function") {
-    function openUrl(raw) {
-        if (!raw) return;
-        var url = String(raw).trim();
-        if (!url) return;
-
-        // http/https 없으면 자동으로 https:// 붙이기
-        if (!/^https?:\/\//i.test(url)) {
-            url = "https://" + url;
-        }
-        window.open(url, "_blank");
-    }
-}
-
-// ✅ Clipboard API 사용이 안 될 때 쓸 폴백 함수
-function fallbackCopyTextToClipboard(text) {
-    var textarea = document.createElement("textarea");
-    textarea.value = text;
-
-    textarea.style.position = "fixed";
-    textarea.style.top = "0";
-    textarea.style.left = "0";
-    textarea.style.opacity = "0";
-
-    document.body.appendChild(textarea);
-    textarea.focus();
-    textarea.select();
-
-    try {
-        var successful = document.execCommand("copy");
-        if (successful) {
-            alert("비밀번호가 클립보드에 복사되었습니다.\n사이트 로그인 화면에서 바로 붙여넣기 하세요.");
-        } else {
-            alert("복사에 실패했습니다. 직접 드래그해서 복사해주세요.");
-        }
-    } catch (e) {
-        console.error("복사 중 오류:", e);
-        alert("복사에 실패했습니다. 직접 드래그해서 복사해주세요.");
-    }
-
-    document.body.removeChild(textarea);
-}
-
-// ✅ 비밀번호 복사 버튼 (data-password에 담긴 복호화 비밀번호 복사)
-function copyPassword(btn) {
-    if (!btn) return;
-
-    // PHP에서 넣어준 data-password 속성 읽기 (복호화된 평문 비밀번호)
-    var pw = btn.getAttribute("data-password") || "";
-    pw = pw.trim();
-
-    if (!pw) {
-        alert("복사할 비밀번호가 없습니다.");
-        return;
-    }
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard
-            .writeText(pw)
-            .then(function () {
-                alert("비밀번호가 클립보드에 복사되었습니다.\n사이트 로그인 화면에서 바로 붙여넣기 하세요.");
-            })
-            .catch(function (err) {
-                console.error("Clipboard API 복사 실패:", err);
-                fallbackCopyTextToClipboard(pw);
-            });
-    } else {
-        // 구형 브라우저용 fallback
-        fallbackCopyTextToClipboard(pw);
-    }
-}
-
-// ========================================================
-// 1. DOMContentLoaded 이후 이벤트 바인딩
-// ========================================================
 document.addEventListener("DOMContentLoaded", function () {
+    // 기존 폼 참조
     var byMeForm = document.getElementById("sharedByMeForm");
     var toMeForm = document.getElementById("sharedToMeForm");
+    var unsharedForm = document.getElementById("unsharedPasswordsForm");  // unsharedForm 정의 추가
 
-    // -----------------------------
-    // 1-1. 전체 선택 체크박스
-    // -----------------------------
+    // 전체 선택 체크박스
     var byMeCheckAll = document.getElementById("byMeCheckAll");
     if (byMeCheckAll && byMeForm) {
         byMeCheckAll.addEventListener("change", function () {
@@ -105,9 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // -----------------------------
-    // 1-2. 삭제 버튼 누르기 전 확인
-    // -----------------------------
+    // 삭제 버튼 전 확인
     if (byMeForm) {
         byMeForm.addEventListener("submit", function (e) {
             var checked = byMeForm.querySelectorAll(
@@ -140,13 +58,13 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // ====================================================
-    // 2. 검색 기능 (버튼 + 엔터키)
-    // ====================================================
+    // 검색 기능
     var byMeInput = document.getElementById("byMeSearch");
     var byMeBtn = document.getElementById("byMeSearchBtn");
     var toMeInput = document.getElementById("toMeSearch");
     var toMeBtn = document.getElementById("toMeSearchBtn");
+    var unsharedInput = document.getElementById("unsharedSearch");
+    var unsharedBtn = document.getElementById("unsharedSearchBtn");
 
     // 공통 필터 함수
     function filterRows(formElem, keyword) {
@@ -155,7 +73,6 @@ document.addEventListener("DOMContentLoaded", function () {
         var lower = keyword.trim().toLowerCase();
 
         rows.forEach(function (row) {
-            // data-search 가 없을 경우를 대비해서 innerText 도 같이 사용
             var hay = (
                 row.getAttribute("data-search") ||
                 row.innerText ||
@@ -170,6 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // 개별 필터 함수
     function filterByMe() {
         if (!byMeInput || !byMeForm) return;
         filterRows(byMeForm, byMeInput.value);
@@ -178,6 +96,11 @@ document.addEventListener("DOMContentLoaded", function () {
     function filterToMe() {
         if (!toMeInput || !toMeForm) return;
         filterRows(toMeForm, toMeInput.value);
+    }
+
+    function filterUnshared() {
+        if (!unsharedInput || !unsharedForm) return;  // unsharedForm 확인 추가
+        filterRows(unsharedForm, unsharedInput.value);
     }
 
     // 버튼 클릭 시 검색
@@ -191,16 +114,23 @@ document.addEventListener("DOMContentLoaded", function () {
             filterToMe();
         });
     }
+    if (unsharedBtn) {
+        unsharedBtn.addEventListener("click", function () {
+            filterUnshared();
+        });
+    }
 
     // 엔터키로 검색 (폼 submit 막기)
     function handleSearchEnter(e) {
         if (e.key === "Enter") {
-            e.preventDefault(); // ❗ 폼 전송 막기 (삭제 submit 방지)
+            e.preventDefault(); // 폼 전송 막기 (삭제 submit 방지)
 
             if (e.target.id === "byMeSearch") {
                 filterByMe();
             } else if (e.target.id === "toMeSearch") {
                 filterToMe();
+            } else if (e.target.id === "unsharedSearch") {
+                filterUnshared();
             }
         }
     }
@@ -210,5 +140,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     if (toMeInput) {
         toMeInput.addEventListener("keydown", handleSearchEnter);
+    }
+    if (unsharedInput) {
+        unsharedInput.addEventListener("keydown", handleSearchEnter);
     }
 });

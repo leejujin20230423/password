@@ -175,7 +175,8 @@ $sharedToMeRows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
  * 6. 내가 "공유하지 않은" 비밀번호 목록
  *    - password_share.share_id IS NULL (공유되지 않은 비밀번호만 가져오기)
  * ==========================================================
- *//**
+ */
+/**
  * ==========================================================
  * 6. 내가 "공유하지 않은" 비밀번호 목록
  *    - password_share.share_id IS NULL (공유되지 않은 비밀번호만 가져오기)
@@ -285,14 +286,14 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                         </div>
 
                         <!-- 테이블 목록 -->
-                        <div class="table-wrapper" style="max-height:260px; overflow-y:auto; overflow-x:auto;">
+                        <div class="table-wrapper">
                             <table class="password-table">
                                 <thead>
                                     <tr>
                                         <th style="width:40px; text-align:center;">
                                             <input type="checkbox" id="byMeCheckAll">
                                         </th>
-                                        <th style="width:50px; text-align:center;">No</th>
+                                        <th>No</th>
                                         <th>공유 대상</th>
                                         <th>연락처</th>
                                         <th>구분</th>
@@ -326,7 +327,9 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php else: ?>
-                                        <tr><td colspan="12" style="text-align:center;">공유한 비밀번호가 없습니다.</td></tr>
+                                        <tr>
+                                            <td colspan="12" style="text-align:center;">공유한 비밀번호가 없습니다.</td>
+                                        </tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
@@ -370,7 +373,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                         </div>
 
                         <!-- 테이블 목록 -->
-                        <div class="table-wrapper" style="max-height:260px; overflow-y:auto; overflow-x:auto;">
+                        <div class="table-wrapper">
                             <table class="password-table">
                                 <thead>
                                     <tr>
@@ -411,7 +414,9 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php else: ?>
-                                        <tr><td colspan="12" style="text-align:center;">공유받은 비밀번호가 없습니다.</td></tr>
+                                        <tr>
+                                            <td colspan="12" style="text-align:center;">공유받은 비밀번호가 없습니다.</td>
+                                        </tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
@@ -419,6 +424,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                     </form>
                 </section>
 
+                <!-- ========================== 아래: 내가 공유하지 않은 비밀번호 목록 ========================== -->
                 <!-- ========================== 아래: 내가 공유하지 않은 비밀번호 목록 ========================== -->
                 <section class="content">
                     <form
@@ -433,6 +439,20 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                             현재 계정에 대해 공유하지 않은 비밀번호 목록입니다.
                         </p>
 
+                        <!-- 🔍 검색 박스 추가 -->
+                        <div class="search-box" style="margin-bottom:10px; display:flex; gap:8px;">
+                            <input
+                                type="text"
+                                id="unsharedSearch"
+                                placeholder="구분, 매장명, 사이트 주소로 검색"
+                                style="flex:1; padding:6px 8px; border:1px solid #ccc; border-radius:4px; font-size:13px;">
+                            <button type="button"
+                                id="unsharedSearchBtn"
+                                style="padding:6px 12px; border-radius:4px; border:1px solid #ddd; cursor:pointer; font-size:13px;">
+                                검색
+                            </button>
+                        </div>
+
                         <!-- ✅ 삭제 버튼 -->
                         <div class="table-actions">
                             <button type="submit" class="btn-danger">
@@ -441,7 +461,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                         </div>
 
                         <!-- 테이블 목록 -->
-                        <div class="table-wrapper" style="max-height:260px; overflow-y:auto; overflow-x:auto;">
+                        <div class="table-wrapper">
                             <table class="password-table">
                                 <thead>
                                     <tr>
@@ -477,7 +497,9 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php else: ?>
-                                        <tr><td colspan="9" style="text-align:center;">공유하지 않은 비밀번호가 없습니다.</td></tr>
+                                        <tr>
+                                            <td colspan="9" style="text-align:center;">공유하지 않은 비밀번호가 없습니다.</td>
+                                        </tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
