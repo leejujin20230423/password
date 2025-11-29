@@ -1,15 +1,34 @@
-<!-- 좌측 사이드바 -->
-<aside class="sidebar" id="sidebar">
+<?php
+// 필요하면 여기서 세션 체크 등 가능
+?>
 
-    <div class="sidebar-title">
-        메뉴 목록
-    </div>
+<!-- ✅ toggleSidebar()가 찾을 수 있도록 id="sidebar" 추가 -->
+<aside id="sidebar" class="sidebar">
+    <!-- 상단 제목 -->
+    <div class="sidebar-title">메뉴 선택</div>
 
     <nav>
         <ul>
-            <li class="active">비밀번호 등록하기</li>
-            <li class="active">비밀번호 공유하기</li>
-            <li class="active">비밀번호 공유현황</li>
+            <!-- 비밀번호 등록하기 -->
+            <li
+                class="active"
+                onclick="window.location.href='/password_5_passwordRegister/password_5_passwordRegister_View/password_5_passwordRegister_View_admin/password_5_passwordRegister_View_admin.php';">
+                비밀번호 등록하기
+            </li>
+
+            <!-- 비밀번호 공유하기 -->
+            <li
+                class="active"
+                onclick="window.location.href='/password_6_share/password_6_share_view/password_6_share_view_admin/password_6_share_view_admin.php';">
+                비밀번호 공유하기
+            </li>
+
+            <!-- 비밀번호 공유현황 (나중에 목록 페이지 만들면 경로만 채워주면 됨) -->
+            <li
+                class="active"
+                onclick="window.location.href='#';">
+                비밀번호 공유현황
+            </li>
         </ul>
     </nav>
 </aside>

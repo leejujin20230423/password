@@ -1,4 +1,10 @@
 <?php
+// ==========================================
+//  관리자 공통 헤더
+//  - 상단 타이틀/유저 정보/로그아웃
+//  - 모바일용 사이드바 토글 JS 포함
+// ==========================================
+
 // 세션이 필요할 수 있으니 안전하게 시작
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -23,7 +29,6 @@ $listSourceSafe    = isset($listSource) ? $listSource : '';
             &#9776;
         </button>
 
-
         <h1 class="header-title">Password 관리 시스템</h1>
     </div>
 
@@ -46,8 +51,16 @@ $listSourceSafe    = isset($listSource) ? $listSource : '';
         </button>
     </div>
 </header>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+
 <script>
-    // ✅ 사이드바 열고 닫기 + 오버레이 제어
+    // ==========================================
+    // 사이드바 열고 닫기 + 오버레이 제어
+    //  - #sidebar : <aside id="sidebar" ...>
+    //  - #sidebarOverlay : <div id="sidebarOverlay" ...>
+    // ==========================================
     function toggleSidebar() {
         var sidebar = document.getElementById('sidebar');
         var overlay = document.getElementById('sidebarOverlay');
@@ -64,15 +77,15 @@ $listSourceSafe    = isset($listSource) ? $listSource : '';
         }
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         var sidebar = document.getElementById('sidebar');
         var overlay = document.getElementById('sidebarOverlay');
 
         // ✅ 모바일에서 메뉴 항목 클릭 시 자동 닫기
         if (sidebar) {
             var menuItems = sidebar.querySelectorAll('li');
-            menuItems.forEach(function(item) {
-                item.addEventListener('click', function() {
+            menuItems.forEach(function (item) {
+                item.addEventListener('click', function () {
                     if (window.innerWidth <= 900) {
                         sidebar.classList.remove('open');
                         if (overlay) overlay.classList.remove('open');
@@ -83,7 +96,7 @@ $listSourceSafe    = isset($listSource) ? $listSource : '';
 
         // ✅ 오버레이 클릭 시 사이드바 닫기
         if (overlay) {
-            overlay.addEventListener('click', function() {
+            overlay.addEventListener('click', function () {
                 if (!sidebar) return;
                 sidebar.classList.remove('open');
                 overlay.classList.remove('open');
