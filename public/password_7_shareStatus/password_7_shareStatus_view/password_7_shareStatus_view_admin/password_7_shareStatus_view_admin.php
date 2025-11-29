@@ -453,12 +453,12 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                             </button>
                         </div>
 
-                        <!-- ✅ 삭제 버튼 -->
+                        <!-- ✅ 삭제 버튼 
                         <div class="table-actions">
                             <button type="submit" class="btn-danger">
                                 선택 삭제
                             </button>
-                        </div>
+                        </div> -->
 
                         <!-- 테이블 목록 -->
                         <div class="table-wrapper">

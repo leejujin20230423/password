@@ -398,10 +398,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = $_POST['password_idno'] ?? null;
 
         if ($id !== null && $id !== '') {
-            $crud->delete($id);
+            // 트랜잭션 시작
+            $pdo->beginTransaction();
+
+            try {
+                // 1. password 테이블에서 비밀번호 삭제
+                $deletePasswordQuery = "DELETE FROM password WHERE password_idno = :password_idno";
+                $stmt1 = $pdo->prepare($deletePasswordQuery);
+                $stmt1->bindValue(':password_idno', $id, PDO::PARAM_INT);
+                $stmt1->execute();
+
+                // 삭제된 비밀번호가 있는지 확인
+                if ($stmt1->rowCount() === 0) {
+                    throw new Exception("비밀번호 삭제 실패: 해당 비밀번호가 존재하지 않거나 이미 삭제되었습니다.");
+                }
+
+                // 2. password_share 테이블에서 해당 비밀번호와 연결된 공유 기록 삭제
+                $deleteShareQuery = "DELETE FROM password_share WHERE password_idno_Fk = :password_idno_Fk";
+                $stmt2 = $pdo->prepare($deleteShareQuery);
+                $stmt2->bindValue(':password_idno_Fk', $id, PDO::PARAM_INT);
+                $stmt2->execute();
+
+                // 삭제된 공유 기록이 있는지 확인
+                if ($stmt2->rowCount() === 0) {
+                    throw new Exception("공유 기록 삭제 실패: 해당 비밀번호와 연결된 공유 기록이 없습니다.");
+                }
+
+                // 트랜잭션 커밋
+                $pdo->commit();
+
+                // 삭제 후 리디렉션
+                header('Location: ' . $_SERVER['REQUEST_URI']);
+                exit;
+            } catch (Exception $e) {
+                // 트랜잭션 롤백
+                $pdo->rollBack();
+                echo "오류 발생: " . $e->getMessage();
+                exit;
+            }
         }
 
-        header('Location: ' . $_SERVER['REQUEST_URI']);
+        // 만약 id가 비어있다면 삭제 실패
+        echo "삭제할 비밀번호가 없습니다.";
         exit;
     }
 
@@ -724,7 +762,7 @@ $isEdit = !empty($editRow);
                 <!-- 우측 리스트 -->
                 <aside class="list-panel">
                     <h2 style="display: flex;">등록된 비밀번호 목록
-                       
+
                     </h2>
                     <span style="font-size: 14px; color: red;">(사이트의 비밀번호를 보려면 보기버튼을 눌러주세요.)
                         <!-- (디버깅용) 리스트 데이터 출처 표시 -->
