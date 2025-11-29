@@ -1,4 +1,5 @@
 <?php
+
 /**
  * ==========================================================
  * 1. 세션 시작 및 로그인 사용자 확인
@@ -49,8 +50,8 @@ $crud         = new GenericCrud($pdo, $schemaLoader, $tableName, $redis);
  *    - 공유할 때 가운데 패널에서 체크박스로 선택
  * ==========================================================
  */
-$pk        = $crud->getPrimaryKey(); // 예: password_idno
-$orderBy   = 'category ASC' . ($pk ? ', ' . $pk . ' DESC' : '');
+$pk         = $crud->getPrimaryKey(); // 예: password_idno
+$orderBy    = 'category ASC' . ($pk ? ', ' . $pk . ' DESC' : '');
 $conditions = ['user_no_Fk' => $currentUserNo];
 
 $myPasswordRows = $crud->getList($conditions, $orderBy);
@@ -64,27 +65,38 @@ $myPasswordRows = $crud->getList($conditions, $orderBy);
  */
 $columns = [];
 if (!empty($myPasswordRows) && is_array($myPasswordRows[0])) {
-    $columns = array_keys($myPasswordRows[0]);
+    $allColumns = array_keys($myPasswordRows[0]);
+
+    // ❌ 화면에서 빼고 싶은 컬럼들
+    $hiddenColumns = ['user_no_Fk', 'password_idno', 'encrypted_password'];
+
+    // ✅ 실제로 테이블에 표시할 컬럼 목록 (숨기고 싶은 컬럼 제외)
+    $columns = array_values(array_filter(
+        $allColumns,
+        function ($col) use ($hiddenColumns) {
+            return !in_array($col, $hiddenColumns, true);
+        }
+    ));
 }
 
 // 컬럼 라벨 매핑 (없는 것은 컬럼명 그대로 사용)
 $columnLabels = [
-    'password_idno'        => '번호',
-    'user_no_Fk'           => '사용자번호',
-    'category'             => '구분',
-    'storename'            => '매장명',
-    'site_url'             => '사이트 주소',
-    'login_id'             => '아이디',
-    'encrypted_password'   => '암호화 비밀번호',
-    'contact_phone'        => '연락처',
-    'memo'                 => '메모',
-    'created_at'           => '등록일',
-    'updated_at'           => '수정일',
-    // 필요하면 나중에 더 추가
+    'password_idno'      => '번호',
+    'user_no_Fk'         => '사용자번호',
+    'category'           => '구분',
+    'storename'          => '매장명',
+    'site_url'           => '사이트 주소',
+    'login_id'           => '아이디',
+    'encrypted_password' => '암호화 비밀번호',
+    'contact_phone'      => '연락처',
+    'memo'               => '메모',
+    'created_at'         => '등록일',
+    'updated_at'         => '수정일',
 ];
 ?>
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <title>Password 공유 설정 (관리자)</title>
@@ -102,6 +114,7 @@ $columnLabels = [
     <link rel="stylesheet"
           href="/password_6_share/password_6_share_view/password_6_share_view_admin/password_6_share_view_admin.css">
 </head>
+
 <body>
 <div class="layout">
 
@@ -133,16 +146,30 @@ $columnLabels = [
             <section class="content">
                 <h2>공유할 비밀번호 선택</h2>
 
+                <!-- 🔍 사이트/매장명/메모 검색 박스 (입력 + 버튼) -->
+                <div class="search-box">
+                    <input
+                        type="text"
+                        id="passwordListSearch"
+                        placeholder="사이트 주소, 매장명, 메모에서 검색">
+                    <button type="button" id="passwordListSearchBtn">검색</button>
+                </div>
+
                 <div class="table-wrapper">
                     <table class="password-table">
                         <thead>
                         <tr>
-                            <!-- ✅ 첫 번째 컬럼: 전체선택 체크박스 -->
+                            <!-- ✅ 전체 선택 체크박스 -->
                             <th style="width:40px; text-align:center;">
                                 <input type="checkbox" id="checkAll">
                             </th>
 
-                            <!-- ✅ password 테이블의 모든 컬럼 헤더 -->
+                            <!-- ✅ 순번 컬럼 -->
+                            <th style="width:50px; text-align:center;">
+                                No
+                            </th>
+
+                            <!-- ✅ password 테이블에서 선택된 컬럼 헤더 (user_no_Fk, password_idno, encrypted_password 제외) -->
                             <?php if (!empty($columns)): ?>
                                 <?php foreach ($columns as $colName): ?>
                                     <th>
@@ -157,25 +184,44 @@ $columnLabels = [
                         </thead>
                         <tbody>
                         <?php if (!empty($myPasswordRows)): ?>
+                            <?php $rowNo = 1; ?>
                             <?php foreach ($myPasswordRows as $row): ?>
-                                <tr>
-                                    <!-- ✅ 공유 대상 비밀번호 선택 체크박스 -->
+                                <?php
+                                // 🔍 검색 대상 텍스트 (사이트 + 매장명 + 메모)
+                                $searchPieces = [];
+                                if (isset($row['site_url'])) {
+                                    $searchPieces[] = (string)$row['site_url'];
+                                }
+                                if (isset($row['storename'])) {
+                                    $searchPieces[] = (string)$row['storename'];
+                                }
+                                if (isset($row['memo'])) {
+                                    $searchPieces[] = (string)$row['memo'];
+                                }
+                                $searchText = htmlspecialchars(implode(' ', $searchPieces), ENT_QUOTES, 'UTF-8');
+
+                                // PK 값 (password_idno)
+                                $pkValue = 0;
+                                if ($pk && isset($row[$pk])) {
+                                    $pkValue = (int)$row[$pk];
+                                } elseif (isset($row['password_idno'])) {
+                                    $pkValue = (int)$row['password_idno'];
+                                }
+                                ?>
+                                <tr data-search="<?php echo $searchText; ?>">
+                                    <!-- ✅ 체크박스 -->
                                     <td style="text-align:center;">
-                                        <?php
-                                        // PK 컬럼명 (예: password_idno)이 없으면 0 처리
-                                        $pkValue = 0;
-                                        if ($pk && isset($row[$pk])) {
-                                            $pkValue = (int)$row[$pk];
-                                        } elseif (isset($row['password_idno'])) {
-                                            $pkValue = (int)$row['password_idno'];
-                                        }
-                                        ?>
                                         <input type="checkbox"
                                                name="password_ids[]"
                                                value="<?php echo $pkValue; ?>">
                                     </td>
 
-                                    <!-- ✅ 각 행의 모든 컬럼 값 출력 -->
+                                    <!-- ✅ 순번 -->
+                                    <td style="text-align:center;">
+                                        <?php echo $rowNo++; ?>
+                                    </td>
+
+                                    <!-- ✅ 화면에 보여줄 컬럼들만 출력 (user_no_Fk, password_idno, encrypted_password 제외) -->
                                     <?php foreach ($columns as $colName): ?>
                                         <td>
                                             <?php
@@ -188,7 +234,8 @@ $columnLabels = [
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="<?php echo 1 + count($columns); ?>" style="text-align:center;">
+                                <!-- 체크박스 + No + 나머지 컬럼 개수 -->
+                                <td colspan="<?php echo 2 + count($columns); ?>" style="text-align:center;">
                                     등록된 비밀번호가 없습니다.
                                 </td>
                             </tr>
@@ -224,15 +271,7 @@ $columnLabels = [
                     <h3 style="margin:0 0 8px 0; font-size:15px;">선택된 공유 대상</h3>
                     <ul id="selectedTargets"
                         style="list-style:none; padding:0; margin:0; font-size:14px;">
-                        <!--
-                            JS에서 아래 형식으로 li + hidden input 생성 예정
-
-                            <li data-user-no="123">
-                                홍길동
-                                <button type="button" onclick="removeTarget(123)">삭제</button>
-                                <input type="hidden" name="target_user_ids[]" value="123">
-                            </li>
-                        -->
+                        <!-- JS에서 li + hidden input 동적으로 추가 -->
                     </ul>
                 </div>
 
@@ -252,5 +291,14 @@ $columnLabels = [
 
 <!-- ✅ 비밀번호 공유 화면용 JS -->
 <script src="/password_6_share/password_6_share_view/password_6_share_view_admin/password_6_share_view_admin.js"></script>
+
+<script>
+    // 초대 메시지에 쓸 발신자 이름
+    window.PASS_SENDER_NAME = '<?php echo htmlspecialchars($sessionUsername, ENT_QUOTES, "UTF-8"); ?>';
+    // 로그인한 사용자 번호 (본인 체크용)
+    window.PASS_USER_NO = <?php echo (int)$currentUserNo; ?>;
+</script>
+
+
 </body>
 </html>

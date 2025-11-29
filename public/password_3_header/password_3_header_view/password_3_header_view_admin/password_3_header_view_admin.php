@@ -1,10 +1,4 @@
 <?php
-// ==========================================
-//  관리자 공통 헤더
-//  - 상단 타이틀/유저 정보/로그아웃
-//  - 모바일용 사이드바 토글 JS 포함
-// ==========================================
-
 // 세션이 필요할 수 있으니 안전하게 시작
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -15,10 +9,24 @@ $sessionUsername = isset($_SESSION['username'])
     ? (string)$_SESSION['username']
     : '알 수 없음';
 
-// (선택) 리스트 소스 표시용 변수 안전 처리
+// (선택) 리스트 소스 / 검색어 표시용 변수 안전 처리
 $searchKeywordSafe = isset($searchKeyword) ? $searchKeyword : '';
 $listSourceSafe    = isset($listSource) ? $listSource : '';
+
+// ✅ 화면에 보여줄 List Source 라벨 (db → DBQuery 로 변경)
+$listSourceLabel = '';
+if (!empty($listSourceSafe)) {
+    $sourceMap = [
+        'db'    => 'DBQuery',      // DB 조회인 경우
+        'redis' => 'Redis cache',  // Redis 캐시인 경우
+    ];
+
+    $listSourceLabel = isset($sourceMap[$listSourceSafe])
+        ? $sourceMap[$listSourceSafe]
+        : $listSourceSafe; // 매핑이 없으면 원래 값 그대로
+}
 ?>
+
 <header class="header">
     <div class="header-left">
         <!-- ✅ 모바일용 사이드바 토글 버튼 (햄버거 버튼) -->
@@ -29,7 +37,19 @@ $listSourceSafe    = isset($listSource) ? $listSource : '';
             &#9776;
         </button>
 
-        <h1 class="header-title">Password 관리 시스템</h1>
+        <div class="header-title-wrap">
+            <h1 style="display:flex;" class="header-title">
+                Password 관리 시스템
+
+                <?php if (!empty($listSourceLabel)): ?>
+                    <!-- ✅ 리스트 소스를 제목 옆에 표시 (db → DBQuery로 매핑된 값) -->
+                    <div style="display:flex; font-size:18px; padding:0 8px;" class="list-source-label">
+                        List Source:
+                        <?php echo htmlspecialchars($listSourceLabel, ENT_QUOTES, 'UTF-8'); ?>
+                    </div>
+                <?php endif; ?>
+            </h1>
+        </div>
     </div>
 
     <div class="header-right">
@@ -52,14 +72,12 @@ $listSourceSafe    = isset($listSource) ? $listSource : '';
     </div>
 </header>
 
+<!-- 전역 오버레이 -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
 
 <script>
     // ==========================================
-    // 사이드바 열고 닫기 + 오버레이 제어
-    //  - #sidebar : <aside id="sidebar" ...>
-    //  - #sidebarOverlay : <div id="sidebarOverlay" ...>
+    // 사이드바 토글 + 오버레이 제어
     // ==========================================
     function toggleSidebar() {
         var sidebar = document.getElementById('sidebar');
@@ -77,15 +95,15 @@ $listSourceSafe    = isset($listSource) ? $listSource : '';
         }
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         var sidebar = document.getElementById('sidebar');
         var overlay = document.getElementById('sidebarOverlay');
 
-        // ✅ 모바일에서 메뉴 항목 클릭 시 자동 닫기
+        // ✅ 모바일에서 메뉴 클릭 시 자동 닫기
         if (sidebar) {
             var menuItems = sidebar.querySelectorAll('li');
-            menuItems.forEach(function (item) {
-                item.addEventListener('click', function () {
+            menuItems.forEach(function(item) {
+                item.addEventListener('click', function() {
                     if (window.innerWidth <= 900) {
                         sidebar.classList.remove('open');
                         if (overlay) overlay.classList.remove('open');
@@ -96,7 +114,7 @@ $listSourceSafe    = isset($listSource) ? $listSource : '';
 
         // ✅ 오버레이 클릭 시 사이드바 닫기
         if (overlay) {
-            overlay.addEventListener('click', function () {
+            overlay.addEventListener('click', function() {
                 if (!sidebar) return;
                 sidebar.classList.remove('open');
                 overlay.classList.remove('open');

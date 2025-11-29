@@ -23,12 +23,13 @@
                 비밀번호 공유하기
             </li>
 
-            <!-- 비밀번호 공유현황 (나중에 목록 페이지 만들면 경로만 채워주면 됨) -->
+            <!-- 비밀번호 공유현황 -->
             <li
                 class="active"
-                onclick="window.location.href='#';">
+                onclick="window.location.href='/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.php';">
                 비밀번호 공유현황
             </li>
+
         </ul>
     </nav>
 </aside>

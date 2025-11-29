@@ -724,22 +724,7 @@ $isEdit = !empty($editRow);
                 <!-- 우측 리스트 -->
                 <aside class="list-panel">
                     <h2 style="display: flex;">등록된 비밀번호 목록
-                        <div style="margin-left:auto; vertical-align: top; padding:0px 16px; font-size:18px; color:#555;">
-                            List Source:
-                            <strong>
-                                <?php
-                                if ($searchKeyword !== '') {
-                                    echo 'Database search';
-                                } elseif ($listSource === 'redis') {
-                                    echo 'Redis cache';
-                                } elseif ($listSource === 'db') {
-                                    echo 'Database query';
-                                } else {
-                                    echo 'Unknown';
-                                }
-                                ?>
-                            </strong>
-                        </div>
+                       
                     </h2>
                     <span style="font-size: 14px; color: red;">(사이트의 비밀번호를 보려면 보기버튼을 눌러주세요.)
                         <!-- (디버깅용) 리스트 데이터 출처 표시 -->
