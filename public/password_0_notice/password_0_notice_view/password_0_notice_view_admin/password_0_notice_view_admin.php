@@ -57,7 +57,7 @@ $targetUrl = isset($_SESSION['after_notice_url'])
         }
 
         .user-info {
-            font-size: 14px;
+            font-size: 12px;
         }
 
         .logout-button {
