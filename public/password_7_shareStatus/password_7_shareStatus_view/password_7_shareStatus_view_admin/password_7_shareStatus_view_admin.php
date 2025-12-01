@@ -281,7 +281,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                         <!-- ✅ 삭제 버튼 -->
                         <div class="table-actions">
                             <button type="submit" class="btn-danger">
-                                선택 삭제
+                                공유 끊기
                             </button>
                         </div>
 
@@ -368,7 +368,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                         <!-- ✅ 삭제 버튼 -->
                         <div class="table-actions">
                             <button type="submit" class="btn-danger">
-                                선택 삭제
+                                공유 끊기
                             </button>
                         </div>
 
@@ -456,7 +456,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                         <!-- ✅ 삭제 버튼 
                         <div class="table-actions">
                             <button type="submit" class="btn-danger">
-                                선택 삭제
+                                공유 끊기
                             </button>
                         </div> -->
 
