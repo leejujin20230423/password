@@ -225,7 +225,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- ✅ 공유현황 전용 레이아웃 CSS (공유하기와 동일 + 삭제 버튼 스타일) -->
     <link rel="stylesheet"
-        href="/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.css?v=20251129_01">
+        href="/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.css?v=20251129_02">
 
 </head>
 
