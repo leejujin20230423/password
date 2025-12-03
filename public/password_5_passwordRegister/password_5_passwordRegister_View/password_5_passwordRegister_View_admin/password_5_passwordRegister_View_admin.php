@@ -735,8 +735,8 @@ $isEdit = !empty($editRow);
                                     name="contact_phone"
                                     style="flex:1;"
                                     placeholder="예: 010-1234-5678"
-                                    value="<?php echo htmlspecialchars($editRow['contact_phone'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
-
+                                    value="<?php echo htmlspecialchars($editRow['contact_phone'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                    required>
                                 <?php if ($isEdit && !empty($editRow['contact_phone'])): ?>
                                     <?php
                                     $telCleanForm = preg_replace('/\D+/', '', $editRow['contact_phone']);

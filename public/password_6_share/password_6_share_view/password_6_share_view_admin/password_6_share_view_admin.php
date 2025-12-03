@@ -272,7 +272,10 @@ $columnLabels = [
                                style="flex:1;">
                         <button type="button" onclick="searchUserByPhone();">검색</button>
                     </div>
-                    <small style="color:#666;">회원으로 등록된 사용자만 검색됩니다.</small>
+                    <!-- ✅ 안내 문구 수정 -->
+                    <small style="color:#666; display:block; margin-top:4px;">
+                        회원으로 등록된 사용자만 검색됩니다. 상대방이 등록하지 않았다면 초대하세요.
+                    </small>
                 </div>
 
                 <!-- 2) 검색 결과 표시 영역 -->
@@ -303,7 +306,7 @@ $columnLabels = [
 </div><!-- /.layout -->
 
 <!-- ✅ 비밀번호 공유 화면용 JS -->
-<script src="/password_6_share/password_6_share_view/password_6_share_view_admin/password_6_share_view_admin.js"></script>
+<script src="/password_6_share/password_6_share_view/password_6_share_view_admin/password_6_share_view_admin.js?v=<?php echo htmlspecialchars($assetVersion, ENT_QUOTES, 'UTF-8'); ?>"></script>
 
 <script>
     // 초대 메시지에 쓸 발신자 이름
@@ -311,7 +314,6 @@ $columnLabels = [
     // 로그인한 사용자 번호 (본인 체크용)
     window.PASS_USER_NO = <?php echo (int)$currentUserNo; ?>;
 </script>
-
 
 </body>
 </html>
