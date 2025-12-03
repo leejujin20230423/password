@@ -402,26 +402,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->beginTransaction();
 
             try {
-                // 1. password 테이블에서 비밀번호 삭제
-                $deletePasswordQuery = "DELETE FROM password WHERE password_idno = :password_idno";
+                // 1. password_share 테이블에서 공유 기록 삭제
+                //    - 공유가 없을 수도 있으므로 rowCount() 체크로 에러 처리하지 않음
+                $deleteShareQuery = "
+                DELETE FROM password_share
+                WHERE password_idno_Fk = :password_idno_Fk
+            ";
+                $stmt2 = $pdo->prepare($deleteShareQuery);
+                $stmt2->bindValue(':password_idno_Fk', $id, PDO::PARAM_INT);
+                $stmt2->execute();
+                // ❌ 여기서는 rowCount() 체크 안 함
+                // $deletedShare = $stmt2->rowCount();
+
+                // 2. password 테이블에서 비밀번호 삭제
+                $deletePasswordQuery = "
+                DELETE FROM password
+                WHERE password_idno = :password_idno
+            ";
                 $stmt1 = $pdo->prepare($deletePasswordQuery);
                 $stmt1->bindValue(':password_idno', $id, PDO::PARAM_INT);
                 $stmt1->execute();
 
-                // 삭제된 비밀번호가 있는지 확인
+                // 삭제된 비밀번호가 있는지 확인 (여기는 반드시 체크)
                 if ($stmt1->rowCount() === 0) {
-                    throw new Exception("비밀번호 삭제 실패: 해당 비밀번호가 존재하지 않거나 이미 삭제되었습니다.");
-                }
-
-                // 2. password_share 테이블에서 해당 비밀번호와 연결된 공유 기록 삭제
-                $deleteShareQuery = "DELETE FROM password_share WHERE password_idno_Fk = :password_idno_Fk";
-                $stmt2 = $pdo->prepare($deleteShareQuery);
-                $stmt2->bindValue(':password_idno_Fk', $id, PDO::PARAM_INT);
-                $stmt2->execute();
-
-                // 삭제된 공유 기록이 있는지 확인
-                if ($stmt2->rowCount() === 0) {
-                    throw new Exception("공유 기록 삭제 실패: 해당 비밀번호와 연결된 공유 기록이 없습니다.");
+                    throw new Exception(
+                        "비밀번호 삭제 실패: 해당 비밀번호가 존재하지 않거나 이미 삭제되었습니다."
+                    );
                 }
 
                 // 트랜잭션 커밋
@@ -442,6 +448,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "삭제할 비밀번호가 없습니다.";
         exit;
     }
+
 
     /**
      * -------------------------------
