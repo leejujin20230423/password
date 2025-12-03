@@ -204,19 +204,32 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
     <title>Password 공유현황 (관리자)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <?php
+    // 세션이 아직 시작 안 되었다면 시작
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    // 로그인 시 세팅해 둔 asset_version 사용 (없으면 기본값)
+    $assetVersion = isset($_SESSION['asset_version'])
+        ? $_SESSION['asset_version']
+        : '20251204_01'; // 기본 버전(로그인 전 또는 첫 접속용)
+    ?>
+
     <!-- ✅ 헤더 전용 CSS -->
     <link rel="stylesheet"
-          href="/password_3_header/password_3_header_view/password_3_header_view_admin/password_3_header_view_admin.css">
+          href="/password_3_header/password_3_header_view/password_3_header_view_admin/password_3_header_view_admin.css?v=<?php echo htmlspecialchars($assetVersion, ENT_QUOTES, 'UTF-8'); ?>">
 
     <!-- ✅ 사이드바 전용 CSS -->
     <link rel="stylesheet"
-          href="/password_4_sidebar/password_4_sidebar_view/password_4_sidebar_view_admin/password_4_sidebar_view_admin.css">
+          href="/password_4_sidebar/password_4_sidebar_view/password_4_sidebar_view_admin/password_4_sidebar_view_admin.css?v=<?php echo htmlspecialchars($assetVersion, ENT_QUOTES, 'UTF-8'); ?>">
 
     <!-- ✅ 공유현황 전용 레이아웃 CSS -->
     <link rel="stylesheet"
-          href="/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.css?v=20251129_04">
+          href="/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.css?v=<?php echo htmlspecialchars($assetVersion, ENT_QUOTES, 'UTF-8'); ?>">
 
 </head>
+
 
 <body>
 <div class="layout">
