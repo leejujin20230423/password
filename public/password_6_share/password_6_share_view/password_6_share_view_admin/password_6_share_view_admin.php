@@ -111,7 +111,7 @@ $columnLabels = [
     // 로그인 시 세팅해 둔 asset_version 사용, 없으면 기본값
     $assetVersion = isset($_SESSION['asset_version'])
         ? $_SESSION['asset_version']
-        : '20251204_01'; // 첫 접속/비로그인용 기본 버전
+        : '20251206_01'; // 첫 접속/비로그인용 기본 버전
     ?>
 
     <!-- ✅ 헤더 전용 CSS -->
