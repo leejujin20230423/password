@@ -634,7 +634,7 @@ $isEdit = !empty($editRow);
                         </div>
 
                         <div class="form-group">
-                            <label for="site_url">사이트 주소</label>
+                            <label for="site_url">사이트 주소 또는 프로그램명을 입력</label>
                             <div style="display:flex; gap:8px; align-items:center;">
                                 <input type="text"
                                     id="site_url"
@@ -808,7 +808,7 @@ $isEdit = !empty($editRow);
                                     <th>순번</th>
                                     <th>구분</th>
                                     <th>항목</th>
-                                    <th>사이트 주소</th>
+                                    <th>사이트 주소/프로그램명 </th>
                                     <th>아이디</th>
                                     <th>연락처</th>
                                     <th>메모</th>
