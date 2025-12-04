@@ -358,35 +358,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- 이메일 -->
         <div class="form-group">
-            <label for="email">이메일</label>
+            <label for="email">이메일 <span style="color:#dc2626;">*</span></label>
             <input type="email"
                    id="email"
                    name="email"
+                   required
                    value="<?php echo htmlspecialchars($input_email, ENT_QUOTES, 'UTF-8'); ?>">
         </div>
 
         <!-- 전화번호 -->
         <div class="form-group">
-            <label for="phone">전화번호</label>
+            <label for="phone">전화번호 <span style="color:#dc2626;">*</span></label>
             <input type="text"
                    id="phone"
                    name="phone"
+                   required
                    value="<?php echo htmlspecialchars($input_phone, ENT_QUOTES, 'UTF-8'); ?>">
         </div>
 
         <!-- 생년월일 -->
         <div class="form-group">
-            <label for="birthdate">생년월일</label>
+            <label for="birthdate">생년월일 <span style="color:#dc2626;">*</span></label>
             <input type="date"
                    id="birthdate"
                    name="birthdate"
+                   required
                    value="<?php echo htmlspecialchars($input_birth, ENT_QUOTES, 'UTF-8'); ?>">
         </div>
 
         <!-- 성별 -->
         <div class="form-group">
-            <label for="gender">성별</label>
-            <select id="gender" name="gender">
+            <label for="gender">성별 <span style="color:#dc2626;">*</span></label>
+            <select id="gender" name="gender" required>
                 <option value="" <?php echo $input_gender === '' ? 'selected' : ''; ?>>선택 안 함</option>
                 <option value="M" <?php echo $input_gender === 'M' ? 'selected' : ''; ?>>남자</option>
                 <option value="F" <?php echo $input_gender === 'F' ? 'selected' : ''; ?>>여자</option>
