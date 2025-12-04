@@ -362,7 +362,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="email"
                    id="email"
                    name="email"
-                   value="<?php echo htmlspecialchars($input_email, ENT_QUOTES, 'UTF-8'); ?>">
+                   value="<?php echo htmlspecialchars($input_email, ENT_QUOTES, 'UTF-8'); ?>"
+                   required>
         </div>
 
         <!-- 전화번호 -->
@@ -371,7 +372,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="text"
                    id="phone"
                    name="phone"
-                   value="<?php echo htmlspecialchars($input_phone, ENT_QUOTES, 'UTF-8'); ?>">
+                   value="<?php echo htmlspecialchars($input_phone, ENT_QUOTES, 'UTF-8'); ?>"
+                   required>
         </div>
 
         <!-- 생년월일 -->
