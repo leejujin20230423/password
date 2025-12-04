@@ -612,13 +612,17 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                                     $siteUrl = (string)($row['site_url'] ?? '');
                                     $loginId = (string)($row['login_id'] ?? '');
                                     ?>
-                                    <tr>
+                                    <!-- <tr> -->
                                         <!-- 체크박스 -->
-                                        <td style="text-align:center;">
-                                            <input type="checkbox"
-                                                   name="password_ids[]"
-                                                   value="<?php echo (int)$row['password_idno']; ?>">
-                                        </td>
+                                        <!-- <td style="text-align:center;"> -->
+                                            <!-- <input type="checkbox" -->
+                                                   <!-- name="password_ids[]" -->
+                                                   <!-- value=" -->
+                                                   <?php
+                                                    // echo (int)$row['password_idno']; 
+                                                    ?>
+                                                   <!-- "> -->
+                                        <!-- </td> -->
 
                                         <!-- No -->
                                         <td style="text-align:center;"><?php echo $idx3++; ?></td>
