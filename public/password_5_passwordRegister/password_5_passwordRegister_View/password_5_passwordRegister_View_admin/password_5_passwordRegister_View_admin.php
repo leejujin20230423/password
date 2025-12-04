@@ -807,7 +807,7 @@ $isEdit = !empty($editRow);
                                 <tr>
                                     <th>순번</th>
                                     <th>구분</th>
-                                    <th>매장명</th>
+                                    <th>항목</th>
                                     <th>사이트 주소</th>
                                     <th>아이디</th>
                                     <th>연락처</th>
