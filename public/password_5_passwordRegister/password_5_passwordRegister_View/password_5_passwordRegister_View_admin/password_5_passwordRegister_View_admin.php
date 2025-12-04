@@ -627,7 +627,7 @@ $isEdit = !empty($editRow);
                                 id="storename"
                                 name="storename"
                                 value="<?php echo htmlspecialchars($editRow['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                                placeholder="예: BHC 경안점 또는 매장용이 아닐때는 구분과 동일입력."
+                                placeholder="예: 넷플릭스 / 더존 / 쿠팡 / 카카오톡 / 등"
                                 required
                                 onfocus="this.select();"
                                 onclick="this.select();">
