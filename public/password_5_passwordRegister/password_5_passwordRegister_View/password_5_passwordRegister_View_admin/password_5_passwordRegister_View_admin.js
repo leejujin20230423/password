@@ -269,51 +269,57 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
+// ==========================================
+// 4) 구분(category) 선택에 따른 매장명(storename) 자동 처리
+//    - password_5_passwordRegister_View_admin.php 전용
+// ==========================================
+// ※ 현재 이 기능은 사용하지 않음 (2024-06 기준)
+// ========================================== 
 
-document.addEventListener('DOMContentLoaded', function () {
-    const categoryInput = document.getElementById('category');   // 구분
-    const storeInput    = document.getElementById('storename'); // 매장명
-    const storeLabel    = document.querySelector('label[for="storename"]'); // 매장명 라벨
+// document.addEventListener('DOMContentLoaded', function () {
+//     const categoryInput = document.getElementById('category');   // 구분
+//     const storeInput    = document.getElementById('storename'); // 매장명
+//     const storeLabel    = document.querySelector('label[for="storename"]'); // 매장명 라벨
 
-    if (!categoryInput || !storeInput || !storeLabel) {
-        console.warn('category / storename / label 요소를 못 찾았음');
-        return;
-    }
+//     if (!categoryInput || !storeInput || !storeLabel) {
+//         console.warn('category / storename / label 요소를 못 찾았음');
+//         return;
+//     }
 
-    const originalLabel = storeLabel.textContent.trim(); // 보통 "매장명"
+//     const originalLabel = storeLabel.textContent.trim(); // 보통 "매장명"
 
-    function syncCategoryAndStore() {
-        const value = categoryInput.value.trim();
+//     function syncCategoryAndStore() {
+//         const value = categoryInput.value.trim();
 
-        // 1) 구분이 비어 있으면: 원래 상태로
-        if (!value) {
-            storeInput.value    = '';
-            storeInput.disabled = false;
-            storeInput.readOnly = false;
-            storeLabel.textContent = originalLabel;   // "매장명"
-            return;
-        }
+//         // 1) 구분이 비어 있으면: 원래 상태로
+//         if (!value) {
+//             storeInput.value    = '';
+//             storeInput.disabled = false;
+//             storeInput.readOnly = false;
+//             storeLabel.textContent = originalLabel;   // "매장명"
+//             return;
+//         }
 
-        // 2) 구분이 "매장관리" 인 경우 → 매장명 직접 입력
-        if (value === '매장관리') {
-            storeInput.disabled = false;
-            storeInput.readOnly = false;
-            // 사용자가 직접 매장명 입력해야 하니까 값은 건들지 않음
-            storeLabel.textContent = originalLabel;   // "매장명"
-        } 
-        // 3) 그 외의 경우 → 구분 값을 그대로 매장명에 넣고 잠궈버림 + 라벨은 "카테고리"
-        else {
-            storeInput.value    = value;
-            storeInput.disabled = true;
-            storeInput.readOnly = true;
-            storeLabel.textContent = '카테고리';
-        }
-    }
+//         // 2) 구분이 "매장관리" 인 경우 → 매장명 직접 입력
+//         if (value === '매장관리') {
+//             storeInput.disabled = false;
+//             storeInput.readOnly = false;
+//             // 사용자가 직접 매장명 입력해야 하니까 값은 건들지 않음
+//             storeLabel.textContent = originalLabel;   // "매장명"
+//         } 
+//         // 3) 그 외의 경우 → 구분 값을 그대로 매장명에 넣고 잠궈버림 + 라벨은 "카테고리"
+//         else {
+//             storeInput.value    = value;
+//             storeInput.disabled = true;
+//             storeInput.readOnly = true;
+//             storeLabel.textContent = '카테고리';
+//         }
+//     }
 
-    // 🔥 구분 값이 변경되는 순간마다 라벨 + storename 동시에 반응
-    categoryInput.addEventListener('input', syncCategoryAndStore);
-    categoryInput.addEventListener('change', syncCategoryAndStore);
+//     // 🔥 구분 값이 변경되는 순간마다 라벨 + storename 동시에 반응
+//     categoryInput.addEventListener('input', syncCategoryAndStore);
+//     categoryInput.addEventListener('change', syncCategoryAndStore);
 
-    // 페이지 처음 로드할 때 한 번 상태 맞춰주기
-    syncCategoryAndStore();
-});
+//     // 페이지 처음 로드할 때 한 번 상태 맞춰주기
+//     syncCategoryAndStore();
+// });
