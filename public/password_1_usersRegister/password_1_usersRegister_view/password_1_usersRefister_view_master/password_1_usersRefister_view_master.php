@@ -1,4 +1,5 @@
 <?php
+
 /**
  * password_1_usersRegister_view_user.php
  *
@@ -153,9 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $input_phone    = '';
                 $input_birth    = '';
                 $input_gender   = '';
-
             }
-
         } catch (PDOException $e) {
             // DB 에러 발생 시 사용자에게는 일반 메시지, 로그에는 상세 내용
             $errorMessage = '회원가입 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
@@ -171,6 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <title>회원가입 - PASS 시스템</title>
@@ -194,7 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             width: 100%;
             max-width: 420px;
             padding: 24px 28px 28px 28px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
             border-radius: 12px;
         }
 
@@ -297,116 +297,118 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </style>
 </head>
+
 <body>
 
-<div class="register-container">
-    <h1 class="register-title">회원가입</h1>
-    <p class="register-subtitle">PASS 시스템에 가입하세요.</p>
+    <div class="register-container">
+        <h1 class="register-title">회원가입</h1>
+        <p class="register-subtitle">PASS 시스템에 가입하세요.</p>
 
-    <?php if ($errorMessage !== ''): ?>
-        <div class="message error">
-            <?php echo htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8'); ?>
-        </div>
-    <?php endif; ?>
+        <?php if ($errorMessage !== ''): ?>
+            <div class="message error">
+                <?php echo htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8'); ?>
+            </div>
+        <?php endif; ?>
 
-    <?php if ($successMessage !== ''): ?>
-        <div class="message success">
-            <?php echo htmlspecialchars($successMessage, ENT_QUOTES, 'UTF-8'); ?>
-        </div>
+        <?php if ($successMessage !== ''): ?>
+            <div class="message success">
+                <?php echo htmlspecialchars($successMessage, ENT_QUOTES, 'UTF-8'); ?>
+            </div>
 
-        <!-- 가입 완료 후 로그인 화면으로 이동하는 버튼 -->
-        <button type="button"
+            <!-- 가입 완료 후 로그인 화면으로 이동하는 버튼 -->
+            <button type="button"
                 class="btn btn-login-link"
                 onclick="window.location.href='/password_0_login/password_0_login_View/password_0_login_View.php';">
-            로그인 화면으로 이동
-        </button>
-    <?php endif; ?>
+                로그인 화면으로 이동
+            </button>
+        <?php endif; ?>
 
-    <!-- 성공했어도 폼을 계속 보여주고 싶지 않으면
+        <!-- 성공했어도 폼을 계속 보여주고 싶지 않으면
          위 if ($successMessage !== '') 블록 아래에서 return; 해도 됨 -->
 
-    <form method="post" action="">
-        <!-- 아이디 -->
-        <div class="form-group">
-            <label for="userid">아이디 <span style="color:#dc2626;">*</span></label>
-            <input type="text"
-                   id="userid"
-                   name="userid"
-                   required
-                   value="<?php echo htmlspecialchars($input_userid, ENT_QUOTES, 'UTF-8'); ?>">
-        </div>
+        <form method="post" action="">
+            <!-- 아이디 -->
+            <div class="form-group">
+                <label for="userid">아이디 <span style="color:#dc2626;">*</span></label>
+                <input type="text"
+                    id="userid"
+                    name="userid"
+                    required
+                    value="<?php echo htmlspecialchars($input_userid, ENT_QUOTES, 'UTF-8'); ?>">
+            </div>
 
-        <!-- 이름 -->
-        <div class="form-group">
-            <label for="username">이름 <span style="color:#dc2626;">*</span></label>
-            <input type="text"
-                   id="username"
-                   name="username"
-                   required
-                   value="<?php echo htmlspecialchars($input_username, ENT_QUOTES, 'UTF-8'); ?>">
-        </div>
+            <!-- 이름 -->
+            <div class="form-group">
+                <label for="username">이름 <span style="color:#dc2626;">*</span></label>
+                <input type="text"
+                    id="username"
+                    name="username"
+                    required
+                    value="<?php echo htmlspecialchars($input_username, ENT_QUOTES, 'UTF-8'); ?>">
+            </div>
 
-        <!-- 비밀번호 -->
-        <div class="form-group">
-            <label for="password">비밀번호 <span style="color:#dc2626;">*</span></label>
-            <input type="password"
-                   id="password"
-                   name="password"
-                   required>
-            <div class="helper-text">영문/숫자/특수문자 조합을 권장합니다.</div>
-        </div>
+            <!-- 비밀번호 -->
+            <div class="form-group">
+                <label for="password">비밀번호 <span style="color:#dc2626;">*</span></label>
+                <input type="password"
+                    id="password"
+                    name="password"
+                    required>
+                <div class="helper-text">영문/숫자/특수문자 조합을 권장합니다.</div>
+            </div>
 
-        <!-- 이메일 -->
-        <div class="form-group">
-            <label for="email">이메일<span style="color:#dc2626;">*</span></label>
-            <input type="email"
-                   id="email"
-                   name="email"
-                   value="<?php echo htmlspecialchars($input_email, ENT_QUOTES, 'UTF-8'); ?>"
-                   required>
-        </div>
+            <!-- 이메일 -->
+            <div class="form-group">
+                <label for="email">이메일 <span style="color:#dc2626;">*</span></label>
+                <input type="email"
+                    id="email"
+                    name="email"
+                    value="<?php echo htmlspecialchars($input_email, ENT_QUOTES, 'UTF-8'); ?>"
+                    required>
+            </div>
 
-        <!-- 전화번호 -->
-        <div class="form-group">
-            <label for="phone">전화번호<span style="color:#dc2626;">*</span></label>
-            <input type="text"
-                   id="phone"
-                   name="phone"
-                   value="<?php echo htmlspecialchars($input_phone, ENT_QUOTES, 'UTF-8'); ?>"
-                   required>
-        </div>
+            <!-- 전화번호 -->
+            <div class="form-group">
+                <label for="phone">전화번호 <span style="color:#dc2626;">*</span></label>
+                <input type="text"
+                    id="phone"
+                    name="phone"
+                    value="<?php echo htmlspecialchars($input_phone, ENT_QUOTES, 'UTF-8'); ?>"
+                    required>
+            </div>
 
-        <!-- 생년월일 -->
-        <div class="form-group">
-            <label for="birthdate">생년월일<span style="color:#dc2626;">*</span></label>
-            <input type="date"
-                   id="birthdate"
-                   name="birthdate"
-                   value="<?php echo htmlspecialchars($input_birth, ENT_QUOTES, 'UTF-8'); ?>"
-                   required>
-        </div>
+            <!-- 생년월일 -->
+            <div class="form-group">
+                <label for="birthdate">생년월일 <span style="color:#dc2626;">*</span></label>
+                <input type="date"
+                    id="birthdate"
+                    name="birthdate"
+                    value="<?php echo htmlspecialchars($input_birth, ENT_QUOTES, 'UTF-8'); ?>"
+                    required>
+            </div>
 
-        <!-- 성별 -->
-        <div class="form-group">
-            <label for="gender">성별<span style="color:#dc2626;">*</span></label>
-            <select id="gender" name="gender" required>
-                <option value="" <?php echo $input_gender === '' ? 'selected' : ''; ?>>선택 안 함</option>
-                <option value="M" <?php echo $input_gender === 'M' ? 'selected' : ''; ?>>남자</option>
-                <option value="F" <?php echo $input_gender === 'F' ? 'selected' : ''; ?>>여자</option>
-            </select>
-        </div>
+            <!-- 성별 -->
+            <div class="form-group">
+                <label for="gender">성별 <span style="color:#dc2626;">*</span></label>
+                <select id="gender" name="gender" required>
+                    <option value="" <?php echo $input_gender === '' ? 'selected' : ''; ?>>선택 안 함</option>
+                    <option value="M" <?php echo $input_gender === 'M' ? 'selected' : ''; ?>>남자</option>
+                    <option value="F" <?php echo $input_gender === 'F' ? 'selected' : ''; ?>>여자</option>
+                </select>
+            </div>
 
-        <!-- 버튼 영역 -->
-        <div class="button-row">
-            <button type="submit" class="btn btn-primary">회원가입</button>
-            <button type="button"
+            <!-- 버튼 영역 -->
+            <div class="button-row">
+                <button type="submit" class="btn btn-primary">회원가입</button>
+                <button type="button"
                     class="btn btn-secondary"
                     onclick="window.location.href='/password_0_login/password_0_login_View/password_0_login_View.php';">
-                로그인으로 돌아가기
-            </button>
-        </div>
-    </form>
-</div>
+                    로그인으로 돌아가기
+                </button>
+            </div>
+        </form>
+    </div>
 
 </body>
+
 </html>
