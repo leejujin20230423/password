@@ -1,23 +1,84 @@
 <?php
-// password_0_notice_view_admin.php
+// 프로젝트 루트 기준 경로 계산 (PHP 7.0 이상)
+$projectRoot = dirname(__DIR__, 4); // /pass
+require_once $projectRoot . '/connection/loader.php';
+
+$db = (new DBConnection())->getDB();
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// 로그인 체크
-if (!isset($_SESSION['is_logged_in']) || $_SESSION['is_logged_in'] !== true) {
+/**
+ * 로그인 사용자 이름 세션에서 꺼내기
+ * - 세션에 없으면 빈 문자열로 처리
+ */
+$sessionUsername = isset($_SESSION['username'])
+    ? (string)$_SESSION['username']
+    : '';
+
+// 로그인 안 되어 있으면 로그인 페이지로
+if (empty($_SESSION['user_no'])) {
     header('Location: /password_0_login/password_0_login_View/password_0_login_View.php');
     exit;
 }
 
-$sessionUsername = isset($_SESSION['username']) ? $_SESSION['username'] : '알 수 없음';
+$userNo = (int)$_SESSION['user_no'];
 
-// ✅ 공지 이후 이동 페이지를 "공유현황(관리자)" 으로 고정
-$targetUrl = '/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.php';
+/**
+ * ✅ 안내 이후 이동할 페이지: "비밀번호 공유현황 (관리자)"
+ *    - 등록 페이지가 아니라, 공유현황 페이지로 고정
+ */
+$afterNoticeUrl = '/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.php';
 
-// 혹시 전에 저장된 after_notice_url 이 있어도 항상 공유현황으로 덮어쓰기
-$_SESSION['after_notice_url'] = $targetUrl;
+// 필요하면 세션에도 저장해둘 수 있음 (선택)
+$_SESSION['after_notice_url'] = $afterNoticeUrl;
+
+// ================================
+// 1) 현재 notice_view_count 조회
+// ================================
+try {
+    $sqlSelect = "
+        SELECT notice_view_count
+        FROM users
+        WHERE user_no = :user_no
+        LIMIT 1
+    ";
+    $stmt = $db->prepare($sqlSelect);
+    $stmt->bindValue(':user_no', $userNo, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $noticeViewCount = $row ? (int)$row['notice_view_count'] : 0;
+
+    // ================================
+    // 2) 이미 5번 이상 본 사람은
+    //    → 안내 페이지 스킵하고 바로 공유현황 페이지로 보내기
+    // ================================
+    if ($noticeViewCount >= 5) {
+        header('Location: ' . $afterNoticeUrl);
+        exit;
+    }
+
+    // ================================
+    // 3) 아직 5번 미만이면 +1 해 주고
+    //    → 아래 HTML로 안내 페이지 보여줌
+    // ================================
+    $sqlUpdate = "
+        UPDATE users
+        SET notice_view_count = notice_view_count + 1
+        WHERE user_no = :user_no
+        LIMIT 1
+    ";
+    $stmtUp = $db->prepare($sqlUpdate);
+    $stmtUp->bindValue(':user_no', $userNo, PDO::PARAM_INT);
+    $stmtUp->execute();
+
+} catch (PDOException $e) {
+    // 에러가 나면 일단 안내는 보여주되, 카운터는 안 올릴 수 있음
+    // error_log('[NOTICE_ERROR] ' . $e->getMessage());
+    // 굳이 막지 말고 그냥 안내 페이지 보여주도록 놔둬도 됨
+}
 ?>
 <!DOCTYPE html>
 <html lang="ko">
@@ -266,8 +327,8 @@ $_SESSION['after_notice_url'] = $targetUrl;
             <div class="button-area">
                 <button type="button"
                     class="btn-primary"
-                    onclick="window.location.href='<?php echo htmlspecialchars($targetUrl, ENT_QUOTES, 'UTF-8'); ?>';">
-                    사용 방법 확인했습니다. 비밀번호 등록하러 가기
+                    onclick="window.location.href='<?php echo htmlspecialchars($afterNoticeUrl, ENT_QUOTES, 'UTF-8'); ?>';">
+                    사용 방법 확인했습니다. 비밀번호 공유현황 보러 가기
                 </button>
             </div>
         </section>
