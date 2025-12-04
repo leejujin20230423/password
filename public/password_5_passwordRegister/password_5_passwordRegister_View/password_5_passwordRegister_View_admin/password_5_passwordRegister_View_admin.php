@@ -621,7 +621,7 @@ $isEdit = !empty($editRow);
 
 
                         <div class="form-group">
-                            <label for="storename" id="storenameLabel">매장명</label>
+                            <label for="storename" id="storenameLabel">항목</label>
                             <input
                                 type="text"
                                 id="storename"
