@@ -271,7 +271,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                         <input
                             type="text"
                             id="byMeSearch"
-                            placeholder="공유 대상, 사이트, 매장명, 메모로 검색"
+                            placeholder="공유 대상, 사이트, 항목, 메모로 검색"
                             style="flex:1; padding:6px 8px; border:1px solid #ccc; border-radius:4px; font-size:13px;">
                         <button type="button"
                                 id="byMeSearchBtn"
@@ -299,7 +299,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                                 <th>공유 대상</th>
                                 <th>연락처</th>
                                 <th>구분</th>
-                                <th>매장명</th>
+                                <th>항목</th>
                                 <th>사이트 주소</th>
                                 <th>아이디</th>
                                 <th>비밀번호</th>
@@ -335,7 +335,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                                         <td><?php echo htmlspecialchars($row['target_username'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                                         <td><?php echo htmlspecialchars($row['target_phone'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
 
-                                        <!-- 구분 / 매장명 -->
+                                        <!-- 구분 / 항목 -->
                                         <td><?php echo htmlspecialchars($row['category'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                                         <td><?php echo htmlspecialchars($row['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
 
@@ -422,7 +422,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                         <input
                             type="text"
                             id="toMeSearch"
-                            placeholder="공유해 준 사람, 사이트, 매장명, 메모로 검색"
+                            placeholder="공유해 준 사람, 사이트, 항목, 메모로 검색"
                             style="flex:1; padding:6px 8px; border:1px solid #ccc; border-radius:4px; font-size:13px;">
                         <button type="button"
                                 id="toMeSearchBtn"
@@ -450,7 +450,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                                 <th>공유해 준 사람</th>
                                 <th>연락처</th>
                                 <th>구분</th>
-                                <th>매장명</th>
+                                <th>항목</th>
                                 <th>사이트 주소</th>
                                 <th>아이디</th>
                                 <th>비밀번호</th>
@@ -486,7 +486,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                                         <td><?php echo htmlspecialchars($row['owner_username'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                                         <td><?php echo htmlspecialchars($row['owner_phone'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
 
-                                        <!-- 구분 / 매장명 -->
+                                        <!-- 구분 / 항목 -->
                                         <td><?php echo htmlspecialchars($row['category'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                                         <td><?php echo htmlspecialchars($row['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
 
@@ -573,7 +573,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                         <input
                             type="text"
                             id="unsharedSearch"
-                            placeholder="구분, 매장명, 사이트 주소로 검색"
+                            placeholder="구분, 항목, 사이트 주소로 검색"
                             style="flex:1; padding:6px 8px; border:1px solid #ccc; border-radius:4px; font-size:13px;">
                         <button type="button"
                                 id="unsharedSearchBtn"
@@ -592,7 +592,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                                 </th> -->
                                 <th style="width:50px; text-align:center;">No</th>
                                 <th>구분</th>
-                                <th>매장명</th>
+                                <th>항목</th>
                                 <th>사이트 주소</th>
                                 <th>아이디</th>
                                 <th>비밀번호</th>
@@ -627,7 +627,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                                         <!-- No -->
                                         <td style="text-align:center;"><?php echo $idx3++; ?></td>
 
-                                        <!-- 구분 / 매장명 -->
+                                        <!-- 구분 / 항목 -->
                                         <td><?php echo htmlspecialchars($row['category'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                                         <td><?php echo htmlspecialchars($row['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
 
