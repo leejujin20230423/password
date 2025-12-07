@@ -1,190 +1,239 @@
-// /**
-//  * ==========================================================
-//  * Password 공유현황 (관리자) 전용 JS
-//  *  - 1) 전체 선택 체크박스
-//  *  - 2) 삭제 버튼 클릭 시 선택 여부 / 확인창
-//  *  - 3) 검색 (엔터, 버튼 클릭, 실시간 입력)
-//  * ==========================================================
-//  */
 
-// document.addEventListener("DOMContentLoaded", function () {
-//     // -------------------------------
-//     // 1. 폼 엘리먼트 가져오기
-//     // -------------------------------
-//     var byMeForm      = document.getElementById("sharedByMeForm");          // 내가 공유한 목록
-//     var toMeForm      = document.getElementById("sharedToMeForm");          // 내가 공유받은 목록
-//     var unsharedForm  = document.getElementById("unsharedPasswordsForm");   // 공유하지 않은 목록
+// ==========================================================
+// 1. URL 열기 / 클립보드 복사 함수
+// ==========================================================
+function openUrl(raw) {
+    if (!raw) return;
+    var url = raw.trim();
+    if (!url) return;
 
-//     // -------------------------------
-//     // 2. 전체 선택 체크박스
-//     // -------------------------------
-//     var byMeCheckAll = document.getElementById("byMeCheckAll");
-//     if (byMeCheckAll && byMeForm) {
-//         byMeCheckAll.addEventListener("change", function () {
-//             var boxes = byMeForm.querySelectorAll('input[name="share_ids[]"]');
-//             boxes.forEach(function (cb) {
-//                 cb.checked = byMeCheckAll.checked;
-//             });
-//         });
-//     }
+    if (!/^https?:\/\//i.test(url)) {
+        url = "https://" + url;
+    }
+    window.open(url, "_blank");
+}
 
-//     var toMeCheckAll = document.getElementById("toMeCheckAll");
-//     if (toMeCheckAll && toMeForm) {
-//         toMeCheckAll.addEventListener("change", function () {
-//             var boxes = toMeForm.querySelectorAll('input[name="share_ids[]"]');
-//             boxes.forEach(function (cb) {
-//                 cb.checked = toMeCheckAll.checked;
-//             });
-//         });
-//     }
+function copyToClipboard(text) {
+    if (!text) return;
 
-//     // (공유하지 않은 목록은 체크박스가 없으므로 전체선택 없음)
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard
+            .writeText(text)
+            .then(function () {
+                alert("복사되었습니다.");
+            })
+            .catch(function () {
+                fallbackCopy(text);
+            });
+    } else {
+        fallbackCopy(text);
+    }
+}
 
-//     // -------------------------------
-//     // 3. 삭제 버튼 submit 전 확인
-//     // -------------------------------
-//     if (byMeForm) {
-//         byMeForm.addEventListener("submit", function (e) {
-//             var checked = byMeForm.querySelectorAll('input[name="share_ids[]"]:checked');
-//             if (checked.length === 0) {
-//                 e.preventDefault();
-//                 alert("삭제할 항목을 하나 이상 선택해 주세요.");
-//                 return;
-//             }
-//             if (!confirm("선택한 공유 설정을 정말 삭제하시겠습니까?")) {
-//                 e.preventDefault();
-//             }
-//         });
-//     }
+function fallbackCopy(text) {
+    var temp = document.createElement("textarea");
+    temp.value = text;
+    document.body.appendChild(temp);
+    temp.select();
 
-//     if (toMeForm) {
-//         toMeForm.addEventListener("submit", function (e) {
-//             var checked = toMeForm.querySelectorAll('input[name="share_ids[]"]:checked');
-//             if (checked.length === 0) {
-//                 e.preventDefault();
-//                 alert("삭제할 항목을 하나 이상 선택해 주세요.");
-//                 return;
-//             }
-//             if (!confirm("선택한 공유 설정을 정말 삭제하시겠습니까?")) {
-//                 e.preventDefault();
-//             }
-//         });
-//     }
+    try {
+        document.execCommand("copy");
+        alert("복사되었습니다.");
+    } catch (e) {
+        alert("복사에 실패했습니다. 직접 선택해서 복사해 주세요.");
+    } finally {
+        document.body.removeChild(temp);
+    }
+}
 
-//     // -------------------------------
-//     // 4. 검색 관련 엘리먼트
-//     // -------------------------------
-//     var byMeInput     = document.getElementById("byMeSearch");
-//     var byMeBtn       = document.getElementById("byMeSearchBtn");
+// ==========================================================
+// 2. DOM 로드 후 전체 로직 실행
+// ==========================================================
+document.addEventListener("DOMContentLoaded", function () {
+    console.log("✅ shareStatus JS 로딩 완료");
 
-//     var toMeInput     = document.getElementById("toMeSearch");
-//     var toMeBtn       = document.getElementById("toMeSearchBtn");
+    // --------------------------------------------------
+    // (1) 사이트 이동 버튼
+    // --------------------------------------------------
+    var openButtons = document.querySelectorAll(".btn-open-url");
+    openButtons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            var url = btn.getAttribute("data-url");
+            openUrl(url);
+        });
+    });
 
-//     var unsharedInput = document.getElementById("unsharedSearch");
-//     var unsharedBtn   = document.getElementById("unsharedSearchBtn");
+    // --------------------------------------------------
+    // (2) 아이디 / 비밀번호 복사 버튼
+    // --------------------------------------------------
+    var copyLoginButtons = document.querySelectorAll(".btn-copy-login");
+    copyLoginButtons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            var login = btn.getAttribute("data-login");
+            copyToClipboard(login);
+        });
+    });
 
-//     // -------------------------------
-//     // 5. 공통 필터 함수
-//     //    - formElem: 각 섹션 form
-//     //    - keyword : 검색어
-//     // -------------------------------
-//     function filterRows(formElem, keyword) {
-//         if (!formElem) return;
+    var copyPasswordButtons = document.querySelectorAll(".btn-copy-password");
+    copyPasswordButtons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            var pw = btn.getAttribute("data-password");
+            copyToClipboard(pw);
+        });
+    });
 
-//         var rows = formElem.querySelectorAll("tbody tr");
-//         var lower = (keyword || "").trim().toLowerCase();
+    // --------------------------------------------------
+    // (3) 폼 / 체크박스 요소
+    // --------------------------------------------------
+    var byMeForm      = document.getElementById("sharedByMeForm");
+    var toMeForm      = document.getElementById("sharedToMeForm");
+    var unsharedForm  = document.getElementById("unsharedPasswordsForm");
 
-//         rows.forEach(function (row) {
-//             // "데이터 없음" 한 줄도 같이 tr 이라서 함께 처리됨
-//             var hay = (
-//                 row.getAttribute("data-search") ||
-//                 row.innerText ||
-//                 ""
-//             ).toLowerCase();
+    var byMeCheckAll  = document.getElementById("byMeCheckAll");
+    var toMeCheckAll  = document.getElementById("toMeCheckAll");
 
-//             // 검색어 없으면 모두 보이기
-//             if (!lower || hay.indexOf(lower) !== -1) {
-//                 row.style.display = "";
-//             } else {
-//                 row.style.display = "none";
-//             }
-//         });
-//     }
+    // 전체 선택 체크박스 - 내가 공유한
+    if (byMeCheckAll && byMeForm) {
+        byMeCheckAll.addEventListener("change", function () {
+            var boxes = byMeForm.querySelectorAll('input[name="share_ids[]"]');
+            boxes.forEach(function (cb) {
+                cb.checked = byMeCheckAll.checked;
+            });
+        });
+    }
 
-//     // -------------------------------
-//     // 6. 섹션별 필터 함수
-//     // -------------------------------
-//     function filterByMe() {
-//         if (!byMeForm || !byMeInput) return;
-//         filterRows(byMeForm, byMeInput.value);
-//     }
+    // 전체 선택 체크박스 - 내가 공유받은
+    if (toMeCheckAll && toMeForm) {
+        toMeCheckAll.addEventListener("change", function () {
+            var boxes = toMeForm.querySelectorAll('input[name="share_ids[]"]');
+            boxes.forEach(function (cb) {
+                cb.checked = toMeCheckAll.checked;
+            });
+        });
+    }
 
-//     function filterToMe() {
-//         if (!toMeForm || !toMeInput) return;
-//         filterRows(toMeForm, toMeInput.value);
-//     }
+    // --------------------------------------------------
+    // (4) 삭제 버튼 submit 전 확인
+    // --------------------------------------------------
+    if (byMeForm) {
+        byMeForm.addEventListener("submit", function (e) {
+            var checked = byMeForm.querySelectorAll('input[name="share_ids[]"]:checked');
+            if (checked.length === 0) {
+                e.preventDefault();
+                alert("삭제할 항목을 하나 이상 선택해 주세요.");
+                return;
+            }
+            if (!confirm("선택한 공유 설정을 정말 삭제하시겠습니까?")) {
+                e.preventDefault();
+            }
+        });
+    }
 
-//     function filterUnshared() {
-//         if (!unsharedForm || !unsharedInput) return;
-//         filterRows(unsharedForm, unsharedInput.value);
-//     }
+    if (toMeForm) {
+        toMeForm.addEventListener("submit", function (e) {
+            var checked = toMeForm.querySelectorAll('input[name="share_ids[]"]:checked');
+            if (checked.length === 0) {
+                e.preventDefault();
+                alert("삭제할 항목을 하나 이상 선택해 주세요.");
+                return;
+            }
+            if (!confirm("선택한 공유 설정을 정말 삭제하시겠습니까?")) {
+                e.preventDefault();
+            }
+        });
+    }
 
-//     // -------------------------------
-//     // 7. 검색 버튼 클릭 이벤트
-//     // -------------------------------
-//     if (byMeBtn) {
-//         byMeBtn.addEventListener("click", function () {
-//             filterByMe();
-//         });
-//     }
-//     if (toMeBtn) {
-//         toMeBtn.addEventListener("click", function () {
-//             filterToMe();
-//         });
-//     }
-//     if (unsharedBtn) {
-//         unsharedBtn.addEventListener("click", function () {
-//             filterUnshared();
-//         });
-//     }
+    // --------------------------------------------------
+    // (5) 검색 input / 버튼
+    // --------------------------------------------------
+    var byMeInput     = document.getElementById("byMeSearch");
+    var byMeBtn       = document.getElementById("byMeSearchBtn");
 
-//     // -------------------------------
-//     // 8. 엔터키로 검색 (폼 submit 방지)
-//     // -------------------------------
-//     function handleSearchEnter(e) {
-//         if (e.key === "Enter") {
-//             e.preventDefault();  // 폼 submit 막기 (삭제/새로고침 방지)
+    var toMeInput     = document.getElementById("toMeSearch");
+    var toMeBtn       = document.getElementById("toMeSearchBtn");
 
-//             if (e.target.id === "byMeSearch") {
-//                 filterByMe();
-//             } else if (e.target.id === "toMeSearch") {
-//                 filterToMe();
-//             } else if (e.target.id === "unsharedSearch") {
-//                 filterUnshared();
-//             }
-//         }
-//     }
+    var unsharedInput = document.getElementById("unsharedSearch");
+    var unsharedBtn   = document.getElementById("unsharedSearchBtn");
 
-//     if (byMeInput) {
-//         byMeInput.addEventListener("keydown", handleSearchEnter);
-//     }
-//     if (toMeInput) {
-//         toMeInput.addEventListener("keydown", handleSearchEnter);
-//     }
-//     if (unsharedInput) {
-//         unsharedInput.addEventListener("keydown", handleSearchEnter);
-//     }
+    // 공통 필터 함수
+    function filterRows(formElem, keyword) {
+        if (!formElem) return;
 
-//     // -------------------------------
-//     // 9. 입력할 때마다 실시간 필터 (선택 사항이지만 UX 좋아짐)
-//     // -------------------------------
-//     if (byMeInput) {
-//         byMeInput.addEventListener("input", filterByMe);
-//     }
-//     if (toMeInput) {
-//         toMeInput.addEventListener("input", filterToMe);
-//     }
-//     if (unsharedInput) {
-//         unsharedInput.addEventListener("input", filterUnshared);
-//     }
-// });
+        var rows  = formElem.querySelectorAll("tbody tr");
+        var lower = (keyword || "").trim().toLowerCase();
+
+        rows.forEach(function (row) {
+            var hay = (
+                row.getAttribute("data-search") ||
+                row.innerText ||
+                ""
+            ).toLowerCase();
+
+            if (!lower || hay.indexOf(lower) !== -1) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+
+        console.log("🔍 필터 적용:", keyword, " / 행 개수:", rows.length);
+    }
+
+    function filterByMe() {
+        if (!byMeForm || !byMeInput) return;
+        filterRows(byMeForm, byMeInput.value);
+    }
+
+    function filterToMe() {
+        if (!toMeForm || !toMeInput) return;
+        filterRows(toMeForm, toMeInput.value);
+    }
+
+    function filterUnshared() {
+        if (!unsharedForm || !unsharedInput) return;
+        filterRows(unsharedForm, unsharedInput.value);
+    }
+
+    // 👉 버튼 클릭 시에만 검색 실행
+    if (byMeBtn) {
+        byMeBtn.addEventListener("click", function () {
+            filterByMe();
+        });
+    }
+    if (toMeBtn) {
+        toMeBtn.addEventListener("click", function () {
+            filterToMe();
+        });
+    }
+    if (unsharedBtn) {
+        unsharedBtn.addEventListener("click", function () {
+            filterUnshared();
+        });
+    }
+
+    // 👉 Enter 키를 눌렀을 때만 검색 실행 (타이핑 중 실시간 X)
+    function handleSearchEnter(e) {
+        if (e.key === "Enter" || e.keyCode === 13) {
+            e.preventDefault(); // 폼 submit 막기 (페이지 리로드 방지)
+
+            if (e.target.id === "byMeSearch") {
+                filterByMe();
+            } else if (e.target.id === "toMeSearch") {
+                filterToMe();
+            } else if (e.target.id === "unsharedSearch") {
+                filterUnshared();
+            }
+        }
+    }
+
+    if (byMeInput) {
+        byMeInput.addEventListener("keydown", handleSearchEnter);
+    }
+    if (toMeInput) {
+        toMeInput.addEventListener("keydown", handleSearchEnter);
+    }
+    if (unsharedInput) {
+        unsharedInput.addEventListener("keydown", handleSearchEnter);
+    }
+});
+
