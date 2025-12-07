@@ -612,18 +612,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                                     $siteUrl = (string)($row['site_url'] ?? '');
                                     $loginId = (string)($row['login_id'] ?? '');
                                     ?>
-                                    <!-- <tr> -->
-                                        <!-- 체크박스 -->
-                                        <!-- <td style="text-align:center;"> -->
-                                            <!-- <input type="checkbox" -->
-                                                   <!-- name="password_ids[]" -->
-                                                   <!-- value=" -->
-                                                   <?php
-                                                    // echo (int)$row['password_idno']; 
-                                                    ?>
-                                                   <!-- "> -->
-                                        <!-- </td> -->
-
+                                    <tr>
                                         <!-- No -->
                                         <td style="text-align:center;"><?php echo $idx3++; ?></td>
 
@@ -695,10 +684,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
 
 </div><!-- /.layout -->
 
-<!-- 기존 공유현황 전용 JS (검색/체크박스 등 쓰고 있으면 유지) -->
-<script src="/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.js"></script>
-
-<!-- 이동 / 복사 버튼용 공통 JS -->
+<!-- ✅ 이동 / 복사 + 검색/체크박스 통합 JS -->
 <script>
 // URL 열기: http/https 없으면 https 자동 붙이기
 function openUrl(raw) {
@@ -746,9 +732,11 @@ function fallbackCopy(text) {
     }
 }
 
-// DOM 로드 후 버튼 이벤트 바인딩
+// DOM 로드 후 버튼 이벤트 바인딩 + 검색/체크박스 처리
 document.addEventListener("DOMContentLoaded", function () {
+    // --------------------------------------------------
     // 1) 사이트 이동 버튼
+    // --------------------------------------------------
     var openButtons = document.querySelectorAll(".btn-open-url");
     openButtons.forEach(function (btn) {
         btn.addEventListener("click", function () {
@@ -757,7 +745,9 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // 2) 아이디 복사 버튼
+    // --------------------------------------------------
+    // 2) 아이디 / 비밀번호 복사 버튼
+    // --------------------------------------------------
     var copyLoginButtons = document.querySelectorAll(".btn-copy-login");
     copyLoginButtons.forEach(function (btn) {
         btn.addEventListener("click", function () {
@@ -766,7 +756,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // 3) 비밀번호 복사 버튼
     var copyPasswordButtons = document.querySelectorAll(".btn-copy-password");
     copyPasswordButtons.forEach(function (btn) {
         btn.addEventListener("click", function () {
@@ -774,6 +763,156 @@ document.addEventListener("DOMContentLoaded", function () {
             copyToClipboard(pw);
         });
     });
+
+    // --------------------------------------------------
+    // 3) 폼 / 체크박스 요소
+    // --------------------------------------------------
+    var byMeForm      = document.getElementById("sharedByMeForm");
+    var toMeForm      = document.getElementById("sharedToMeForm");
+    var unsharedForm  = document.getElementById("unsharedPasswordsForm");
+
+    var byMeCheckAll  = document.getElementById("byMeCheckAll");
+    var toMeCheckAll  = document.getElementById("toMeCheckAll");
+    // unshared 목록은 체크박스 없음
+
+    // 전체 선택 체크박스 - 내가 공유한
+    if (byMeCheckAll && byMeForm) {
+        byMeCheckAll.addEventListener("change", function () {
+            var boxes = byMeForm.querySelectorAll('input[name="share_ids[]"]');
+            boxes.forEach(function (cb) {
+                cb.checked = byMeCheckAll.checked;
+            });
+        });
+    }
+
+    // 전체 선택 체크박스 - 내가 공유받은
+    if (toMeCheckAll && toMeForm) {
+        toMeCheckAll.addEventListener("change", function () {
+            var boxes = toMeForm.querySelectorAll('input[name="share_ids[]"]');
+            boxes.forEach(function (cb) {
+                cb.checked = toMeCheckAll.checked;
+            });
+        });
+    }
+
+    // --------------------------------------------------
+    // 4) 삭제 버튼 submit 전 확인
+    // --------------------------------------------------
+    if (byMeForm) {
+        byMeForm.addEventListener("submit", function (e) {
+            var checked = byMeForm.querySelectorAll('input[name="share_ids[]"]:checked');
+            if (checked.length === 0) {
+                e.preventDefault();
+                alert("삭제할 항목을 하나 이상 선택해 주세요.");
+                return;
+            }
+            if (!confirm("선택한 공유 설정을 정말 삭제하시겠습니까?")) {
+                e.preventDefault();
+            }
+        });
+    }
+
+    if (toMeForm) {
+        toMeForm.addEventListener("submit", function (e) {
+            var checked = toMeForm.querySelectorAll('input[name="share_ids[]"]:checked');
+            if (checked.length === 0) {
+                e.preventDefault();
+                alert("삭제할 항목을 하나 이상 선택해 주세요.");
+                return;
+            }
+            if (!confirm("선택한 공유 설정을 정말 삭제하시겠습니까?")) {
+                e.preventDefault();
+            }
+        });
+    }
+
+    // --------------------------------------------------
+    // 5) 검색 input / 버튼
+    // --------------------------------------------------
+    var byMeInput     = document.getElementById("byMeSearch");
+    var byMeBtn       = document.getElementById("byMeSearchBtn");
+
+    var toMeInput     = document.getElementById("toMeSearch");
+    var toMeBtn       = document.getElementById("toMeSearchBtn");
+
+    var unsharedInput = document.getElementById("unsharedSearch");
+    var unsharedBtn   = document.getElementById("unsharedSearchBtn");
+
+    // 공통 필터 함수
+    function filterRows(formElem, keyword) {
+        if (!formElem) return;
+
+        var rows  = formElem.querySelectorAll("tbody tr");
+        var lower = (keyword || "").trim().toLowerCase();
+
+        rows.forEach(function (row) {
+            var hay = (
+                row.getAttribute("data-search") ||
+                row.innerText ||
+                ""
+            ).toLowerCase();
+
+            if (!lower || hay.indexOf(lower) !== -1) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
+
+    function filterByMe() {
+        if (!byMeForm || !byMeInput) return;
+        filterRows(byMeForm, byMeInput.value);
+    }
+
+    function filterToMe() {
+        if (!toMeForm || !toMeInput) return;
+        filterRows(toMeForm, toMeInput.value);
+    }
+
+    function filterUnshared() {
+        if (!unsharedForm || !unsharedInput) return;
+        filterRows(unsharedForm, unsharedInput.value);
+    }
+
+    // 버튼 클릭 시 검색
+    if (byMeBtn) {
+        byMeBtn.addEventListener("click", filterByMe);
+    }
+    if (toMeBtn) {
+        toMeBtn.addEventListener("click", filterToMe);
+    }
+    if (unsharedBtn) {
+        unsharedBtn.addEventListener("click", filterUnshared);
+    }
+
+    // 엔터키로 검색 (폼 submit 방지)
+    function handleSearchEnter(e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+
+            if (e.target.id === "byMeSearch") {
+                filterByMe();
+            } else if (e.target.id === "toMeSearch") {
+                filterToMe();
+            } else if (e.target.id === "unsharedSearch") {
+                filterUnshared();
+            }
+        }
+    }
+
+    if (byMeInput) {
+        byMeInput.addEventListener("keydown", handleSearchEnter);
+        byMeInput.addEventListener("input", filterByMe); // 실시간 검색
+    }
+    if (toMeInput) {
+        toMeInput.addEventListener("keydown", handleSearchEnter);
+        toMeInput.addEventListener("input", filterToMe);
+    }
+    if (unsharedInput) {
+        unsharedInput.addEventListener("keydown", handleSearchEnter);
+        unsharedInput.addEventListener("input", filterUnshared);
+    }
 });
 </script>
 
