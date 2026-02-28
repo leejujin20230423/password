@@ -1,0 +1,21 @@
+{
+  "name": "PASS 비밀번호 관리",
+  "short_name": "PASS PW",
+  "start_url": "/password_0_login/password_0_login_View/password_0_login_View.php",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#111827",
+  "icons": [
+    {
+      "src": "/password_icons/password-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/password_icons/password-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
