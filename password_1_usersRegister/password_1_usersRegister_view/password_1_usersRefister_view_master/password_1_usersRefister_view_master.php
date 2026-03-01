@@ -20,7 +20,7 @@ if (session_status() === PHP_SESSION_NONE) {
  *
  *    PASS 루트까지 4단계 올라간 후 /connection/DBConnection.php
  * ========================================================== */
-require_once __DIR__ . '/../../../../connection/DBConnection.php';
+require_once dirname(__DIR__, 3) . '/connection/DBConnection.php';
 
 /* ==========================================================
  * 2. DBConnection 객체 생성
@@ -410,6 +410,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </form>
     </div>
+
+    <script>
+        (function () {
+            var phoneInput = document.getElementById('phone');
+            if (!phoneInput) return;
+
+            function formatPhoneNumber(input) {
+                var digits = String(input || '').replace(/\D+/g, '');
+                if (digits.length <= 3) return digits;
+                if (digits.length <= 7) return digits.replace(/(\d{3})(\d+)/, '$1-$2');
+                if (digits.length <= 11) return digits.replace(/(\d{3})(\d{3,4})(\d+)/, '$1-$2-$3');
+                return digits.slice(0, 11).replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+            }
+
+            phoneInput.addEventListener('input', function (e) {
+                e.target.value = formatPhoneNumber(e.target.value);
+            });
+        })();
+    </script>
 
 </body>
 

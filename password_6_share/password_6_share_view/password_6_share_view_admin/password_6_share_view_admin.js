@@ -23,6 +23,9 @@ document.addEventListener("DOMContentLoaded", function () {
   // 3) 전화번호 입력창에서 엔터만 쳐도 검색되도록 처리
   var phoneInput = document.getElementById("search_phone");
   if (phoneInput) {
+    phoneInput.addEventListener("input", function (e) {
+      e.target.value = formatPhoneNumber(e.target.value);
+    });
     phoneInput.addEventListener("keydown", function (e) {
       if (e.key === "Enter" || e.keyCode === 13) {
         e.preventDefault(); // 폼 submit 막기
@@ -38,17 +41,22 @@ document.addEventListener("DOMContentLoaded", function () {
 function initPasswordListSearch() {
   var input = document.getElementById("passwordListSearch");
   if (!input) return;
+  var searchBtn = document.getElementById("passwordListSearchBtn");
 
   var tbody = document.querySelector(".password-table tbody");
   if (!tbody) return;
 
   var rows = Array.prototype.slice.call(tbody.querySelectorAll("tr"));
 
-  input.addEventListener("input", function () {
+  function runFilter() {
     var keyword = input.value.trim().toLowerCase();
 
     rows.forEach(function (tr) {
-      var searchText = (tr.getAttribute("data-search") || "").toLowerCase();
+      var searchText = (
+        tr.getAttribute("data-search") ||
+        tr.textContent ||
+        ""
+      ).toLowerCase();
 
       if (!keyword) {
         tr.style.display = "";
@@ -58,7 +66,57 @@ function initPasswordListSearch() {
         tr.style.display = "none";
       }
     });
+  }
+
+  var debouncedRunFilter = debounce(runFilter, 160);
+  input.addEventListener("input", debouncedRunFilter);
+
+  if (searchBtn) {
+    searchBtn.addEventListener("click", runFilter);
+  }
+
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.keyCode === 13) {
+      e.preventDefault();
+      runFilter();
+    }
   });
+}
+
+function parseJsonWithFallback(rawText) {
+  var text = String(rawText || "").trim();
+  if (!text) return null;
+
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    // PHP warning/notice가 JSON 앞뒤에 섞인 경우를 대비
+    var start = text.indexOf("{");
+    var end = text.lastIndexOf("}");
+    if (start !== -1 && end !== -1 && end > start) {
+      var candidate = text.slice(start, end + 1);
+      try {
+        return JSON.parse(candidate);
+      } catch (ignored) {
+        return null;
+      }
+    }
+    return null;
+  }
+}
+
+function debounce(fn, delayMs) {
+  var timer = null;
+  return function () {
+    var context = this;
+    var args = arguments;
+    if (timer) {
+      clearTimeout(timer);
+    }
+    timer = setTimeout(function () {
+      fn.apply(context, args);
+    }, delayMs);
+  };
 }
 
 // ================================================
@@ -82,7 +140,6 @@ function searchUserByPhone() {
 
   var url =
     "/password_6_share/password_6_share_route/password_6_share_ajax_admin.php";
-
   var params = "action=search_user" + "&phone=" + encodeURIComponent(raw);
 
   var xhr = new XMLHttpRequest();
@@ -91,52 +148,47 @@ function searchUserByPhone() {
 
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4) {
+      // 요청이 끝났을 때
       if (xhr.status === 200) {
-        try {
-          var res = JSON.parse(xhr.responseText);
-
-          // ✅ 회원 존재
-          if (res.ok && res.user) {
-            var u = res.user; // { user_no, username, phone }
-
-            // 🔹 로그인한 본인 번호인지 확인
-            var currentUserNo = 0;
-            if (typeof window.PASS_USER_NO !== "undefined") {
-              currentUserNo = parseInt(window.PASS_USER_NO, 10) || 0;
-            }
-
-            if (currentUserNo && parseInt(u.user_no, 10) === currentUserNo) {
-              alert(
-                "본인 전화번호는 공유 대상으로 선택할 수 없습니다.\n다른 사용자의 전화번호를 검색해 주세요."
-              );
-              resultBox.innerHTML =
-                '<span style="color:#d9534f;">본인 번호는 공유 대상에 추가할 수 없습니다.</span>';
-              phoneInput.focus();
-              return;
-            }
-
-            // 🔹 정상적인 다른 회원인 경우:
-            //    - 선택된 공유대상 리스트에 바로 추가
-            addTarget(u.user_no, u.username, u.phone || "");
-
-            //    - 결과 영역은 안내 문구
-            resultBox.textContent =
-              "공유 대상에 추가되었습니다. 여러 명을 추가할 수 있습니다.";
-          }
-          // ❌ 회원 없음 (가입 유도)
-          else {
-            resultBox.innerHTML =
-              '<span style="color:#d9534f;">해당 전화번호로 등록된 회원이 없습니다.</span><br>' +
-              '<span style="font-size:12px; color:#6b7280;">회원으로 등록된 사용자만 검색됩니다. 상대방이 등록하지 않았다면 로그인 화면에서 카카오톡/문자로 초대해 주세요.</span><br>' +
-              '<button type="button" onclick="inviteBySms();">카카오톡/문자로 초대하기</button>';
-          }
-
-          // 검색 처리 후 입력창 비우기
-          phoneInput.value = "";
-        } catch (e) {
-          console.error(e);
-          resultBox.textContent = "응답 처리 중 오류가 발생했습니다.";
+        // 서버 응답 상태 200이면
+        var res = parseJsonWithFallback(xhr.responseText);
+        if (!res) {
+          resultBox.textContent =
+            "응답 처리 중 오류가 발생했습니다. 다시 로그인 후 시도해 주세요.";
+          console.error("raw response:", xhr.responseText);
+          return;
         }
+
+        var users = [];
+        if (res.ok && Array.isArray(res.users)) {
+          users = res.users.slice();
+        } else if (res.ok && res.user) {
+          users = [res.user];
+        } else if (res.ok && Array.isArray(res.data)) {
+          users = res.data.slice();
+        }
+
+        if (users.length > 0) {
+          var currentUserNo = parseInt(window.PASS_USER_NO || 0, 10) || 0;
+          var filtered = users.filter(function (u) {
+            return !(currentUserNo && parseInt(u.user_no, 10) === currentUserNo);
+          });
+
+          if (filtered.length === 0) {
+            resultBox.innerHTML =
+              '<span class="error-text">본인 번호는 공유 대상에 추가할 수 없습니다.</span>';
+            phoneInput.focus();
+            return;
+          }
+
+          renderSearchResultUsers(resultBox, filtered);
+          return;
+        }
+
+        var msg =
+          res && res.msg ? res.msg : "해당 전화번호로 등록된 회원이 없습니다.";
+        resultBox.innerHTML =
+          '<span class="error-text">' + escapeHtml(msg) + "</span>";
       } else {
         resultBox.textContent =
           "서버 통신 오류입니다. 잠시 후 다시 시도해 주세요.";
@@ -144,7 +196,50 @@ function searchUserByPhone() {
     }
   };
 
-  xhr.send(params);
+  xhr.send(params); // 서버로 요청 보내기
+}
+
+function renderSearchResultUsers(resultBox, users) {
+  if (!resultBox) return;
+
+  var html = '<div class="search-users-title">검색된 회원 목록</div>';
+  html += '<ul class="search-user-list">';
+
+  users.forEach(function (u) {
+    var userNo = parseInt(u.user_no, 10) || 0;
+    if (!userNo) return;
+
+    var username = escapeHtml(u.username || "");
+    var phone = escapeHtml(u.phone || "");
+    var desc = phone ? username + " (" + phone + ")" : username;
+
+    html +=
+      '<li class="search-user-item">' +
+      '<span class="search-user-name">' +
+      desc +
+      "</span>" +
+      '<button type="button" class="btn-add-target" data-user-no="' +
+      userNo +
+      '" data-username="' +
+      username +
+      '" data-phone="' +
+      phone +
+      '">추가</button>' +
+      "</li>";
+  });
+
+  html += "</ul>";
+  resultBox.innerHTML = html;
+
+  var addButtons = resultBox.querySelectorAll(".btn-add-target");
+  addButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var userNo = btn.getAttribute("data-user-no");
+      var username = btn.getAttribute("data-username");
+      var phone = btn.getAttribute("data-phone");
+      addTarget(userNo, username, phone);
+    });
+  });
 }
 
 // ================================================
@@ -175,6 +270,7 @@ function addTarget(userNo, username, phone) {
 
   var li = document.createElement("li");
   li.setAttribute("data-user-no", userNo);
+  li.className = "target-item";
 
   var phoneText = phone ? " (" + escapeHtml(phone) + ")" : "";
 
@@ -241,6 +337,13 @@ function inviteBySms() {
   window.location.href = "sms:?body=" + smsBody;
 }
 
+function formatPhoneNumber(input) {
+  var digits = String(input || "").replace(/\D+/g, "");
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 7) return digits.replace(/(\d{3})(\d+)/, "$1-$2");
+  if (digits.length <= 11) return digits.replace(/(\d{3})(\d{3,4})(\d+)/, "$1-$2-$3");
+  return digits.slice(0, 11).replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3");
+}
 // ================================================
 // 7. 공유 설정 저장
 // ================================================

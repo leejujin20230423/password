@@ -1,4 +1,10 @@
 <?php
+declare(strict_types=1);
+
+require_once dirname(__DIR__, 2) . '/app/bootstrap.php';
+
+use PassApp\Auth\AuthGate;
+
 // ==============================================
 //  비밀번호 공유 설정 저장 (관리자용 라우트)
 //  경로:
@@ -6,19 +12,9 @@
 // ==============================================
 
 // ------------------------------------------------
-// 1) 세션 시작
+// 1) 로그인 체크
 // ------------------------------------------------
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// ------------------------------------------------
-// 2) 로그인 체크 (user_no 기준)
-// ------------------------------------------------
-if (empty($_SESSION['user_no'])) {
-    header('Location: /password_0_login/password_0_login_View/password_0_login_View.php');
-    exit;
-}
+(new AuthGate())->requireLogin();
 
 // 공유 설정을 만드는 사람(현재 로그인 사용자)
 $currentUserNo = (int)$_SESSION['user_no'];

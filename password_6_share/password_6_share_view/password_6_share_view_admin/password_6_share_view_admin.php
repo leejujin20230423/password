@@ -111,14 +111,6 @@ $columnLabels = [
     $assetVersion = (string) (@filemtime(__FILE__) ?: time());
     ?>
 
-    <!-- ✅ 헤더 전용 CSS -->
-    <link rel="stylesheet"
-          href="/password_3_header/password_3_header_view/password_3_header_view_admin/password_3_header_view_admin.css?v=<?php echo htmlspecialchars($assetVersion, ENT_QUOTES, 'UTF-8'); ?>">
-
-    <!-- ✅ 사이드바 전용 CSS -->
-    <link rel="stylesheet"
-          href="/password_4_sidebar/password_4_sidebar_view/password_4_sidebar_view_admin/password_4_sidebar_view_admin.css?v=<?php echo htmlspecialchars($assetVersion, ENT_QUOTES, 'UTF-8'); ?>">
-
     <!-- ✅ 비밀번호 공유 화면 전용 CSS -->
     <link rel="stylesheet"
           href="/password_6_share/password_6_share_view/password_6_share_view_admin/password_6_share_view_admin.css?v=<?php echo htmlspecialchars($assetVersion, ENT_QUOTES, 'UTF-8'); ?>">
@@ -167,7 +159,7 @@ $columnLabels = [
                 </div>
 
                 <div class="table-wrapper">
-                    <table class="password-table">
+                    <table class="password-table" id="sharePasswordTable">
                         <thead>
                         <tr>
                             <!-- ✅ 전체 선택 체크박스 -->
@@ -183,7 +175,15 @@ $columnLabels = [
                             <!-- ✅ password 테이블에서 선택된 컬럼 헤더 (user_no_Fk, password_idno, encrypted_password 제외) -->
                             <?php if (!empty($columns)): ?>
                                 <?php foreach ($columns as $colName): ?>
-                                    <th>
+                                    <?php
+                                    $thClass = '';
+                                    if ($colName === 'site_url') {
+                                        $thClass = 'col-site-url';
+                                    } elseif ($colName === 'memo') {
+                                        $thClass = 'col-memo';
+                                    }
+                                    ?>
+                                    <th class="<?php echo htmlspecialchars($thClass, ENT_QUOTES, 'UTF-8'); ?>">
                                         <?php
                                         $label = isset($columnLabels[$colName]) ? $columnLabels[$colName] : $colName;
                                         echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8');
@@ -198,16 +198,12 @@ $columnLabels = [
                             <?php $rowNo = 1; ?>
                             <?php foreach ($myPasswordRows as $row): ?>
                                 <?php
-                                // 🔍 검색 대상 텍스트 (사이트 + 매장명 + 메모)
+                                // 🔍 검색 대상 텍스트 (현재 행의 전체 표시 컬럼 기준)
                                 $searchPieces = [];
-                                if (isset($row['site_url'])) {
-                                    $searchPieces[] = (string)$row['site_url'];
-                                }
-                                if (isset($row['storename'])) {
-                                    $searchPieces[] = (string)$row['storename'];
-                                }
-                                if (isset($row['memo'])) {
-                                    $searchPieces[] = (string)$row['memo'];
+                                foreach ($columns as $searchCol) {
+                                    if (isset($row[$searchCol])) {
+                                        $searchPieces[] = (string)$row[$searchCol];
+                                    }
                                 }
                                 $searchText = htmlspecialchars(implode(' ', $searchPieces), ENT_QUOTES, 'UTF-8');
 
@@ -234,10 +230,24 @@ $columnLabels = [
 
                                     <!-- ✅ 화면에 보여줄 컬럼들만 출력 (user_no_Fk, password_idno, encrypted_password 제외) -->
                                     <?php foreach ($columns as $colName): ?>
-                                        <td>
+                                        <?php
+                                        $tdClass = '';
+                                        if ($colName === 'site_url') {
+                                            $tdClass = 'cell-site-url';
+                                        } elseif ($colName === 'memo') {
+                                            $tdClass = 'cell-memo';
+                                        }
+                                        ?>
+                                        <td class="<?php echo htmlspecialchars($tdClass, ENT_QUOTES, 'UTF-8'); ?>">
                                             <?php
                                             $value = isset($row[$colName]) ? (string)$row[$colName] : '';
-                                            echo htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+                                            if ($colName === 'site_url' || $colName === 'memo') {
+                                                echo '<div class="cell-scroll-x">'
+                                                    . htmlspecialchars($value, ENT_QUOTES, 'UTF-8')
+                                                    . '</div>';
+                                            } else {
+                                                echo htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+                                            }
                                             ?>
                                         </td>
                                     <?php endforeach; ?>
@@ -278,20 +288,18 @@ $columnLabels = [
                 </div>
 
                 <!-- 2) 검색 결과 표시 영역 -->
-                <div id="searchResult"
-                     style="margin-top:10px; font-size:14px; min-height:24px;"></div>
+                <div id="searchResult" class="search-result-box"></div>
 
                 <!-- 3) 선택된 공유 대상 목록 -->
-                <div style="margin-top:16px;">
-                    <h3 style="margin:0 0 8px 0; font-size:15px;">선택된 공유 대상</h3>
-                    <ul id="selectedTargets"
-                        style="list-style:none; padding:0; margin:0; font-size:14px;">
+                <div class="target-list-block">
+                    <h3 class="target-list-title">선택된 공유 대상</h3>
+                    <ul id="selectedTargets" class="selected-targets">
                         <!-- JS에서 li + hidden input 동적으로 추가 -->
                     </ul>
                 </div>
 
                 <!-- 4) 공유 저장 버튼 -->
-                <div style="margin-top:20px; text-align:right;">
+                <div class="share-save-wrap">
                     <button type="button"
                             onclick="submitShareForm();"
                             class="btn-primary">

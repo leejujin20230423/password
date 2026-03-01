@@ -23,6 +23,13 @@ var DECRYPT_URL = window.location.pathname;
 // 3) DOMContentLoaded 이후 이벤트 바인딩
 // ==========================================
 document.addEventListener("DOMContentLoaded", function () {
+  var contactPhoneInput = document.getElementById("contact_phone");
+  if (contactPhoneInput) {
+    contactPhoneInput.addEventListener("input", function (e) {
+      e.target.value = formatPhoneNumber(e.target.value);
+    });
+  }
+
   // ---- 아이디 복사 관련 요소 ----
   var loginInput   = document.getElementById("login_id");
   var copyLoginBtn = document.getElementById("copyLoginIdBtn");
@@ -268,12 +275,67 @@ document.addEventListener("DOMContentLoaded", function () {
   //    → PHP가 그대로 INSERT / UPDATE 실행.
 });
 
+function formatPhoneNumber(input) {
+  var digits = String(input || "").replace(/\D+/g, "");
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 7) return digits.replace(/(\d{3})(\d+)/, "$1-$2");
+  if (digits.length <= 11) return digits.replace(/(\d{3})(\d{3,4})(\d+)/, "$1-$2-$3");
+  return digits.slice(0, 11).replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3");
+}
+
+function debounce(fn, delayMs) {
+  var timer = null;
+  return function () {
+    var context = this;
+    var args = arguments;
+    if (timer) {
+      clearTimeout(timer);
+    }
+    timer = setTimeout(function () {
+      fn.apply(context, args);
+    }, delayMs);
+  };
+}
+
 document.addEventListener('DOMContentLoaded', function () {
+    var searchInput = document.getElementById("pw5TableSearchInput");
+    var searchBtn = document.getElementById("pw5TableSearchBtn");
+    var tableBody = document.querySelector("#passwordTable tbody");
+
+    if (searchInput && tableBody) {
+      var rows = Array.prototype.slice.call(tableBody.querySelectorAll("tr"));
+
+      function runTableFilter() {
+        var keyword = searchInput.value.trim().toLowerCase();
+        rows.forEach(function (row) {
+          var haystack = (row.textContent || "").toLowerCase();
+          if (!keyword || haystack.indexOf(keyword) !== -1) {
+            row.style.display = "";
+          } else {
+            row.style.display = "none";
+          }
+        });
+      }
+
+      var debouncedRunTableFilter = debounce(runTableFilter, 160);
+      searchInput.addEventListener("input", debouncedRunTableFilter);
+
+      if (searchBtn) {
+        searchBtn.addEventListener("click", runTableFilter);
+      }
+
+      searchInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.keyCode === 13) {
+          e.preventDefault();
+          runTableFilter();
+        }
+      });
+    }
+
     const categoryInput = document.getElementById('category');        // 구분 input
     const storeLabel    = document.getElementById('storenameLabel');  // 매장명 레이블
 
     if (!categoryInput || !storeLabel) {
-        console.warn('category 또는 storenameLabel 요소를 찾을 수 없습니다.');
         return;
     }
 

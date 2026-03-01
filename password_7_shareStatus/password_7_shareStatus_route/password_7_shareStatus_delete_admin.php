@@ -1,19 +1,18 @@
 <?php
+declare(strict_types=1);
+
+require_once dirname(__DIR__, 2) . '/app/bootstrap.php';
+
+use PassApp\Auth\AuthGate;
+
 // ==============================================
 //  Password 공유현황 - 선택 삭제 처리 (관리자)
 //  경로:
 //  public/password_7_shareStatus/password_7_shareStatus_route/password_7_shareStatus_delete_admin.php
 // ==============================================
 
-// 1) 세션 시작 및 로그인 체크
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-if (empty($_SESSION['user_no'])) {
-    header('Location: /password_0_login/password_0_login_View/password_0_login_View.php');
-    exit;
-}
+// 1) 로그인 체크
+(new AuthGate())->requireLogin();
 
 $currentUserNo = (int)$_SESSION['user_no'];
 

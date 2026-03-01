@@ -1,39 +1,27 @@
 <?php
+declare(strict_types=1);
+
+require_once dirname(__DIR__, 3) . '/app/bootstrap.php';
+
+use PassApp\Auth\AuthGate;
+
 // ===============================
 // 관리자 비밀번호 변경 페이지 (View + 처리)
 // ===============================
 
-// 세션 시작
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+(new AuthGate())->requireLogin();
 
 // --------------------------------
 // DB 연결 클래스 로드 (DBConnection)
 //  - 위치 예시: /connection/DBConnection.php
 // --------------------------------
-require_once __DIR__ . '/../../../../connection/DBConnection.php';
+require_once dirname(__DIR__, 3) . '/connection/DBConnection.php';
 
 // DBConnection 인스턴스 생성 후 PDO 객체 가져오기
 $dbConnection = new DBConnection();
 $db           = $dbConnection->getDB(); // ← 여기서부터 $db는 PDO
 
-// ---------------------------
-// 로그인 체크 (user_no 기준)
-// ---------------------------
-$userNo = null;
-
-// adminLogin()에서 설정한 세션 키 사용
-// $_SESSION['user_no'], $_SESSION['userid'], $_SESSION['username'], $_SESSION['user_type']
-if (isset($_SESSION['user_no'])) {
-    $userNo = (int) $_SESSION['user_no'];
-}
-
-// 로그인 안 되어 있으면 로그인 화면으로 이동
-if ($userNo === null || $userNo === 0) {
-    header('Location: /password_0_login/password_0_login_View/password_0_login_View.php');
-    exit;
-}
+$userNo = (int)($_SESSION['user_no'] ?? 0);
 
 // 상단 헤더에서 사용할 이름 표시용 세션 값
 $sessionUsername = '';
@@ -173,7 +161,7 @@ $currentUserid = isset($_SESSION['userid']) ? $_SESSION['userid'] : '';
             <?php endif; ?>
 
 
-            <form method="post"ㅌ
+            <form method="post"
                 class="change-form"
                 id="passwordChangeForm"
                 autocomplete="off">

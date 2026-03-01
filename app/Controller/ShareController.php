@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace PassApp\Controller;
 
-use PassApp\Auth\AuthGate;
 use PassApp\Core\DbHub;
 use PassApp\Core\SessionVault;
 use PassApp\Security\CsrfShield;
@@ -14,8 +13,13 @@ final class ShareController
 {
     public function ajaxAdmin(): void
     {
-        (new AuthGate())->requireLogin();
         header('Content-Type: application/json; charset=utf-8');
+        // AJAX에서는 HTML redirect 대신 JSON 에러를 반환
+        if (!SessionVault::isLoggedIn()) {
+            http_response_code(401);
+            echo json_encode(['ok' => false, 'msg' => '로그인이 필요합니다.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
 
         $action = (string)($_POST['action'] ?? '');
         $repo = new ShareRepo();
@@ -45,13 +49,22 @@ final class ShareController
                         "SELECT user_no, username, phone
                          FROM users
                          WHERE REPLACE(REPLACE(REPLACE(phone, '-', ''), ' ', ''), '.', '') = :digits
-                         LIMIT 1"
+                         ORDER BY user_no DESC
+                         LIMIT 30"
                     );
                     $stmt->execute([':digits' => $digits]);
-                    $user = $stmt->fetch() ?: null;
+                    $users = $stmt->fetchAll() ?: [];
 
-                    if ($user) {
-                        echo json_encode(['ok' => true, 'user' => $user], JSON_UNESCAPED_UNICODE);
+                    if (!empty($users)) {
+                        // 하위 호환: 기존 JS가 user 단일 필드를 읽어도 동작하도록 첫 행을 함께 전달
+                        echo json_encode(
+                            [
+                                'ok' => true,
+                                'user' => $users[0],
+                                'users' => $users,
+                            ],
+                            JSON_UNESCAPED_UNICODE
+                        );
                     } else {
                         echo json_encode(['ok' => false, 'msg' => '해당 전화번호로 등록된 회원이 없습니다.'], JSON_UNESCAPED_UNICODE);
                     }

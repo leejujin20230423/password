@@ -214,14 +214,6 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
     $assetVersion = (string) (@filemtime(__FILE__) ?: time());
     ?>
 
-    <!-- ✅ 헤더 전용 CSS -->
-    <link rel="stylesheet"
-          href="/password_3_header/password_3_header_view/password_3_header_view_admin/password_3_header_view_admin.css?v=<?php echo htmlspecialchars($assetVersion, ENT_QUOTES, 'UTF-8'); ?>">
-
-    <!-- ✅ 사이드바 전용 CSS -->
-    <link rel="stylesheet"
-          href="/password_4_sidebar/password_4_sidebar_view/password_4_sidebar_view_admin/password_4_sidebar_view_admin.css?v=<?php echo htmlspecialchars($assetVersion, ENT_QUOTES, 'UTF-8'); ?>">
-
     <!-- ✅ 공유현황 전용 레이아웃 CSS -->
     <link rel="stylesheet"
           href="/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.css?v=<?php echo htmlspecialchars($assetVersion, ENT_QUOTES, 'UTF-8'); ?>">
@@ -339,7 +331,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                                         <td><?php echo htmlspecialchars($row['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
 
                                         <!-- 사이트 주소 + 이동 버튼 -->
-                                        <td>
+                                        <td class="cell-site-url">
                                             <div class="site-cell">
                                                 <span class="site-url-text">
                                                     <?php echo htmlspecialchars($siteUrl, ENT_QUOTES, 'UTF-8'); ?>
@@ -382,8 +374,10 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                                         </td>
 
                                         <!-- 공유 메모 -->
-                                        <td>
-                                            <?php echo htmlspecialchars($row['share_memo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
+                                        <td class="cell-memo">
+                                            <div class="memo-scroll-text">
+                                                <?php echo htmlspecialchars($row['share_memo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
+                                            </div>
                                         </td>
 
                                         <!-- 권한 / 공유일 -->
@@ -491,7 +485,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                                         <td><?php echo htmlspecialchars($row['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
 
                                         <!-- 사이트 주소 + 이동 버튼 -->
-                                        <td>
+                                        <td class="cell-site-url">
                                             <div class="site-cell">
                                                 <span class="site-url-text">
                                                     <?php echo htmlspecialchars($siteUrl, ENT_QUOTES, 'UTF-8'); ?>
@@ -534,8 +528,10 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                                         </td>
 
                                         <!-- 공유 메모 -->
-                                        <td>
-                                            <?php echo htmlspecialchars($row['share_memo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
+                                        <td class="cell-memo">
+                                            <div class="memo-scroll-text">
+                                                <?php echo htmlspecialchars($row['share_memo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
+                                            </div>
                                         </td>
 
                                         <!-- 권한 / 공유일 -->
@@ -621,7 +617,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                                         <td><?php echo htmlspecialchars($row['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
 
                                         <!-- 사이트 주소 + 이동 버튼 -->
-                                        <td>
+                                        <td class="cell-site-url">
                                             <div class="site-cell">
                                                 <span class="site-url-text">
                                                     <?php echo htmlspecialchars($siteUrl, ENT_QUOTES, 'UTF-8'); ?>
@@ -664,7 +660,11 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                                         </td>
 
                                         <!-- 메모 / 소유자 -->
-                                        <td><?php echo htmlspecialchars($row['memo'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td class="cell-memo">
+                                            <div class="memo-scroll-text">
+                                                <?php echo htmlspecialchars($row['memo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
+                                            </div>
+                                        </td>
                                         <td><?php echo htmlspecialchars($row['owner_username'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                                     </tr>
                                 <?php endforeach; ?>

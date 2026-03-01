@@ -50,8 +50,6 @@ function fallbackCopy(text) {
 // 2. DOM 로드 후 전체 로직 실행
 // ==========================================================
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("✅ shareStatus JS 로딩 완료");
-
     // --------------------------------------------------
     // (1) 사이트 이동 버튼
     // --------------------------------------------------
@@ -155,6 +153,20 @@ document.addEventListener("DOMContentLoaded", function () {
     var unsharedInput = document.getElementById("unsharedSearch");
     var unsharedBtn   = document.getElementById("unsharedSearchBtn");
 
+    function debounce(fn, delayMs) {
+        var timer = null;
+        return function () {
+            var context = this;
+            var args = arguments;
+            if (timer) {
+                clearTimeout(timer);
+            }
+            timer = setTimeout(function () {
+                fn.apply(context, args);
+            }, delayMs);
+        };
+    }
+
     // 공통 필터 함수
     function filterRows(formElem, keyword) {
         if (!formElem) return;
@@ -176,7 +188,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        console.log("🔍 필터 적용:", keyword, " / 행 개수:", rows.length);
     }
 
     function filterByMe() {
@@ -194,6 +205,10 @@ document.addEventListener("DOMContentLoaded", function () {
         filterRows(unsharedForm, unsharedInput.value);
     }
 
+    var debouncedByMe = debounce(filterByMe, 160);
+    var debouncedToMe = debounce(filterToMe, 160);
+    var debouncedUnshared = debounce(filterUnshared, 160);
+
     // 👉 버튼 클릭 시에만 검색 실행
     if (byMeBtn) {
         byMeBtn.addEventListener("click", function () {
@@ -208,6 +223,23 @@ document.addEventListener("DOMContentLoaded", function () {
     if (unsharedBtn) {
         unsharedBtn.addEventListener("click", function () {
             filterUnshared();
+        });
+    }
+
+    // 👉 입력 시 자동 필터링 (디바운스 적용)
+    if (byMeInput) {
+        byMeInput.addEventListener("input", function () {
+            debouncedByMe();
+        });
+    }
+    if (toMeInput) {
+        toMeInput.addEventListener("input", function () {
+            debouncedToMe();
+        });
+    }
+    if (unsharedInput) {
+        unsharedInput.addEventListener("input", function () {
+            debouncedUnshared();
         });
     }
 
@@ -236,4 +268,3 @@ document.addEventListener("DOMContentLoaded", function () {
         unsharedInput.addEventListener("keydown", handleSearchEnter);
     }
 });
-

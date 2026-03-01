@@ -537,14 +537,6 @@ $isEdit = !empty($editRow);
     $assetVersion = (string) (@filemtime(__FILE__) ?: time());
     ?>
 
-    <!-- ✅ 헤더 전용 CSS -->
-    <link rel="stylesheet"
-          href="/password_3_header/password_3_header_view/password_3_header_view_admin/password_3_header_view_admin.css?v=<?php echo htmlspecialchars($assetVersion, ENT_QUOTES, 'UTF-8'); ?>">
-
-    <!-- ✅ 사이드바 전용 CSS -->
-    <link rel="stylesheet"
-          href="/password_4_sidebar/password_4_sidebar_view/password_4_sidebar_view_admin/password_4_sidebar_view_admin.css?v=<?php echo htmlspecialchars($assetVersion, ENT_QUOTES, 'UTF-8'); ?>">
-
     <!-- ✅ 비밀번호 등록 화면 전용 CSS -->
     <link rel="stylesheet"
           href="/password_5_passwordRegister/password_5_passwordRegister_View/password_5_passwordRegister_View_admin/password_5_passwordRegister_View_admin.css?v=<?php echo htmlspecialchars($assetVersion, ENT_QUOTES, 'UTF-8'); ?>">
@@ -774,14 +766,16 @@ $isEdit = !empty($editRow);
                     </span>
                     <!-- 🔎 검색 박스: 사이트 주소 / 메모 검색 -->
                     <div class="search-box">
-                        <form method="get" action="">
+                        <form method="get" action="" id="pw5SearchForm">
                             <input type="text"
+                                id="pw5TableSearchInput"
                                 name="q"
                                 placeholder="매장명 / 사이트 주소 / 메모에서 검색"
                                 value="<?php echo htmlspecialchars($searchKeyword, ENT_QUOTES, 'UTF-8'); ?>">
-                            <button type="submit">검색</button>
+                            <button type="button" id="pw5TableSearchBtn">검색</button>
                             <?php if ($searchKeyword !== ''): ?>
                                 <button type="button"
+                                    id="pw5TableSearchResetBtn"
                                     class="search-reset-btn"
                                     onclick="window.location.href='<?php echo htmlspecialchars(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), ENT_QUOTES, 'UTF-8'); ?>';">
                                     초기화
@@ -798,10 +792,10 @@ $isEdit = !empty($editRow);
                                     <th>순번</th>
                                     <th>구분</th>
                                     <th>항목</th>
-                                    <th>사이트 주소/프로그램명 </th>
+                                    <th class="col-site-url">사이트 주소/프로그램명 </th>
                                     <th>아이디</th>
                                     <th>연락처</th>
-                                    <th>메모</th>
+                                    <th class="col-memo">메모</th>
                                     <th class="col-actions">Action</th>
                                 </tr>
                             </thead>
@@ -818,9 +812,9 @@ $isEdit = !empty($editRow);
                                                 <?php echo htmlspecialchars($row['storename'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
                                             </td>
 
-                                            <td>
-                                                <div style="display:flex; gap:6px; align-items:center;">
-                                                    <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                            <td class="cell-site-url">
+                                                <div class="table-action-cell">
+                                                    <span class="cell-scroll-text">
                                                         <?php echo htmlspecialchars($row['site_url'], ENT_QUOTES, 'UTF-8'); ?>
                                                     </span>
                                                     <button type="button"
@@ -835,8 +829,8 @@ $isEdit = !empty($editRow);
                                             <!-- 연락처 + 전화걸기 버튼 -->
                                             <td>
                                                 <?php if (!empty($row['contact_phone'])): ?>
-                                                    <div style="display:flex; gap:6px; align-items:center;">
-                                                        <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                                    <div class="table-action-cell">
+                                                        <span class="cell-scroll-text">
                                                             <?php echo htmlspecialchars($row['contact_phone'], ENT_QUOTES, 'UTF-8'); ?>
                                                         </span>
                                                         <?php
@@ -853,7 +847,11 @@ $isEdit = !empty($editRow);
                                                 <?php endif; ?>
                                             </td>
 
-                                            <td><?php echo htmlspecialchars($row['memo'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                            <td class="cell-memo">
+                                                <div class="cell-scroll-text">
+                                                    <?php echo htmlspecialchars($row['memo'], ENT_QUOTES, 'UTF-8'); ?>
+                                                </div>
+                                            </td>
 
                                             <!-- 보기 / 삭제 -->
                                             <td class="col-actions">
