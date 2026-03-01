@@ -1,58 +1,61 @@
 <?php
+declare(strict_types=1);
+
 /**
  * PASS bootstrap loader
- * (프로젝트마다 DB/ENV 로드용으로 로컬에서만 두는 경우가 많음)
+ * - .env 로딩을 확실히 하고(EnvBox),
+ * - 필요한 경우 전역 PDO($GLOBALS['pdo'])를 생성
+ * - 절대 실행 안 되는 코드/중복 로딩 제거
  */
 
 $ROOT = dirname(__DIR__);
 
-// Lightweight .env loader (works even when $_ENV is not populated by PHP/FPM)
+// 1) .env 로드 (EnvBox 하나로 통일)
 require_once $ROOT . '/app/Core/EnvBox.php';
 \PassApp\Core\EnvBox::boot($ROOT . '/.env');
 
-// composer autoload가 있으면 로드
+// 2) composer autoload (있으면)
 $autoload = $ROOT . '/vendor/autoload.php';
-if (file_exists($autoload)) {
+if (is_file($autoload)) {
     require_once $autoload;
 }
 
-// .env 로딩 (phpdotenv 사용 시)
-if (class_exists(\Dotenv\Dotenv::class) && file_exists($ROOT.'/.env')) {
-    $dotenv = \Dotenv\Dotenv::createImmutable($ROOT);
-    $dotenv->safeLoad();
-}
+// 3) 기본 ENV (없으면 기본값)
+$appEnv = \PassApp\Core\EnvBox::get('APP_ENV', 'local');
+putenv("APP_ENV={$appEnv}");
+$_ENV['APP_ENV'] = $appEnv;
+$_SERVER['APP_ENV'] = $appEnv;
 
-/**
- * 여기부터는 프로젝트가 기대하는 값에 맞춰 조정
- * - DB 연결을 여기서 만들거나
- * - 상수/전역 변수 세팅만 해도 됨
- */
-
-// 예: 기본 환경변수 세팅(없어도 동작은 하게)
-$_ENV['APP_ENV'] = $_ENV['APP_ENV'] ?? getenv('APP_ENV') ?: 'local';
-
-// 필요하면 PDO 연결 (프로젝트가 DB를 쓰는 경우만)
-// 아래는 "있으면" 생성하는 형태라 당장 에러는 안 남
-if (!isset($GLOBALS['pdo']) && !empty($_ENV['DB_NAME'])) {
-    $host = \PassApp\Core\EnvBox::get('DB_HOST', '127.0.0.1');
-    $db   = \PassApp\Core\EnvBox::get('DB_NAME', '');
-    $user = \PassApp\Core\EnvBox::get('DB_USER', 'root');
-    $pass = \PassApp\Core\EnvBox::get('DB_PASS', '');
-    $port = \PassApp\Core\EnvBox::get('DB_PORT', '3306');
+// 4) 전역 PDO 생성 (DB_NAME 없어도 만들지 않음)
+if (!isset($GLOBALS['pdo'])) {
+    $host    = \PassApp\Core\EnvBox::get('DB_HOST', '127.0.0.1');
+    $db      = \PassApp\Core\EnvBox::get('DB_NAME', '');
+    $user    = \PassApp\Core\EnvBox::get('DB_USER', 'root');
+    $pass    = \PassApp\Core\EnvBox::get('DB_PASS', '');
+    $port    = \PassApp\Core\EnvBox::get('DB_PORT', '3306');
     $charset = \PassApp\Core\EnvBox::get('DB_CHARSET', 'utf8mb4');
 
-    $dsn = "mysql:host={$host};port={$port};dbname={$db};charset={$charset}";
-    try {
-        $GLOBALS['pdo'] = new PDO($dsn, $user, $pass, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        ]);
-    } catch (Throwable $e) {
-        // 로컬에서 DB 없을 때도 화면은 뜨게(필요하면 여기서 die로 바꿔도 됨)
-        // error_log($e->getMessage());
+    if ($db !== '') {
+        $dsn = "mysql:host={$host};port={$port};dbname={$db};charset={$charset}";
+
+        try {
+            $GLOBALS['pdo'] = new PDO($dsn, $user, $pass, [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES   => false,
+            ]);
+        } catch (Throwable $e) {
+            // 운영에서 원인 파악 가능하도록 로그는 남김
+            error_log('[PASS][DB] connect failed: ' . $e->getMessage());
+
+            // 로그인/서비스가 DB 필수면 fail-fast 추천
+            // http_response_code(500);
+            // exit('DB 연결 실패');
+        }
     }
 }
 
+// 필요 시 RedisConnection 등은 여기서 로드 (return 아래로 보내지 말 것)
+// require_once __DIR__ . '/RedisConnection.php';
+
 return true;
-require_once __DIR__ . '/DBConnection.php';
-require_once __DIR__ . '/RedisConnection.php';

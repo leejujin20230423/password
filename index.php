@@ -1,6 +1,10 @@
 <?php
 declare(strict_types=1);
 
+echo "Hello, PASS! This is the refactored index.php.\n";
+
+
+
 /**
  * PASS front controller (refactored)
  * - If not logged in -> login screen
