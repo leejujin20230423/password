@@ -10,8 +10,9 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // ✅ 2. DBConnection 클래스 불러오기
 // 현재 파일: /PASS/public/password_50_getAllTableNameColumnNameAutoload/password_50_getAllTableNameColumnNameAutoload.php
-// DBConnection: /PASS/connection/classes/DBConnection.php
-require_once __DIR__ . '/../../connection/classes/DBConnection.php';
+// DBConnection: /PASS/connection/DBConnection.php
+require_once __DIR__ . '/../connection/DBConnection.php';
+
 
 /**
  * GetAllTableNameAutoload 클래스

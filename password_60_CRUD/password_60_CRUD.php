@@ -14,7 +14,8 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // DB 연결 클래스
-require_once __DIR__ . '/../connection/classes/DBConnection.php';
+
+require_once __DIR__ . '/../connection/DBConnection.php';
 
 
 // 테이블/컬럼 자동 로더

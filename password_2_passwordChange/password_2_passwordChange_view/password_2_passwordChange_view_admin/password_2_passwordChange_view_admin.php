@@ -12,7 +12,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // DB 연결 클래스 로드 (DBConnection)
 //  - 위치 예시: /connection/DBConnection.php
 // --------------------------------
-require_once __DIR__ . '/../../../../connection/classes/DBConnection.php';
+require_once __DIR__ . '/../../../../connection/DBConnection.php';
 
 // DBConnection 인스턴스 생성 후 PDO 객체 가져오기
 $dbConnection = new DBConnection();

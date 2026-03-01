@@ -17,9 +17,9 @@ if (session_status() === PHP_SESSION_NONE) {
  *    현재 파일 위치:
  *    /public/password_1_usersRegister/password_1_usersRegister_view/password_1_usersRegister_view_user/...
  *
- *    PASS 루트까지 4단계 올라간 후 /connection/classes/DBConnection.php
+ *    PASS 루트까지 4단계 올라간 후 /connection/DBConnection.php
  * ========================================================== */
-require_once __DIR__ . '/../../../../connection/classes/DBConnection.php';
+require_once __DIR__ . '/../../../../connection/DBConnection.php';
 
 /* ==========================================================
  * 2. DBConnection 객체 생성

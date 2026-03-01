@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../connection/classes/DBConnection.php';
+require_once __DIR__ . '/../../../connection/DBConnection.php';
 require_once __DIR__ . '/../../../SessionManager/SessionManager.php';
 
 SessionManager::start();
