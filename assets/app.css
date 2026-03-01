@@ -507,3 +507,364 @@ body{
   background: rgba(255,255,255,0.05);
   padding: 18px;
 }
+
+/* =========================================================
+   Admin Unified Layout Override (2026-03)
+   - left/right 30px gutter
+   - fixed header + scrollable body area
+   - unified table style (no wrap + horizontal scroll)
+   ========================================================= */
+
+:root{
+  --page-gutter: 30px;
+  --top-gap: 12px;
+  --header-h: 64px;
+  --bottom-gap: 16px;
+  --panel-gap: 5px;
+}
+
+html, body{
+  height: 100%;
+  overflow: hidden;
+}
+
+.layout{
+  height: 100vh;
+  overflow: hidden;
+}
+
+.header{
+  position: fixed;
+  top: var(--top-gap);
+  left: var(--page-gutter);
+  right: var(--page-gutter);
+  width: auto;
+  margin: 0;
+  height: var(--header-h);
+  padding: 8px 12px;
+  box-sizing: border-box;
+  flex-wrap: nowrap;
+  z-index: 80;
+}
+
+.header-title-wrap,
+.header-title,
+.header-right,
+.user-info{
+  white-space: nowrap;
+}
+
+.main{
+  position: fixed;
+  left: var(--page-gutter);
+  right: var(--page-gutter);
+  top: calc(var(--top-gap) + var(--header-h) + 5px);
+  bottom: var(--bottom-gap);
+  width: auto;
+  margin: 0;
+  min-height: 0;
+  max-height: none;
+  overflow: auto;
+  gap: var(--panel-gap);
+  align-items: stretch;
+}
+
+.sidebar{
+  width: 260px;
+  min-width: 260px;
+  max-width: 260px;
+  height: 100%;
+  position: relative;
+  top: 0;
+  overflow: auto;
+  white-space: nowrap;
+}
+
+.sidebar li{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.content,
+.list-panel,
+.share-container{
+  min-width: 0;
+}
+
+.share-container{
+  flex: 1 1 auto;
+  height: auto;
+  overflow: visible;
+  padding-right: 0;
+}
+
+.content{
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: visible;
+}
+
+.content form{
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.list-panel{
+  overflow: visible;
+}
+
+.container{
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.search-box{
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.search-box input{
+  flex: 1 1 auto;
+}
+
+.table-wrapper{
+  width: 100%;
+  flex: 0 0 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: visible;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  background: rgba(6,10,22,0.38);
+}
+
+.password-table{
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+}
+
+.password-table th,
+.password-table td{
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.09);
+  border-right: 1px solid rgba(255,255,255,0.06);
+  font-size: 13px;
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+  vertical-align: middle;
+  text-overflow: ellipsis;
+}
+
+.password-table th:last-child,
+.password-table td:last-child{
+  border-right: 0;
+}
+
+.password-table th{
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: rgba(30, 40, 62, 0.92);
+  color: rgba(255,255,255,0.9);
+  font-weight: 700;
+}
+
+.password-table tbody tr:nth-child(even) td{
+  background: rgba(255,255,255,0.02);
+}
+
+.password-table tbody tr:hover td{
+  background: rgba(59,130,246,0.08);
+}
+
+/* keep button/text in one line and scroll instead of wrapping */
+.site-cell,
+.login-cell,
+.password-cell{
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: nowrap;
+  min-width: max-content;
+}
+
+.site-url-text,
+.login-id-text{
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* 사이트 주소 컬럼 고정폭 + 내부 가로 스크롤 */
+.site-cell{
+  width: 300px;
+  min-width: 300px;
+  max-width: 300px;
+  overflow-x: auto;
+}
+
+.site-cell .site-url-text{
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 230px;
+}
+
+.password-view-input{
+  min-width: 180px;
+  white-space: nowrap;
+}
+
+.btn-open-url,
+.btn-copy-login,
+.btn-copy-password,
+.table-actions button,
+.form-actions button{
+  white-space: nowrap;
+}
+
+.table-actions{
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  margin-bottom: 5px;
+}
+
+.page-share .share-container{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 5px;
+  align-items: start;
+  height: auto;
+  overflow: visible;
+}
+
+.page-share .content,
+.page-share .list-panel{
+  height: auto;
+  min-height: 0;
+}
+
+/* 공유하기 페이지 실제 마크업은 #shareForm이 section+aside를 감싼다 */
+.page-share #shareForm{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 5px;
+  align-items: start;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+}
+
+.page-share #shareForm > .content{
+  grid-column: 1;
+  min-width: 0;
+  height: auto;
+}
+
+.page-share #shareForm > .list-panel{
+  grid-column: 2;
+  min-width: 0;
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  overflow: visible;
+}
+
+/* 공유하기 페이지: 본문 영역 휠 스크롤 활성화 */
+.page-share .main{
+  overflow: auto;
+}
+
+/* 공유하기 페이지: "공유할 비밀번호 선택" 테이블 스크롤 고정 */
+.page-share .content .table-wrapper{
+  height: 600px;
+  min-height: 600px;
+  max-height: 600px;
+  overflow: auto;
+}
+
+.page-share .content .password-table{
+  min-width: 1400px;
+}
+
+@media (max-width: 900px){
+  :root{
+    --page-gutter: 30px;
+    --top-gap: 8px;
+    --header-h: 56px;
+  }
+
+  .main{
+    left: var(--page-gutter);
+    right: var(--page-gutter);
+    top: calc(var(--top-gap) + var(--header-h) + 5px);
+    bottom: 10px;
+    min-height: auto;
+    max-height: none;
+    overflow: visible;
+    position: absolute;
+    display: block;
+  }
+
+  .sidebar{
+    min-width: 280px;
+    width: 280px;
+    max-width: 280px;
+    position: fixed;
+    top: 64px;
+    bottom: 12px;
+    transform: translateX(-120%);
+    transition: transform .18s ease;
+    z-index: 90;
+  }
+
+  .sidebar.open{
+    transform: translateX(0);
+  }
+
+  .share-container{
+    height: calc(100vh - (var(--header-h) + 20px));
+    overflow: auto;
+  }
+
+  .page-share .share-container{
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    overflow: visible;
+    height: auto;
+  }
+
+  .page-share #shareForm{
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    height: auto;
+  }
+
+  .page-share #shareForm > .list-panel{
+    max-width: none;
+    height: auto;
+  }
+
+  .page-share .content .table-wrapper{
+    height: 600px;
+    min-height: 600px;
+    max-height: 600px;
+  }
+}

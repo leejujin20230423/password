@@ -1,7 +1,9 @@
 <?php
 
-// 절대 경로로 수정하여 EnvBox 클래스를 로드합니다.
-require_once $_SERVER['DOCUMENT_ROOT'] . '/app/Core/EnvBox.php';
+declare(strict_types=1);
+
+// DOCUMENT_ROOT 의존성을 제거하고 프로젝트 기준 경로로 로드
+require_once dirname(__DIR__) . '/app/Core/EnvBox.php';
 
 use PassApp\Core\EnvBox;
 

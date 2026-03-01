@@ -38,17 +38,17 @@ if (!empty($listSourceSafe)) {
         </button>
 
         <div class="header-title-wrap">
-            <h1 style="display:flex;" class="header-title"></h1>
+            <h1 class="header-title">
                 Password
 
                 <?php if (!empty($listSourceLabel)): ?>
                     <!-- ✅ 리스트 소스를 제목 옆에 표시 (db → DBQuery로 매핑된 값) -->
-                    <div style="text-align: left; display:flex; font-size:10px;" class="list-source-label">
+                    <span style="text-align:left; font-size:10px;" class="list-source-label">
                         Source:
                         <?php echo htmlspecialchars($listSourceLabel, ENT_QUOTES, 'UTF-8'); ?>
-                    </div>
+                    </span>
                 <?php endif; ?>
-            
+            </h1>
         </div>
     </div>
 

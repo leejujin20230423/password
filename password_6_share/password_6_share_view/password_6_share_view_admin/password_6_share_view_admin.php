@@ -31,14 +31,13 @@ $dbConnection = new DBConnection();
 $pdo          = $dbConnection->getDB();
 
 // Redis (있으면 쓰고, 없어도 null 처리)
-$redis = null;
-try {
-    if (class_exists('Redis')) {
-        $redis = new Redis();
-        $redis->connect('127.0.0.1', 6379, 0.5);
+$redis = $GLOBALS['redis'] ?? null;
+if ($redis === null && class_exists('RedisConnection')) {
+    try {
+        $redis = (new RedisConnection())->getRedis();
+    } catch (Throwable $e) {
+        $redis = null;
     }
-} catch (Exception $e) {
-    $redis = null;
 }
 
 $schemaLoader = new GetAllTableNameAutoload($pdo, 'user_no', $redis);
@@ -102,18 +101,14 @@ $columnLabels = [
     <title>Password 공유 설정 (관리자)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    
-    <link rel="stylesheet" href="/assets/app.css">
 <?php
     // 세션이 아직 시작 안 되었으면 시작
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
 
-    // 로그인 시 세팅해 둔 asset_version 사용, 없으면 기본값
-    $assetVersion = isset($_SESSION['asset_version'])
-        ? $_SESSION['asset_version']
-        : '20251206_01'; // 첫 접속/비로그인용 기본 버전
+    // 캐시 이슈 방지: 파일 수정시간 기반으로 asset 버전 생성
+    $assetVersion = (string) (@filemtime(__FILE__) ?: time());
     ?>
 
     <!-- ✅ 헤더 전용 CSS -->
@@ -130,7 +125,7 @@ $columnLabels = [
 </head>
 
 
-<body>
+<body id="page-share" class="page-share">
 <div class="layout">
 
     <!-- ========================== 상단 헤더 include ========================== -->

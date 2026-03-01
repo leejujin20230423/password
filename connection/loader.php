@@ -56,6 +56,15 @@ if (!isset($GLOBALS['pdo'])) {
 }
 
 // 필요 시 RedisConnection 등은 여기서 로드 (return 아래로 보내지 말 것)
-// require_once __DIR__ . '/RedisConnection.php';
+require_once __DIR__ . '/DBConnection.php';
+require_once __DIR__ . '/RedisConnection.php';
+
+if (!isset($GLOBALS['redis'])) {
+    try {
+        $GLOBALS['redis'] = (new RedisConnection())->getRedis();
+    } catch (Throwable $e) {
+        $GLOBALS['redis'] = null;
+    }
+}
 
 return true;

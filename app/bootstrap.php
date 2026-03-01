@@ -11,7 +11,6 @@ declare(strict_types=1);
 require_once __DIR__ . '/../app_bootstrap.php'; // keeps pass_require_loader_or_die() compatibility
 pass_require_loader_or_die();
 
-use PassApp\Core\DbHub;
 use PassApp\Core\CacheHub;
 use PassApp\Core\SessionVault;
 
@@ -31,5 +30,9 @@ spl_autoload_register(function (string $class): void {
 
 // Boot core services (idempotent)
 SessionVault::boot();
-DbHub::warm();
-CacheHub::warm();
+// DB는 실제 사용 시점에 lazy connect (초기 화면 로딩 안정화)
+try {
+    CacheHub::warm();
+} catch (Throwable $e) {
+    error_log('[PASS][bootstrap] cache warm failed: ' . $e->getMessage());
+}

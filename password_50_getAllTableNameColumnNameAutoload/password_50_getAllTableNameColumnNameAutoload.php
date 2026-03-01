@@ -300,11 +300,13 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'])) {
     $redis = null;
 
     try {
-        // [REDIS] Redis 인스턴스 생성
-        $redis = new Redis();
+        if (class_exists('Redis')) {
+            // [REDIS] Redis 인스턴스 생성
+            $redis = new Redis();
 
-        // [REDIS] Redis 서버에 연결 (host, port, timeout)
-        $redis->connect('127.0.0.1', 6379, 0.5);
+            // [REDIS] Redis 서버에 연결 (host, port, timeout)
+            $redis->connect('127.0.0.1', 6379, 0.5);
+        }
 
         // [REDIS] 비밀번호를 쓰는 서버라면 여기서 auth 필요
         // $redis->auth('your_redis_password');
@@ -312,7 +314,7 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'])) {
         // [REDIS] DB index 선택 (기본은 0번)
         // $redis->select(0);
 
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         $redis = null;
     }
 

@@ -86,6 +86,7 @@ SQL;
         SessionVault::put('user_no', (int)$row['user_no']);
         SessionVault::put('userid', (string)($row['userid'] ?? $userId));
         SessionVault::put('user_name', (string)($row['username'] ?? '')); // 기존 user_name 호환
+        SessionVault::put('username', (string)($row['username'] ?? ''));  // 레거시 username 호환
         SessionVault::put('user_type', (string)($row['user_type'] ?? ''));
         SessionVault::put('user_level', (string)($row['user_type'] ?? '')); // user_level 컬럼이 없어서 user_type로 매핑
         SessionVault::put('is_logged_in', true);

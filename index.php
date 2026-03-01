@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-echo "Hello, PASS! This is the refactored index.php.\n";
+// echo "Hello, PASS! This is the refactored index.php.\n";
 
 
 
@@ -20,6 +20,6 @@ if (!SessionVault::isLoggedIn()) {
     exit;
 }
 
-// 기존 화면 흐름 유지: "비밀번호 등록" 라우트로 이동
-header('Location: /password_5_passwordRegister/password_5_passwordRegister_Route/password_5_passwordRegister_Route.php');
+// 기본 진입 화면: 비밀번호 공유현황
+header('Location: /password_7_shareStatus/password_7_shareStatus_route/password_7_shareStatus_route_admin.php');
 exit;

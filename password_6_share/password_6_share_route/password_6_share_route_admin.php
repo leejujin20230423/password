@@ -38,13 +38,13 @@ $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 // 4) POST 요청 + action=save_share 만 허용
 // ------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: /password_6_share/password_6_share_view/password_6_share_view_admin/password_6_share_view_admin.php');
+    header('Location: /password_6_share/password_6_share_route/password_6_share_route_view_admin.php');
     exit;
 }
 
 $action = isset($_POST['action']) ? (string)$_POST['action'] : '';
 if ($action !== 'save_share') {
-    header('Location: /password_6_share/password_6_share_view/password_6_share_view_admin/password_6_share_view_admin.php');
+    header('Location: /password_6_share/password_6_share_route/password_6_share_route_view_admin.php');
     exit;
 }
 
@@ -69,7 +69,7 @@ $targetUserIds = array_filter(array_map('intval', $targetUserIds), static functi
 
 // 유효성 체크: 아무것도 선택 안 했으면 다시 화면으로
 if (empty($passwordIds) || empty($targetUserIds)) {
-    header('Location: /password_6_share/password_6_share_view/password_6_share_view_admin/password_6_share_view_admin.php?error=empty');
+    header('Location: /password_6_share/password_6_share_route/password_6_share_route_view_admin.php?error=empty');
     exit;
 }
 
@@ -157,7 +157,7 @@ try {
     // 10) 완료 후 다시 공유 화면으로 리디렉트
     //      (원하면 insert/update 개수도 쿼리스트링으로 전달)
     // ------------------------------------------------
-    $redirectUrl = '/password_6_share/password_6_share_view/password_6_share_view_admin/password_6_share_view_admin.php'
+    $redirectUrl = '/password_6_share/password_6_share_route/password_6_share_route_view_admin.php'
         . '?success=1'
         . '&insert=' . $insertCount
         . '&update=' . $updateCount;

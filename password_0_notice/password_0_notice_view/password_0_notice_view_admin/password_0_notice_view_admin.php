@@ -28,7 +28,7 @@ $userNo = (int)$_SESSION['user_no'];
  * ✅ 안내 이후 이동할 페이지: "비밀번호 공유현황 (관리자)"
  *    - 등록 페이지가 아니라, 공유현황 페이지로 고정
  */
-$afterNoticeUrl = '/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.php';
+$afterNoticeUrl = '/password_7_shareStatus/password_7_shareStatus_route/password_7_shareStatus_route_admin.php';
 
 // 필요하면 세션에도 저장해둘 수 있음 (선택)
 $_SESSION['after_notice_url'] = $afterNoticeUrl;

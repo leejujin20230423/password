@@ -204,18 +204,14 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
     <title>Password 공유현황 (관리자)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    
-    <link rel="stylesheet" href="/assets/app.css">
 <?php
     // 세션이 아직 시작 안 되었다면 시작
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
 
-    // 로그인 시 세팅해 둔 asset_version 사용 (없으면 기본값)
-    $assetVersion = isset($_SESSION['asset_version'])
-        ? $_SESSION['asset_version']
-        : '20251204_01'; // 기본 버전(로그인 전 또는 첫 접속용)
+    // 캐시 이슈 방지: 파일 수정시간 기반으로 asset 버전 생성
+    $assetVersion = (string) (@filemtime(__FILE__) ?: time());
     ?>
 
     <!-- ✅ 헤더 전용 CSS -->
@@ -233,7 +229,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
 </head>
 
 
-<body>
+<body id="page-share-status" class="page-share-status">
 <div class="layout">
 
     <!-- ========================== 상단 헤더 include ========================== -->

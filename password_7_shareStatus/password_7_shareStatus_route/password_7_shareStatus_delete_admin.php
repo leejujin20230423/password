@@ -19,7 +19,7 @@ $currentUserNo = (int)$_SESSION['user_no'];
 
 // 2) POST 요청만 허용
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: /password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.php');
+    header('Location: /password_7_shareStatus/password_7_shareStatus_route/password_7_shareStatus_route_admin.php');
     exit;
 }
 
@@ -35,7 +35,7 @@ $shareIds = array_filter($shareIds, function ($v) {
 
 // 아무 것도 선택 안 했으면 되돌리기
 if (empty($shareIds)) {
-    header('Location: /password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.php?error=empty');
+    header('Location: /password_7_shareStatus/password_7_shareStatus_route/password_7_shareStatus_route_admin.php?error=empty');
     exit;
 }
 
@@ -74,7 +74,7 @@ try {
     } else {
         // 잘못된 모드
         $pdo->rollBack();
-        header('Location: /password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.php?error=mode');
+        header('Location: /password_7_shareStatus/password_7_shareStatus_route/password_7_shareStatus_route_admin.php?error=mode');
         exit;
     }
 
@@ -84,7 +84,7 @@ try {
     $pdo->commit();
 
     // 삭제 후 다시 공유현황 화면으로
-    header('Location: /password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.php?deleted=1');
+    header('Location: /password_7_shareStatus/password_7_shareStatus_route/password_7_shareStatus_route_admin.php?deleted=1');
     exit;
 
 } catch (PDOException $e) {

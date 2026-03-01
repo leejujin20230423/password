@@ -122,18 +122,14 @@ require_once __DIR__ . '/../../../password_60_CRUD/password_60_CRUD.php';
 $dbConnection = new DBConnection();
 $pdo          = $dbConnection->getDB();
 
-// (선택) Redis 연결
-$redis = null;
-try {
-    if (class_exists('Redis')) {
-        $redis = new Redis();
-        // 로컬 개발 환경 기준 127.0.0.1:6379
-        $redis->connect('127.0.0.1', 6379, 0.5);
-        // $redis->auth('your_redis_password'); // 필요시
-        // $redis->select(0);                   // 필요시
+// bootstrap에서 만든 redis를 우선 사용, 없으면 직접 생성 시도
+$redis = $GLOBALS['redis'] ?? null;
+if ($redis === null && class_exists('RedisConnection')) {
+    try {
+        $redis = (new RedisConnection())->getRedis();
+    } catch (Throwable $e) {
+        $redis = null;
     }
-} catch (Exception $e) {
-    $redis = null;
 }
 
 // 스키마 로더 (두 번째 인자 'user_no' 는 로그인 세션 키 이름)
@@ -531,18 +527,14 @@ $isEdit = !empty($editRow);
     <title>Password 등록</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    
-    <link rel="stylesheet" href="/assets/app.css">
 <?php
     // 세션이 아직 시작 안 되었으면 시작
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
 
-    // 로그인 시 세팅해 둔 asset_version 사용, 없으면 기본값
-    $assetVersion = isset($_SESSION['asset_version'])
-        ? $_SESSION['asset_version']
-        : '20251204_01'; // 첫 접속/비로그인용 기본 버전
+    // 캐시 이슈 방지: 파일 수정시간 기반으로 asset 버전 생성
+    $assetVersion = (string) (@filemtime(__FILE__) ?: time());
     ?>
 
     <!-- ✅ 헤더 전용 CSS -->
@@ -560,21 +552,15 @@ $isEdit = !empty($editRow);
 
 
 
-<body>
-    <div class="layout">
-
-
-        <div class="layout">
+<body id="page-pw5" class="pw5-page">
+    <div class="layout pw5-layout">
 
             <!-- 상단 헤더 있던곳-->
             <?php
             require_once $_SERVER['DOCUMENT_ROOT'] . '/password_3_header/password_3_header_view/password_3_header_view_admin/password_3_header_view_admin.php';
             ?>
 
-            <!-- ✅ 모바일에서 사이드바 열렸을 때 바탕 클릭용 오버레이 -->
-            <div id="sidebarOverlay" class="sidebar-overlay"></div>
-
-            <div class="main">
+            <div class="main pw5-main">
 
                 <?php
                 // 헤더, 사이드바 include
@@ -584,8 +570,8 @@ $isEdit = !empty($editRow);
 
 
                 <!-- 가운데 등록 / 수정 폼 -->
-                <section class="content">
-  <div class="container">
+                <section class="content pw5-content">
+  <div class="container pw5-container">
                     <h2>비밀번호 <?php echo $isEdit ? '수정' : '등록'; ?></h2>
 
 
@@ -778,7 +764,7 @@ $isEdit = !empty($editRow);
 </section>
 
                 <!-- 우측 리스트 -->
-                <aside class="list-panel">
+                <aside class="list-panel pw5-list-panel">
                     <h2 style="display: flex;">등록된 비밀번호 목록
 
                     </h2>
@@ -902,9 +888,8 @@ $isEdit = !empty($editRow);
                 </aside>
 
             </div><!-- /.main -->
-        </div><!-- /.layout -->
     </div>
-    <script src="password_5_passwordRegister_View_admin.js?v=20251128_03"></script>
+    <script src="/password_5_passwordRegister/password_5_passwordRegister_View/password_5_passwordRegister_View_admin/password_5_passwordRegister_View_admin.js?v=20251128_03"></script>
 
 </body>
 
