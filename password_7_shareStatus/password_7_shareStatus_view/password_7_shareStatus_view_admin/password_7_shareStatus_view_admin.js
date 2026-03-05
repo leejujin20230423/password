@@ -161,33 +161,30 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // 공통 필터 함수
-    function filterRows(formElem, keyword) {
-        if (!formElem) return;
-
-        var rows  = formElem.querySelectorAll("tbody tr");
-        var lower = (keyword || "").trim().toLowerCase();
-
-        rows.forEach(function (row) {
-            var hay = (
-                row.getAttribute("data-search") ||
-                row.innerText ||
-                ""
-            ).toLowerCase();
-
-            if (!lower || hay.indexOf(lower) !== -1) {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
-            }
-        });
-
-    }
-
     function runGlobalFilter() {
-        var keyword = globalSearchInput ? globalSearchInput.value : "";
-        filterRows(byMeForm, keyword);
-        filterRows(toMeForm, keyword);
-        filterRows(unsharedForm, keyword);
+        var lower = (globalSearchInput && globalSearchInput.value
+            ? globalSearchInput.value
+            : "").trim().toLowerCase();
+
+        var allRows = document.querySelectorAll(
+            ".share-container .password-table tbody tr"
+        );
+
+        allRows.forEach(function (row) {
+            var hasOnlyColspanCell =
+                row.children &&
+                row.children.length === 1 &&
+                row.children[0].hasAttribute("colspan");
+
+            // "데이터 없음" 안내행은 검색 중에는 숨김
+            if (hasOnlyColspanCell) {
+                row.style.display = lower ? "none" : "";
+                return;
+            }
+
+            var hay = (row.getAttribute("data-search") || row.innerText || "").toLowerCase();
+            row.style.display = (!lower || hay.indexOf(lower) !== -1) ? "" : "none";
+        });
     }
 
     if (globalSearchInput) {

@@ -649,7 +649,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
 
 </div><!-- /.layout -->
 
-<script src="/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.js"></script>
+<script src="/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.js?v=<?php echo htmlspecialchars($assetVersion, ENT_QUOTES, 'UTF-8'); ?>"></script>
 
 
 </body>
