@@ -224,77 +224,6 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
     <!-- ✅ 공유현황 전용 레이아웃 CSS -->
     <link rel="stylesheet"
           href="/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.css?v=<?php echo htmlspecialchars($cssVersion, ENT_QUOTES, 'UTF-8'); ?>">
-    <style>
-    /* cache bypass hotfix: global search LED border */
-    body#page-share-status .global-filter-bar{
-      left: var(--gutter) !important;
-      right: var(--gutter) !important;
-      justify-content: center !important;
-    }
-    body#page-share-status .global-search-shell{
-      width: 40% !important;
-      min-width: 360px !important;
-      max-width: 960px !important;
-      --led-border-size: 2px !important;
-      position: relative !important;
-      border-radius: 14px !important;
-      overflow: hidden !important;
-      isolation: isolate !important;
-      background: rgba(9, 15, 28, .55) !important;
-    }
-    body#page-share-status .global-search-shell::before{
-      content: "" !important;
-      position: absolute !important;
-      inset: 0 !important;
-      padding: var(--led-border-size) !important;
-      border-radius: inherit !important;
-      background: conic-gradient(
-        from 0deg,
-        rgba(90, 196, 255, 0) 0deg,
-        rgba(90, 196, 255, 0) 318deg,
-        rgba(93, 225, 255, .86) 334deg,
-        rgba(228, 251, 255, 1) 346deg,
-        rgba(93, 225, 255, .86) 356deg,
-        rgba(90, 196, 255, 0) 360deg
-      ) !important;
-      animation: share-global-search-led-hotfix 1.4s linear infinite !important;
-      filter: drop-shadow(0 0 8px rgba(93, 225, 255, .65)) !important;
-      z-index: 0 !important;
-      pointer-events: none !important;
-    }
-    body#page-share-status .global-search-shell::after{
-      content: "" !important;
-      position: absolute !important;
-      inset: var(--led-border-size) !important;
-      border-radius: calc(14px - var(--led-border-size)) !important;
-      background: linear-gradient(180deg, rgba(18,28,51,.94), rgba(9,16,31,.96)) !important;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.08) !important;
-      z-index: 1 !important;
-      pointer-events: none !important;
-    }
-    body#page-share-status #globalShareSearch{
-      position: relative !important;
-      z-index: 2 !important;
-      width: 100% !important;
-      height: 100% !important;
-      border: 0 !important;
-      border-radius: 13px !important;
-      background: transparent !important;
-      padding: 0 12px !important;
-      color: var(--text) !important;
-      font-size: 13px !important;
-    }
-    @keyframes share-global-search-led-hotfix {
-      to { transform: rotate(1turn); }
-    }
-    @media (max-width: 900px) {
-      body#page-share-status .global-search-shell{
-        width: 100% !important;
-        min-width: 0 !important;
-        max-width: none !important;
-      }
-    }
-    </style>
 
 </head>
 
@@ -309,7 +238,11 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
     ?>
 
     <div class="global-filter-bar">
-        <div class="global-search-shell">
+        <div class="global-search-shell" id="globalSearchShell">
+            <svg class="global-search-led" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <rect class="global-search-led-base" x="1.4" y="1.4" width="97.2" height="97.2" rx="12" ry="12"></rect>
+                <rect class="global-search-led-trail" x="1.4" y="1.4" width="97.2" height="97.2" rx="12" ry="12"></rect>
+            </svg>
             <input
                 type="text"
                 id="globalShareSearch"

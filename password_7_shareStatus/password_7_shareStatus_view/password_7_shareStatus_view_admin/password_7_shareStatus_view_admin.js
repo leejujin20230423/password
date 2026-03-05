@@ -50,6 +50,33 @@ function fallbackCopy(text) {
 // 2. DOM 로드 후 전체 로직 실행
 // ==========================================================
 document.addEventListener("DOMContentLoaded", function () {
+    var globalSearchShell = document.getElementById("globalSearchShell");
+
+    function syncGlobalSearchShellSize() {
+        if (!globalSearchShell) return;
+
+        if (window.innerWidth <= 900) {
+            globalSearchShell.style.width = "100%";
+            globalSearchShell.style.minWidth = "0";
+            globalSearchShell.style.maxWidth = "none";
+            return;
+        }
+
+        var w = Math.round(window.innerWidth * 0.4);
+        if (w < 360) w = 360;
+        if (w > 960) w = 960;
+
+        globalSearchShell.style.width = w + "px";
+        globalSearchShell.style.minWidth = "360px";
+        globalSearchShell.style.maxWidth = "960px";
+
+        var h = Math.round(globalSearchShell.getBoundingClientRect().height);
+        globalSearchShell.setAttribute("data-size", w + "x" + h);
+    }
+
+    syncGlobalSearchShellSize();
+    window.addEventListener("resize", syncGlobalSearchShellSize);
+
     // --------------------------------------------------
     // (1) 사이트 이동 버튼
     // --------------------------------------------------
