@@ -99,9 +99,27 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 2000);
     }
 
+    function onUserScrollAwayFromSearch() {
+        if (!globalSearchInputEl) return;
+
+        var hasTyped = String(globalSearchInputEl.value || "").trim() !== "";
+        var isFocused = (document.activeElement === globalSearchInputEl);
+
+        // 검색 입력 이후 스크롤하면 2초 후 LED 재시작
+        if (!hasTyped && !isFocused) return;
+
+        if (isFocused) {
+            globalSearchInputEl.blur();
+        }
+        resumeGlobalSearchLedWithDelay();
+    }
+
     if (globalSearchInputEl) {
         globalSearchInputEl.addEventListener("focus", pauseGlobalSearchLed);
         globalSearchInputEl.addEventListener("blur", resumeGlobalSearchLedWithDelay);
+        document.addEventListener("scroll", onUserScrollAwayFromSearch, { passive: true, capture: true });
+        window.addEventListener("wheel", onUserScrollAwayFromSearch, { passive: true });
+        window.addEventListener("touchmove", onUserScrollAwayFromSearch, { passive: true });
     }
 
     // --------------------------------------------------
