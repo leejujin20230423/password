@@ -51,6 +51,8 @@ function fallbackCopy(text) {
 // ==========================================================
 document.addEventListener("DOMContentLoaded", function () {
     var globalSearchShell = document.getElementById("globalSearchShell");
+    var globalSearchInputEl = document.getElementById("globalShareSearch");
+    var resumeLedTimer = null;
 
     function syncGlobalSearchShellSize() {
         if (!globalSearchShell) return;
@@ -76,6 +78,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
     syncGlobalSearchShellSize();
     window.addEventListener("resize", syncGlobalSearchShellSize);
+
+    function pauseGlobalSearchLed() {
+        if (!globalSearchShell) return;
+        if (resumeLedTimer) {
+            clearTimeout(resumeLedTimer);
+            resumeLedTimer = null;
+        }
+        globalSearchShell.classList.add("is-paused");
+    }
+
+    function resumeGlobalSearchLedWithDelay() {
+        if (!globalSearchShell) return;
+        if (resumeLedTimer) {
+            clearTimeout(resumeLedTimer);
+        }
+        resumeLedTimer = setTimeout(function () {
+            globalSearchShell.classList.remove("is-paused");
+            resumeLedTimer = null;
+        }, 2000);
+    }
+
+    if (globalSearchInputEl) {
+        globalSearchInputEl.addEventListener("focus", pauseGlobalSearchLed);
+        globalSearchInputEl.addEventListener("blur", resumeGlobalSearchLedWithDelay);
+    }
 
     // --------------------------------------------------
     // (1) 사이트 이동 버튼
