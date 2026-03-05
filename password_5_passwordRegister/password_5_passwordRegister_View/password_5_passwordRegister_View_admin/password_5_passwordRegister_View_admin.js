@@ -10,7 +10,13 @@ function openUrl(raw) {
   if (!/^https?:\/\//i.test(url)) {
     url = "https://" + url;
   }
-  window.open(url, "_blank");
+
+  // 요청사항: 이동 클릭 시 새창을 하나 더 열기 (총 2개)
+  var win1 = window.open(url, "_blank", "noopener,noreferrer");
+  var win2 = window.open(url, "_blank", "noopener,noreferrer");
+
+  if (win1) win1.opener = null;
+  if (win2) win2.opener = null;
 }
 
 // ==========================================
