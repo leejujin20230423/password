@@ -551,7 +551,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
 
                     <input type="hidden" name="mode" value="unshared">
 
-                    <h4>공유하지 않은 비밀번호</h4>
+                    <h4>나만의 비밀번호</h4>
                     <p style="margin-top:0; margin-bottom:12px; font-size:13px; color:#6b7280;">
                         현재 계정에 대해 공유하지 않은 비밀번호 목록입니다.
                     </p>
