@@ -9,6 +9,11 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// 브라우저 캐시로 인해 최신 CSS/JS가 반영되지 않는 문제 방지
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
+
 // 로그인 여부 체크
 if (empty($_SESSION['user_no'])) {
     header('Location: /password_0_login/password_0_login_View/password_0_login_View.php');
@@ -210,13 +215,86 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
         session_start();
     }
 
-    // 캐시 이슈 방지: 파일 수정시간 기반으로 asset 버전 생성
-    $assetVersion = (string) (@filemtime(__FILE__) ?: time());
+    // 캐시 이슈 방지: 강제 캐시 버스트
+    $cacheBust = (string) time();
+    $cssVersion = $cacheBust;
+    $jsVersion  = $cacheBust;
     ?>
 
     <!-- ✅ 공유현황 전용 레이아웃 CSS -->
     <link rel="stylesheet"
-          href="/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.css?v=<?php echo htmlspecialchars($assetVersion, ENT_QUOTES, 'UTF-8'); ?>">
+          href="/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.css?v=<?php echo htmlspecialchars($cssVersion, ENT_QUOTES, 'UTF-8'); ?>">
+    <style>
+    /* cache bypass hotfix: global search LED border */
+    body#page-share-status .global-filter-bar{
+      left: var(--gutter) !important;
+      right: var(--gutter) !important;
+      justify-content: center !important;
+    }
+    body#page-share-status .global-search-shell{
+      width: 40% !important;
+      min-width: 360px !important;
+      max-width: 960px !important;
+      --led-border-size: 2px !important;
+      position: relative !important;
+      border-radius: 14px !important;
+      overflow: hidden !important;
+      isolation: isolate !important;
+      background: rgba(9, 15, 28, .55) !important;
+    }
+    body#page-share-status .global-search-shell::before{
+      content: "" !important;
+      position: absolute !important;
+      inset: 0 !important;
+      padding: var(--led-border-size) !important;
+      border-radius: inherit !important;
+      background: conic-gradient(
+        from 0deg,
+        rgba(90, 196, 255, 0) 0deg,
+        rgba(90, 196, 255, 0) 318deg,
+        rgba(93, 225, 255, .86) 334deg,
+        rgba(228, 251, 255, 1) 346deg,
+        rgba(93, 225, 255, .86) 356deg,
+        rgba(90, 196, 255, 0) 360deg
+      ) !important;
+      animation: share-global-search-led-hotfix 1.4s linear infinite !important;
+      filter: drop-shadow(0 0 8px rgba(93, 225, 255, .65)) !important;
+      z-index: 0 !important;
+      pointer-events: none !important;
+    }
+    body#page-share-status .global-search-shell::after{
+      content: "" !important;
+      position: absolute !important;
+      inset: var(--led-border-size) !important;
+      border-radius: calc(14px - var(--led-border-size)) !important;
+      background: linear-gradient(180deg, rgba(18,28,51,.94), rgba(9,16,31,.96)) !important;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.08) !important;
+      z-index: 1 !important;
+      pointer-events: none !important;
+    }
+    body#page-share-status #globalShareSearch{
+      position: relative !important;
+      z-index: 2 !important;
+      width: 100% !important;
+      height: 100% !important;
+      border: 0 !important;
+      border-radius: 13px !important;
+      background: transparent !important;
+      padding: 0 12px !important;
+      color: var(--text) !important;
+      font-size: 13px !important;
+    }
+    @keyframes share-global-search-led-hotfix {
+      to { transform: rotate(1turn); }
+    }
+    @media (max-width: 900px) {
+      body#page-share-status .global-search-shell{
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+      }
+    }
+    </style>
 
 </head>
 
@@ -651,7 +729,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
 
 </div><!-- /.layout -->
 
-<script src="/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.js?v=<?php echo htmlspecialchars($assetVersion, ENT_QUOTES, 'UTF-8'); ?>"></script>
+<script src="/password_7_shareStatus/password_7_shareStatus_view/password_7_shareStatus_view_admin/password_7_shareStatus_view_admin.js?v=<?php echo htmlspecialchars($jsVersion, ENT_QUOTES, 'UTF-8'); ?>"></script>
 
 
 </body>
