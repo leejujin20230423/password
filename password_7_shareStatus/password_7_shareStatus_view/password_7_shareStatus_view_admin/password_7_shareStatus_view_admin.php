@@ -231,10 +231,12 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
     ?>
 
     <div class="global-filter-bar">
-        <input
-            type="text"
-            id="globalShareSearch"
-            placeholder="공유 대상, 공유해 준 사람, 구분, 항목, 사이트 주소, 아이디, 메모, 연락처에서 통합 검색">
+        <div class="global-search-shell">
+            <input
+                type="text"
+                id="globalShareSearch"
+                placeholder="공유 대상, 공유해 준 사람, 구분, 항목, 사이트 주소, 아이디, 메모, 연락처에서 통합 검색">
+        </div>
     </div>
 
     <div class="main">
