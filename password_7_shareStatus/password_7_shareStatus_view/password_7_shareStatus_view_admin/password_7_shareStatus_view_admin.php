@@ -270,7 +270,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
 
                     <input type="hidden" name="mode" value="by_me">
 
-                    <h4 class="status-moving-title">공유해준 비밀번호</h4>
+                    <h5 class="status-moving-title">공유해준 비밀번호</h5>
                     <p style="margin-top:0; margin-bottom:12px; font-size:13px; color:#6b7280;">
                         현재 계정
                         (<strong><?php echo htmlspecialchars($sessionUsername, ENT_QUOTES, 'UTF-8'); ?></strong>)
@@ -412,7 +412,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
 
                     <input type="hidden" name="mode" value="to_me">
 
-                    <h4 class="status-moving-title">공유받은 비밀번호</h4>
+                    <h5 class="status-moving-title">공유받은 비밀번호</h5>
                     <p style="margin-top:0; margin-bottom:12px; font-size:13px; color:#6b7280;">
                         다른 사용자 계정에서 이 계정으로 공유해 준 비밀번호 목록입니다.
                     </p>
@@ -551,7 +551,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
 
                     <input type="hidden" name="mode" value="unshared">
 
-                    <h4 class="status-moving-title">나만의 비밀번호</h4>
+                    <h5 class="status-moving-title">나만의 비밀번호</h5>
                     <p style="margin-top:0; margin-bottom:12px; font-size:13px; color:#6b7280;">
                         현재 계정에 대해 공유하지 않은 비밀번호 목록입니다.
                     </p>
