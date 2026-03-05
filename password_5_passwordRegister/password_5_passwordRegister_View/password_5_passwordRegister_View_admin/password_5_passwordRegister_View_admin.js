@@ -11,12 +11,22 @@ function openUrl(raw) {
     url = "https://" + url;
   }
 
-  // 요청사항: 이동 클릭 시 새창을 하나 더 열기 (총 2개)
-  var win1 = window.open(url, "_blank", "noopener,noreferrer");
-  var win2 = window.open(url, "_blank", "noopener,noreferrer");
+  // 모바일/태블릿 포함: 현재 페이지 이동 없이 새창(새탭)으로 열기
+  var win = window.open(url, "_blank", "noopener,noreferrer");
+  if (win) {
+    win.opener = null;
+    return;
+  }
 
-  if (win1) win1.opener = null;
-  if (win2) win2.opener = null;
+  // 일부 모바일 브라우저의 팝업 차단 대비 fallback
+  var a = document.createElement("a");
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 // ==========================================
