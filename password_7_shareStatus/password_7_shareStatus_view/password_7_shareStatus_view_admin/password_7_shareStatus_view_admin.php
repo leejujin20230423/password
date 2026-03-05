@@ -230,6 +230,13 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
         . '/password_3_header/password_3_header_view/password_3_header_view_admin/password_3_header_view_admin.php';
     ?>
 
+    <div class="global-filter-bar">
+        <input
+            type="text"
+            id="globalShareSearch"
+            placeholder="공유 대상, 공유해 준 사람, 구분, 항목, 사이트 주소, 아이디, 메모, 연락처에서 통합 검색">
+    </div>
+
     <div class="main">
         <!-- ========================== 좌측 사이드바 include ========================== -->
         <?php
@@ -256,20 +263,6 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                         (<strong><?php echo htmlspecialchars($sessionUsername, ENT_QUOTES, 'UTF-8'); ?></strong>)
                         에서 다른 사용자에게 공유 중인 비밀번호 목록입니다.
                     </p>
-
-                    <!-- 🔍 검색 -->
-                    <div class="search-box" style="margin-bottom:10px; display:flex; gap:8px;">
-                        <input
-                            type="text"
-                            id="byMeSearch"
-                            placeholder="공유 대상, 사이트, 항목, 메모로 검색"
-                            style="flex:1; padding:6px 8px; border:1px solid #ccc; border-radius:4px; font-size:13px;">
-                        <button type="button"
-                                id="byMeSearchBtn"
-                                style="padding:6px 12px; border-radius:4px; border:1px solid #ddd; cursor:pointer; font-size:13px;">
-                            검색
-                        </button>
-                    </div>
 
                     <!-- ✅ 삭제 버튼 -->
                     <div class="table-actions">
@@ -411,20 +404,6 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                         다른 사용자 계정에서 이 계정으로 공유해 준 비밀번호 목록입니다.
                     </p>
 
-                    <!-- 🔍 검색 -->
-                    <div class="search-box" style="margin-bottom:10px; display:flex; gap:8px;">
-                        <input
-                            type="text"
-                            id="toMeSearch"
-                            placeholder="공유해 준 사람, 사이트, 항목, 메모로 검색"
-                            style="flex:1; padding:6px 8px; border:1px solid #ccc; border-radius:4px; font-size:13px;">
-                        <button type="button"
-                                id="toMeSearchBtn"
-                                style="padding:6px 12px; border-radius:4px; border:1px solid #ddd; cursor:pointer; font-size:13px;">
-                            검색
-                        </button>
-                    </div>
-
                     <!-- ✅ 삭제 버튼 -->
                     <div class="table-actions">
                         <button type="submit" class="btn-danger">
@@ -563,20 +542,6 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
                     <p style="margin-top:0; margin-bottom:12px; font-size:13px; color:#6b7280;">
                         현재 계정에 대해 공유하지 않은 비밀번호 목록입니다.
                     </p>
-
-                    <!-- 🔍 검색 박스 -->
-                    <div class="search-box" style="margin-bottom:10px; display:flex; gap:8px;">
-                        <input
-                            type="text"
-                            id="unsharedSearch"
-                            placeholder="구분, 항목, 사이트 주소로 검색"
-                            style="flex:1; padding:6px 8px; border:1px solid #ccc; border-radius:4px; font-size:13px;">
-                        <button type="button"
-                                id="unsharedSearchBtn"
-                                style="padding:6px 12px; border-radius:4px; border:1px solid #ddd; cursor:pointer; font-size:13px;">
-                            검색
-                        </button>
-                    </div>
 
                     <!-- 테이블 목록 -->
                     <div class="table-wrapper">

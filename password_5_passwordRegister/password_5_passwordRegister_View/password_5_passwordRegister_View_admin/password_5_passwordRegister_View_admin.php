@@ -794,6 +794,7 @@ $isEdit = !empty($editRow);
                                     <th>항목</th>
                                     <th class="col-site-url">사이트 주소/프로그램명 </th>
                                     <th>아이디</th>
+                                    <th>비밀번호</th>
                                     <th>연락처</th>
                                     <th class="col-memo">메모</th>
                                     <th class="col-actions">Action</th>
@@ -825,6 +826,17 @@ $isEdit = !empty($editRow);
                                             </td>
 
                                             <td><?php echo htmlspecialchars($row['login_id'], ENT_QUOTES, 'UTF-8'); ?></td>
+
+                                            <td>
+                                                <div class="table-action-cell">
+                                                    <span class="cell-scroll-text">••••••••</span>
+                                                    <button type="button"
+                                                        class="copy-password-row-btn"
+                                                        data-password-id="<?php echo (int)$row['password_idno']; ?>">
+                                                        복사
+                                                    </button>
+                                                </div>
+                                            </td>
 
                                             <!-- 연락처 + 전화걸기 버튼 -->
                                             <td>
@@ -877,7 +889,7 @@ $isEdit = !empty($editRow);
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="7" style="text-align:center;">등록된 비밀번호가 없습니다.</td>
+                                        <td colspan="9" style="text-align:center;">등록된 비밀번호가 없습니다.</td>
                                     </tr>
                                 <?php endif; ?>
                             </tbody>

@@ -142,16 +142,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // --------------------------------------------------
-    // (5) 검색 input / 버튼
+    // (5) 상단 고정 통합 검색: 3개 테이블 동시 필터링
     // --------------------------------------------------
-    var byMeInput     = document.getElementById("byMeSearch");
-    var byMeBtn       = document.getElementById("byMeSearchBtn");
-
-    var toMeInput     = document.getElementById("toMeSearch");
-    var toMeBtn       = document.getElementById("toMeSearchBtn");
-
-    var unsharedInput = document.getElementById("unsharedSearch");
-    var unsharedBtn   = document.getElementById("unsharedSearchBtn");
+    var globalSearchInput = document.getElementById("globalShareSearch");
 
     function debounce(fn, delayMs) {
         var timer = null;
@@ -190,81 +183,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-    function filterByMe() {
-        if (!byMeForm || !byMeInput) return;
-        filterRows(byMeForm, byMeInput.value);
+    function runGlobalFilter() {
+        var keyword = globalSearchInput ? globalSearchInput.value : "";
+        filterRows(byMeForm, keyword);
+        filterRows(toMeForm, keyword);
+        filterRows(unsharedForm, keyword);
     }
 
-    function filterToMe() {
-        if (!toMeForm || !toMeInput) return;
-        filterRows(toMeForm, toMeInput.value);
-    }
-
-    function filterUnshared() {
-        if (!unsharedForm || !unsharedInput) return;
-        filterRows(unsharedForm, unsharedInput.value);
-    }
-
-    var debouncedByMe = debounce(filterByMe, 160);
-    var debouncedToMe = debounce(filterToMe, 160);
-    var debouncedUnshared = debounce(filterUnshared, 160);
-
-    // 👉 버튼 클릭 시에만 검색 실행
-    if (byMeBtn) {
-        byMeBtn.addEventListener("click", function () {
-            filterByMe();
+    if (globalSearchInput) {
+        var debouncedGlobalFilter = debounce(runGlobalFilter, 90);
+        globalSearchInput.addEventListener("input", function () {
+            debouncedGlobalFilter();
         });
-    }
-    if (toMeBtn) {
-        toMeBtn.addEventListener("click", function () {
-            filterToMe();
-        });
-    }
-    if (unsharedBtn) {
-        unsharedBtn.addEventListener("click", function () {
-            filterUnshared();
-        });
-    }
-
-    // 👉 입력 시 자동 필터링 (디바운스 적용)
-    if (byMeInput) {
-        byMeInput.addEventListener("input", function () {
-            debouncedByMe();
-        });
-    }
-    if (toMeInput) {
-        toMeInput.addEventListener("input", function () {
-            debouncedToMe();
-        });
-    }
-    if (unsharedInput) {
-        unsharedInput.addEventListener("input", function () {
-            debouncedUnshared();
-        });
-    }
-
-    // 👉 Enter 키를 눌렀을 때만 검색 실행 (타이핑 중 실시간 X)
-    function handleSearchEnter(e) {
-        if (e.key === "Enter" || e.keyCode === 13) {
-            e.preventDefault(); // 폼 submit 막기 (페이지 리로드 방지)
-
-            if (e.target.id === "byMeSearch") {
-                filterByMe();
-            } else if (e.target.id === "toMeSearch") {
-                filterToMe();
-            } else if (e.target.id === "unsharedSearch") {
-                filterUnshared();
+        globalSearchInput.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.keyCode === 13) {
+                e.preventDefault();
+                runGlobalFilter();
             }
-        }
-    }
-
-    if (byMeInput) {
-        byMeInput.addEventListener("keydown", handleSearchEnter);
-    }
-    if (toMeInput) {
-        toMeInput.addEventListener("keydown", handleSearchEnter);
-    }
-    if (unsharedInput) {
-        unsharedInput.addEventListener("keydown", handleSearchEnter);
+        });
     }
 });

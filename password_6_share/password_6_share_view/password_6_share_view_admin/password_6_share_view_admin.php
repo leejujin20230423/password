@@ -274,15 +274,15 @@ $columnLabels = [
                 <!-- 1) 전화번호로 회원 검색 -->
                 <div class="form-group">
                     <label for="search_phone">전화번호로 회원 검색</label>
-                    <div style="display:flex; gap:8px;">
+                    <div class="phone-search-row">
                         <input type="tel"
                                id="search_phone"
                                placeholder="예: 010-1234-5678 또는 숫자만"
-                               style="flex:1;">
+                               class="phone-search-input">
                         <button type="button" onclick="searchUserByPhone();">검색</button>
                     </div>
                     <!-- ✅ 안내 문구 수정 -->
-                    <small style="color:#666; display:block; margin-top:4px;">
+                    <small class="phone-search-help">
                         회원으로 등록된 사용자만 검색됩니다. 상대방이 등록하지 않았다면 초대하세요.
                     </small>
                 </div>

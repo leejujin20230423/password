@@ -183,7 +183,44 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // 🟢 "복사" 버튼: 로그인 비밀번호 절대 안 묻고, 서버에서 바로 복호화해서 복사
+  function requestPasswordCopy(passwordId, onSuccess) {
+    if (typeof fetch === "undefined") {
+      alert("이 브라우저에서는 복호화 복사를 지원하지 않습니다.");
+      return;
+    }
+
+    var formData = new FormData();
+    formData.append("ajax", "decrypt_password_copy");
+    formData.append("password_idno", passwordId);
+
+    fetch(DECRYPT_URL, {
+      method: "POST",
+      body: formData,
+      credentials: "same-origin"
+    })
+      .then(function (res) {
+        if (!res.ok) {
+          throw new Error("HTTP " + res.status);
+        }
+        return res.json();
+      })
+      .then(function (data) {
+        if (!data || !data.ok) {
+          alert((data && data.msg) || "비밀번호 복호화에 실패했습니다.");
+          return;
+        }
+
+        if (typeof onSuccess === "function") {
+          onSuccess(String(data.plain || ""));
+        }
+      })
+      .catch(function (err) {
+        console.error("decrypt_password_copy error:", err);
+        alert("서버 통신 중 오류가 발생했습니다.");
+      });
+  }
+
+  // 🟢 상세 패널 비밀번호 복사
   if (copyPwBtn && idHidden) {
     copyPwBtn.addEventListener("click", function () {
       var pwId = String(idHidden.value || "").trim();
@@ -191,46 +228,26 @@ document.addEventListener("DOMContentLoaded", function () {
         alert("선택된 비밀번호 레코드가 없습니다.");
         return;
       }
-
-      if (typeof fetch === "undefined") {
-        alert("이 브라우저에서는 복호화 복사를 지원하지 않습니다.");
-        return;
-      }
-
-      var formData = new FormData();
-      formData.append("ajax", "decrypt_password_copy"); // 👈 PHP에서 이 분기 처리
-      formData.append("password_idno", pwId);
-
-      fetch(DECRYPT_URL, {
-        method: "POST",
-        body: formData,
-        credentials: "same-origin"
-      })
-        .then(function (res) {
-          if (!res.ok) {
-            throw new Error("HTTP " + res.status);
-          }
-          return res.json();
-        })
-        .then(function (data) {
-          if (!data || !data.ok) {
-            alert((data && data.msg) || "비밀번호 복호화에 실패했습니다.");
-            return;
-          }
-
-          var plain = String(data.plain || "");
-
-          // ⚠️ 여기서는 암호 보기용 캐시는 건드리지 않음
-          // if (plainHidden) { plainHidden.value = plain; }  ← 일부러 안 함
-
-          copyToClipboard(plain);
-        })
-        .catch(function (err) {
-          console.error("decrypt_password_copy error:", err);
-          alert("서버 통신 중 오류가 발생했습니다.");
-        });
+      requestPasswordCopy(pwId, function (plain) {
+        copyToClipboard(plain);
+      });
     });
   }
+
+  // 🟢 리스트 테이블 비밀번호 복사
+  var tableCopyButtons = document.querySelectorAll(".copy-password-row-btn");
+  tableCopyButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var pwId = String(btn.getAttribute("data-password-id") || "").trim();
+      if (!pwId) {
+        alert("비밀번호 ID를 찾을 수 없습니다.");
+        return;
+      }
+      requestPasswordCopy(pwId, function (plain) {
+        copyToClipboard(plain);
+      });
+    });
+  });
 
   // ------------------------------------------
   // 공통: 클립보드 복사 함수
