@@ -159,6 +159,41 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // --------------------------------------------------
+    // (0) 탭 전환: App / Web / Tablet (각각 테이블 1개만 표시)
+    // --------------------------------------------------
+    var shareTabButtons = Array.prototype.slice.call(
+        document.querySelectorAll(".share-tab-btn")
+    );
+    var shareTabPanels = Array.prototype.slice.call(
+        document.querySelectorAll(".share-tab-panel")
+    );
+
+    function activateShareTab(tabKey) {
+        shareTabButtons.forEach(function (btn) {
+            var active = btn.getAttribute("data-tab") === tabKey;
+            btn.classList.toggle("is-active", active);
+            btn.setAttribute("aria-selected", active ? "true" : "false");
+        });
+
+        shareTabPanels.forEach(function (panel) {
+            var active = panel.getAttribute("data-tab-panel") === tabKey;
+            panel.hidden = !active;
+        });
+    }
+
+    if (shareTabButtons.length > 0 && shareTabPanels.length > 0) {
+        shareTabButtons.forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                var tabKey = btn.getAttribute("data-tab") || "app";
+                activateShareTab(tabKey);
+            });
+        });
+
+        var initialTab = shareTabButtons[0].getAttribute("data-tab") || "app";
+        activateShareTab(initialTab);
+    }
+
+    // --------------------------------------------------
     // (1) 사이트 이동 버튼
     // --------------------------------------------------
     var openButtons = document.querySelectorAll(".btn-open-url");

@@ -259,9 +259,20 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
 
         <!-- ✅ 가운데 + 아래를 위/아래로 쌓는 컨테이너 -->
         <div class="share-container">
+            <div class="share-tabs" id="shareStatusTabs" role="tablist" aria-label="공유현황 탭">
+                <button type="button" class="share-tab-btn is-active" data-tab="app" role="tab" aria-selected="true">
+                    App
+                </button>
+                <button type="button" class="share-tab-btn" data-tab="web" role="tab" aria-selected="false">
+                    Web
+                </button>
+                <button type="button" class="share-tab-btn" data-tab="tablet" role="tab" aria-selected="false">
+                    Tablet
+                </button>
+            </div>
 
             <!-- ========================== 위: 내가 공유한 비밀번호 목록 ========================== -->
-            <section class="content">
+            <section class="content share-tab-panel" data-tab-panel="app">
   <div class="container">
                 <form
                     id="sharedByMeForm"
@@ -404,7 +415,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
 </section>
 
             <!-- ========================== 중간: 내가 공유받은 비밀번호 목록 ========================== -->
-            <section class="content">
+            <section class="content share-tab-panel" data-tab-panel="web">
                 <form
                     id="sharedToMeForm"
                     method="post"
@@ -543,7 +554,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
             </section>
 
             <!-- ========================== 아래: 내가 공유하지 않은 비밀번호 목록 ========================== -->
-            <section class="content">
+            <section class="content share-tab-panel" data-tab-panel="tablet">
                 <form
                     id="unsharedPasswordsForm"
                     method="post"
