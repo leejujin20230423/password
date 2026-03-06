@@ -330,10 +330,54 @@ function debounce(fn, delayMs) {
   };
 }
 
+function setupPw5ListSearchRail(searchInput, searchShell) {
+    if (!searchInput || !searchShell) return;
+
+    var resumeLedTimer = null;
+
+    function pauseLed() {
+      if (resumeLedTimer) {
+        clearTimeout(resumeLedTimer);
+        resumeLedTimer = null;
+      }
+      searchShell.classList.add("is-paused");
+    }
+
+    function resumeLedWithDelay() {
+      if (resumeLedTimer) {
+        clearTimeout(resumeLedTimer);
+      }
+      resumeLedTimer = setTimeout(function () {
+        searchShell.classList.remove("is-paused");
+        resumeLedTimer = null;
+      }, 2000);
+    }
+
+    function onScrollAway() {
+      var hasTyped = String(searchInput.value || "").trim() !== "";
+      var isFocused = document.activeElement === searchInput;
+      if (!hasTyped && !isFocused) return;
+
+      if (isFocused) {
+        searchInput.blur();
+      }
+      resumeLedWithDelay();
+    }
+
+    searchInput.addEventListener("focus", pauseLed);
+    searchInput.addEventListener("blur", resumeLedWithDelay);
+    document.addEventListener("scroll", onScrollAway, { passive: true, capture: true });
+    window.addEventListener("wheel", onScrollAway, { passive: true });
+    window.addEventListener("touchmove", onScrollAway, { passive: true });
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     var searchInput = document.getElementById("pw5TableSearchInput");
+    var searchShell = document.getElementById("pw5ListSearchShell");
     var searchBtn = document.getElementById("pw5TableSearchBtn");
     var tableBody = document.querySelector("#passwordTable tbody");
+
+    setupPw5ListSearchRail(searchInput, searchShell);
 
     if (searchInput && tableBody) {
       var rows = Array.prototype.slice.call(tableBody.querySelectorAll("tr"));

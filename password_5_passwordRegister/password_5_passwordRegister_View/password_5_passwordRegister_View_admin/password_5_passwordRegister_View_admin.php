@@ -767,11 +767,17 @@ $isEdit = !empty($editRow);
                     <!-- 🔎 검색 박스: 사이트 주소 / 메모 검색 -->
                     <div class="search-box">
                         <form method="get" action="" id="pw5SearchForm">
-                            <input type="text"
-                                id="pw5TableSearchInput"
-                                name="q"
-                                placeholder="매장명 / 사이트 주소 / 메모에서 검색"
-                                value="<?php echo htmlspecialchars($searchKeyword, ENT_QUOTES, 'UTF-8'); ?>">
+                            <div class="pw5-led-search-shell" id="pw5ListSearchShell">
+                                <svg class="pw5-led-search" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                                    <rect class="pw5-led-search-base" x="1.4" y="1.4" width="97.2" height="97.2" rx="12" ry="12"></rect>
+                                    <rect class="pw5-led-search-trail" x="1.4" y="1.4" width="97.2" height="97.2" rx="12" ry="12"></rect>
+                                </svg>
+                                <input type="text"
+                                    id="pw5TableSearchInput"
+                                    name="q"
+                                    placeholder="매장명 / 사이트 주소 / 메모에서 검색"
+                                    value="<?php echo htmlspecialchars($searchKeyword, ENT_QUOTES, 'UTF-8'); ?>">
+                            </div>
                             <button type="button" id="pw5TableSearchBtn">검색</button>
                             <?php if ($searchKeyword !== ''): ?>
                                 <button type="button"

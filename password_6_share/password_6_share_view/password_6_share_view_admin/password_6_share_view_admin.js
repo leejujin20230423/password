@@ -13,9 +13,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 3) 전화번호 입력창에서 엔터만 쳐도 검색되도록 처리
   var phoneInput = document.getElementById("search_phone");
+  var targetSearchShell = document.getElementById("targetSearchShell");
   if (phoneInput) {
+    setupTargetUserSearchRail(phoneInput, targetSearchShell);
+
     phoneInput.addEventListener("input", function (e) {
-      e.target.value = formatPhoneNumber(e.target.value);
+      var raw = String(e.target.value || "");
+      // 숫자 입력 패턴일 때만 하이픈 자동 포맷, 이름 검색은 원문 유지
+      if (/^[\d\s\-.]+$/.test(raw)) {
+        e.target.value = formatPhoneNumber(raw);
+      }
     });
     phoneInput.addEventListener("keydown", function (e) {
       if (e.key === "Enter" || e.keyCode === 13) {
@@ -222,6 +229,47 @@ function initPasswordListSearch() {
   runFilter();
 }
 
+function setupTargetUserSearchRail(inputEl, shellEl) {
+  if (!inputEl || !shellEl) return;
+
+  var resumeTimer = null;
+
+  function pauseRail() {
+    if (resumeTimer) {
+      clearTimeout(resumeTimer);
+      resumeTimer = null;
+    }
+    shellEl.classList.add("is-paused");
+  }
+
+  function resumeRailWithDelay() {
+    if (resumeTimer) {
+      clearTimeout(resumeTimer);
+    }
+    resumeTimer = setTimeout(function () {
+      shellEl.classList.remove("is-paused");
+      resumeTimer = null;
+    }, 2000);
+  }
+
+  function onScrollAway() {
+    var hasTyped = String(inputEl.value || "").trim() !== "";
+    var isFocused = document.activeElement === inputEl;
+    if (!hasTyped && !isFocused) return;
+
+    if (isFocused) {
+      inputEl.blur();
+    }
+    resumeRailWithDelay();
+  }
+
+  inputEl.addEventListener("focus", pauseRail);
+  inputEl.addEventListener("blur", resumeRailWithDelay);
+  document.addEventListener("scroll", onScrollAway, { passive: true, capture: true });
+  window.addEventListener("wheel", onScrollAway, { passive: true });
+  window.addEventListener("touchmove", onScrollAway, { passive: true });
+}
+
 function parseJsonWithFallback(rawText) {
   var text = String(rawText || "").trim();
   if (!text) return null;
@@ -273,13 +321,13 @@ function searchUserByPhone() {
 
   var raw = phoneInput.value.trim();
   if (!raw) {
-    alert("전화번호를 입력하세요.");
+    alert("이름 또는 전화번호를 입력하세요.");
     return;
   }
 
   var url =
     "/password_6_share/password_6_share_route/password_6_share_ajax_admin.php";
-  var params = "action=search_user" + "&phone=" + encodeURIComponent(raw);
+  var params = "action=search_user" + "&keyword=" + encodeURIComponent(raw);
 
   var xhr = new XMLHttpRequest();
   xhr.open("POST", url, true);
@@ -325,7 +373,7 @@ function searchUserByPhone() {
         }
 
         var msg =
-          res && res.msg ? res.msg : "해당 전화번호로 등록된 회원이 없습니다.";
+          res && res.msg ? res.msg : "해당 이름/전화번호로 등록된 회원이 없습니다.";
         resultBox.innerHTML =
           '<span class="error-text">' + escapeHtml(msg) + "</span>";
       } else {

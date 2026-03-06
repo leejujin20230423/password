@@ -277,17 +277,23 @@ $columnLabels = [
 
                 <!-- 1) 전화번호로 회원 검색 -->
                 <div class="form-group">
-                    <label for="search_phone">전화번호로 회원 검색</label>
+                    <label for="search_phone">이름 / 전화번호로 회원 검색</label>
                     <div class="phone-search-row">
-                        <input type="tel"
-                               id="search_phone"
-                               placeholder="예: 010-1234-5678 또는 숫자만"
-                               class="phone-search-input">
+                        <div class="target-search-shell" id="targetSearchShell">
+                            <svg class="target-search-led" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                                <rect class="target-search-led-base" x="1.4" y="1.4" width="97.2" height="97.2" rx="12" ry="12"></rect>
+                                <rect class="target-search-led-trail" x="1.4" y="1.4" width="97.2" height="97.2" rx="12" ry="12"></rect>
+                            </svg>
+                            <input type="text"
+                                   id="search_phone"
+                                   placeholder="예: 손영민 또는 010-1234-5678"
+                                   class="phone-search-input">
+                        </div>
                         <button type="button" onclick="searchUserByPhone();">검색</button>
                     </div>
                     <!-- ✅ 안내 문구 수정 -->
                     <small class="phone-search-help">
-                        회원으로 등록된 사용자만 검색됩니다. 상대방이 등록하지 않았다면 초대하세요.
+                        회원으로 등록된 사용자만 검색됩니다. 이름 또는 전화번호로 검색하세요.
                     </small>
                 </div>
 

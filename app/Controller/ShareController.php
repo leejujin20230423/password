@@ -7,6 +7,7 @@ use PassApp\Core\DbHub;
 use PassApp\Core\SessionVault;
 use PassApp\Security\CsrfShield;
 use PassApp\Vault\ShareRepo;
+use PDO;
 use Throwable;
 
 final class ShareController
@@ -25,55 +26,53 @@ final class ShareController
         $repo = new ShareRepo();
 
         if ($action === 'search_user') {
-            // Legacy JS 호환: phone 파라미터 우선 사용, 없으면 keyword 사용
+            // Legacy JS 호환: phone 파라미터 + 신규 keyword 파라미터 모두 지원
             $rawPhone = trim((string)($_POST['phone'] ?? ''));
             $keyword  = trim((string)($_POST['keyword'] ?? ''));
+            $query    = $keyword !== '' ? $keyword : $rawPhone;
 
-            if ($rawPhone === '' && $keyword === '') {
-                echo json_encode(['ok' => false, 'msg' => '전화번호를 입력해 주세요.'], JSON_UNESCAPED_UNICODE);
+            if ($query === '') {
+                echo json_encode(['ok' => false, 'msg' => '이름 또는 전화번호를 입력해 주세요.'], JSON_UNESCAPED_UNICODE);
                 exit;
             }
 
             try {
                 $pdo = DbHub::pdo();
+                $digits = preg_replace('/\D+/', '', $query) ?? '';
 
-                // 전화번호 검색: 하이픈/공백 제거 후 비교
-                if ($rawPhone !== '') {
-                    $digits = preg_replace('/\D+/', '', $rawPhone) ?? '';
-                    if ($digits === '') {
-                        echo json_encode(['ok' => false, 'msg' => '전화번호 형식이 올바르지 않습니다.'], JSON_UNESCAPED_UNICODE);
-                        exit;
-                    }
+                $sql = "SELECT user_no, username, phone FROM users
+                        WHERE username LIKE :nameKw";
+                $params = [':nameKw' => '%' . $query . '%'];
 
-                    $stmt = $pdo->prepare(
-                        "SELECT user_no, username, phone
-                         FROM users
-                         WHERE REPLACE(REPLACE(REPLACE(phone, '-', ''), ' ', ''), '.', '') = :digits
-                         ORDER BY user_no DESC
-                         LIMIT 30"
+                if ($digits !== '') {
+                    $sql .= " OR REPLACE(REPLACE(REPLACE(phone, '-', ''), ' ', ''), '.', '') LIKE :phoneDigits";
+                    $params[':phoneDigits'] = '%' . $digits . '%';
+                }
+
+                $sql .= " ORDER BY user_no DESC LIMIT 30";
+
+                $stmt = $pdo->prepare($sql);
+                foreach ($params as $k => $v) {
+                    $stmt->bindValue($k, $v, PDO::PARAM_STR);
+                }
+                $stmt->execute();
+                $users = $stmt->fetchAll() ?: [];
+
+                if (!empty($users)) {
+                    // 하위 호환: 기존 JS가 user 단일 필드를 읽어도 동작하도록 첫 행을 함께 전달
+                    echo json_encode(
+                        [
+                            'ok' => true,
+                            'user' => $users[0],
+                            'users' => $users,
+                            'data' => $users,
+                        ],
+                        JSON_UNESCAPED_UNICODE
                     );
-                    $stmt->execute([':digits' => $digits]);
-                    $users = $stmt->fetchAll() ?: [];
-
-                    if (!empty($users)) {
-                        // 하위 호환: 기존 JS가 user 단일 필드를 읽어도 동작하도록 첫 행을 함께 전달
-                        echo json_encode(
-                            [
-                                'ok' => true,
-                                'user' => $users[0],
-                                'users' => $users,
-                            ],
-                            JSON_UNESCAPED_UNICODE
-                        );
-                    } else {
-                        echo json_encode(['ok' => false, 'msg' => '해당 전화번호로 등록된 회원이 없습니다.'], JSON_UNESCAPED_UNICODE);
-                    }
                     exit;
                 }
 
-                // fallback: keyword 검색 (신규 API 호환)
-                $rows = $repo->searchUser($keyword);
-                echo json_encode(['ok' => true, 'data' => $rows], JSON_UNESCAPED_UNICODE);
+                echo json_encode(['ok' => false, 'msg' => '해당 이름/전화번호로 등록된 회원이 없습니다.'], JSON_UNESCAPED_UNICODE);
                 exit;
             } catch (Throwable $e) {
                 echo json_encode(['ok' => false, 'msg' => '검색 중 오류가 발생했습니다.'], JSON_UNESCAPED_UNICODE);
