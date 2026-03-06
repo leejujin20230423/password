@@ -295,18 +295,20 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
 
                     <input type="hidden" name="mode" value="by_me">
 
-                    <h5 class="status-moving-title">공유해준 비밀번호</h5>
-                    <p style="margin-top:0; margin-bottom:12px; font-size:13px; color:#6b7280;">
-                        현재 계정
-                        (<strong><?php echo htmlspecialchars($sessionUsername, ENT_QUOTES, 'UTF-8'); ?></strong>)
-                        에서 다른 사용자에게 공유 중인 비밀번호 목록입니다.
-                    </p>
+                    <div class="table-top-fixed">
+                        <h5 class="status-moving-title">공유해준 비밀번호</h5>
+                        <p style="margin-top:0; margin-bottom:12px; font-size:13px; color:#6b7280;">
+                            현재 계정
+                            (<strong><?php echo htmlspecialchars($sessionUsername, ENT_QUOTES, 'UTF-8'); ?></strong>)
+                            에서 다른 사용자에게 공유 중인 비밀번호 목록입니다.
+                        </p>
 
-                    <!-- ✅ 삭제 버튼 -->
-                    <div class="table-actions">
-                        <button type="submit" class="btn-danger">
-                            공유 끊기
-                        </button>(공유를 해제할 대상을 선택한후 버튼을 눌러주세요)
+                        <!-- ✅ 삭제 버튼 -->
+                        <div class="table-actions">
+                            <button type="submit" class="btn-danger">
+                                공유 끊기
+                            </button>(공유를 해제할 대상을 선택한후 버튼을 눌러주세요)
+                        </div>
                     </div>
 
                     <!-- 테이블 목록 -->
@@ -437,16 +439,18 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
 
                     <input type="hidden" name="mode" value="to_me">
 
-                    <h5 class="status-moving-title">공유받은 비밀번호</h5>
-                    <p style="margin-top:0; margin-bottom:12px; font-size:13px; color:#6b7280;">
-                        다른 사용자 계정에서 이 계정으로 공유해 준 비밀번호 목록입니다.
-                    </p>
+                    <div class="table-top-fixed">
+                        <h5 class="status-moving-title">공유받은 비밀번호</h5>
+                        <p style="margin-top:0; margin-bottom:12px; font-size:13px; color:#6b7280;">
+                            다른 사용자 계정에서 이 계정으로 공유해 준 비밀번호 목록입니다.
+                        </p>
 
-                    <!-- ✅ 삭제 버튼 -->
-                    <div class="table-actions">
-                        <button type="submit" class="btn-danger">
-                            공유 끊기
-                        </button>(공유를 해제할 대상을 선택한후 버튼을 눌러주세요)
+                        <!-- ✅ 삭제 버튼 -->
+                        <div class="table-actions">
+                            <button type="submit" class="btn-danger">
+                                공유 끊기
+                            </button>(공유를 해제할 대상을 선택한후 버튼을 눌러주세요)
+                        </div>
                     </div>
 
                     <!-- 테이블 목록 -->
@@ -576,10 +580,12 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
 
                     <input type="hidden" name="mode" value="unshared">
 
-                    <h5 class="status-moving-title">나만의 비밀번호</h5>
-                    <p style="margin-top:0; margin-bottom:12px; font-size:13px; color:#6b7280;">
-                        현재 계정에 대해 공유하지 않은 비밀번호 목록입니다.
-                    </p>
+                    <div class="table-top-fixed">
+                        <h5 class="status-moving-title">나만의 비밀번호</h5>
+                        <p style="margin-top:0; margin-bottom:12px; font-size:13px; color:#6b7280;">
+                            현재 계정에 대해 공유하지 않은 비밀번호 목록입니다.
+                        </p>
+                    </div>
 
                     <!-- 테이블 목록 -->
                     <div class="table-wrapper">
