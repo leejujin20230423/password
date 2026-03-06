@@ -574,7 +574,7 @@ $initialMobileMode = $isEdit ? 'form' : 'list';
                 <section class="content pw5-content">
   <div class="container pw5-container">
                     <div class="pw5-form-head">
-                        <h2>비밀번호 <?php echo $isEdit ? '수정' : '등록'; ?></h2>
+                        <h2 class="status-moving-title">비밀번호 <?php echo $isEdit ? '수정' : '등록'; ?></h2>
                         <button type="button" id="pw5BackToListBtn" class="pw5-mobile-toggle-btn">
                             목록 보기
                         </button>
@@ -772,7 +772,7 @@ $initialMobileMode = $isEdit ? 'form' : 'list';
                 <!-- 우측 리스트 -->
                 <aside class="list-panel pw5-list-panel">
                     <div class="pw5-list-head">
-                        <h2>등록된 비밀번호 목록</h2>
+                        <h2 class="status-moving-title">등록된 비밀번호 목록</h2>
                         <button type="button" id="pw5OpenFormBtn" class="pw5-mobile-toggle-btn">
                             비밀번호 등록하기
                         </button>

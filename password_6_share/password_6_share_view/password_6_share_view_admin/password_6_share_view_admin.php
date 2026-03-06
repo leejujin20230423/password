@@ -160,7 +160,7 @@ $columnLabels = [
             <!-- ========================== 가운데: 내 비밀번호 리스트 (체크박스) ========================== -->
             <section class="content">
                 <div class="container">
-                <h2>공유할 비밀번호 선택</h2>
+                <h2 class="status-moving-title">공유할 비밀번호 선택</h2>
 
                 <div class="table-wrapper">
                     <table class="password-table" id="sharePasswordTable">
@@ -273,7 +273,7 @@ $columnLabels = [
 
             <!-- ========================== 우측: 공유 대상 선택 영역 ========================== -->
             <aside class="list-panel">
-                <h2>공유 대상 설정</h2>
+                <h2 class="status-moving-title">공유 대상 설정</h2>
 
                 <!-- 1) 전화번호로 회원 검색 -->
                 <div class="form-group">
