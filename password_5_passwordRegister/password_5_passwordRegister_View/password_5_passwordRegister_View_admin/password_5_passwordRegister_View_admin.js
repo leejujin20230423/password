@@ -389,12 +389,67 @@ function setupPw5ListSearchRail(searchInput, searchShell) {
     window.addEventListener("touchmove", onScrollAway, { passive: true });
 }
 
+function initPw5MobilePanelToggle() {
+    var body = document.getElementById("page-pw5");
+    if (!body) return;
+
+    var openFormBtn = document.getElementById("pw5OpenFormBtn");
+    var backToListBtn = document.getElementById("pw5BackToListBtn");
+    var viewport = window.matchMedia("(max-width:900px)");
+
+    function setMode(mode) {
+      var nextMode = mode === "form" ? "form" : "list";
+      body.classList.toggle("pw5-mobile-form-mode", nextMode === "form");
+      body.classList.toggle("pw5-mobile-list-mode", nextMode === "list");
+      body.setAttribute("data-mobile-initial-mode", nextMode);
+    }
+
+    function applyViewportMode() {
+      if (!viewport.matches) {
+        body.classList.remove("pw5-mobile-form-mode", "pw5-mobile-list-mode");
+        return;
+      }
+      var initialMode = body.getAttribute("data-mobile-initial-mode") === "form" ? "form" : "list";
+      setMode(initialMode);
+    }
+
+    if (openFormBtn) {
+      openFormBtn.addEventListener("click", function () {
+        setMode("form");
+      });
+    }
+
+    if (backToListBtn) {
+      backToListBtn.addEventListener("click", function () {
+        setMode("list");
+      });
+    }
+
+    var actionInputs = document.querySelectorAll('.pw5-list-panel form input[name="action"][value="view"]');
+    actionInputs.forEach(function (actionInput) {
+      var viewForm = actionInput.form;
+      if (!viewForm) return;
+      viewForm.addEventListener("submit", function () {
+        if (!viewport.matches) return;
+        setMode("form");
+      });
+    });
+
+    applyViewportMode();
+    if (typeof viewport.addEventListener === "function") {
+      viewport.addEventListener("change", applyViewportMode);
+    } else if (typeof viewport.addListener === "function") {
+      viewport.addListener(applyViewportMode);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     var searchInput = document.getElementById("pw5TableSearchInput");
     var searchShell = document.getElementById("pw5ListSearchShell");
     var searchBtn = document.getElementById("pw5TableSearchBtn");
     var tableBody = document.querySelector("#passwordTable tbody");
 
+    initPw5MobilePanelToggle();
     setupPw5ListSearchRail(searchInput, searchShell);
 
     if (searchInput && tableBody) {

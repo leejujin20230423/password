@@ -517,6 +517,7 @@ if ($searchKeyword !== '') {
 
 // view 액션이 실행되었다면 $editRow 가 채워져 있을 것
 $isEdit = !empty($editRow);
+$initialMobileMode = $isEdit ? 'form' : 'list';
 
 ?>
 <!DOCTYPE html>
@@ -544,7 +545,9 @@ $isEdit = !empty($editRow);
 
 
 
-<body id="page-pw5" class="pw5-page">
+<body id="page-pw5"
+      class="pw5-page"
+      data-mobile-initial-mode="<?php echo htmlspecialchars($initialMobileMode, ENT_QUOTES, 'UTF-8'); ?>">
     <div class="layout pw5-layout">
 
             <!-- 상단 헤더 있던곳-->
@@ -564,7 +567,12 @@ $isEdit = !empty($editRow);
                 <!-- 가운데 등록 / 수정 폼 -->
                 <section class="content pw5-content">
   <div class="container pw5-container">
-                    <h2>비밀번호 <?php echo $isEdit ? '수정' : '등록'; ?></h2>
+                    <div class="pw5-form-head">
+                        <h2>비밀번호 <?php echo $isEdit ? '수정' : '등록'; ?></h2>
+                        <button type="button" id="pw5BackToListBtn" class="pw5-mobile-toggle-btn">
+                            목록 보기
+                        </button>
+                    </div>
 
 
 
@@ -757,9 +765,12 @@ $isEdit = !empty($editRow);
 
                 <!-- 우측 리스트 -->
                 <aside class="list-panel pw5-list-panel">
-                    <h2 style="display: flex;">등록된 비밀번호 목록
-
-                    </h2>
+                    <div class="pw5-list-head">
+                        <h2>등록된 비밀번호 목록</h2>
+                        <button type="button" id="pw5OpenFormBtn" class="pw5-mobile-toggle-btn">
+                            비밀번호 등록하기
+                        </button>
+                    </div>
                     <span style="font-size: 14px; color: red;">(사이트의 비밀번호를 보려면 보기버튼을 눌러주세요.)
                         <!-- (디버깅용) 리스트 데이터 출처 표시 -->
 
