@@ -65,10 +65,69 @@ function fallbackCopy(text) {
 // ==========================================================
 // 2. DOM 로드 후 전체 로직 실행
 // ==========================================================
+function bindRailInteraction(shellEl, inputEl) {
+    if (!shellEl || !inputEl) return;
+
+    var pauseTimer = null;
+    var resumeTimer = null;
+
+    function clearPauseTimer() {
+        if (!pauseTimer) return;
+        clearTimeout(pauseTimer);
+        pauseTimer = null;
+    }
+
+    function clearResumeTimer() {
+        if (!resumeTimer) return;
+        clearTimeout(resumeTimer);
+        resumeTimer = null;
+    }
+
+    function schedulePause() {
+        clearResumeTimer();
+        clearPauseTimer();
+        pauseTimer = setTimeout(function () {
+            shellEl.classList.add("is-paused");
+            pauseTimer = null;
+        }, 500);
+    }
+
+    function scheduleResume() {
+        clearPauseTimer();
+        clearResumeTimer();
+        resumeTimer = setTimeout(function () {
+            shellEl.classList.remove("is-paused");
+            resumeTimer = null;
+        }, 1000);
+    }
+
+    function onScrollAway() {
+        var hasTyped = String(inputEl.value || "").trim() !== "";
+        var isFocused = (document.activeElement === inputEl);
+        if (!hasTyped && !isFocused) return;
+
+        if (isFocused) {
+            inputEl.blur();
+        }
+        scheduleResume();
+    }
+
+    inputEl.addEventListener("focus", schedulePause);
+    inputEl.addEventListener("blur", scheduleResume);
+    shellEl.addEventListener("mouseenter", schedulePause);
+    shellEl.addEventListener("mouseleave", function () {
+        if (document.activeElement === inputEl) return;
+        scheduleResume();
+    });
+
+    document.addEventListener("scroll", onScrollAway, { passive: true, capture: true });
+    window.addEventListener("wheel", onScrollAway, { passive: true });
+    window.addEventListener("touchmove", onScrollAway, { passive: true });
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     var globalSearchShell = document.getElementById("globalSearchShell");
     var globalSearchInputEl = document.getElementById("globalShareSearch");
-    var resumeLedTimer = null;
 
     function syncGlobalSearchShellSize() {
         if (!globalSearchShell) return;
@@ -95,47 +154,8 @@ document.addEventListener("DOMContentLoaded", function () {
     syncGlobalSearchShellSize();
     window.addEventListener("resize", syncGlobalSearchShellSize);
 
-    function pauseGlobalSearchLed() {
-        if (!globalSearchShell) return;
-        if (resumeLedTimer) {
-            clearTimeout(resumeLedTimer);
-            resumeLedTimer = null;
-        }
-        globalSearchShell.classList.add("is-paused");
-    }
-
-    function resumeGlobalSearchLedWithDelay() {
-        if (!globalSearchShell) return;
-        if (resumeLedTimer) {
-            clearTimeout(resumeLedTimer);
-        }
-        resumeLedTimer = setTimeout(function () {
-            globalSearchShell.classList.remove("is-paused");
-            resumeLedTimer = null;
-        }, 2000);
-    }
-
-    function onUserScrollAwayFromSearch() {
-        if (!globalSearchInputEl) return;
-
-        var hasTyped = String(globalSearchInputEl.value || "").trim() !== "";
-        var isFocused = (document.activeElement === globalSearchInputEl);
-
-        // 검색 입력 이후 스크롤하면 2초 후 LED 재시작
-        if (!hasTyped && !isFocused) return;
-
-        if (isFocused) {
-            globalSearchInputEl.blur();
-        }
-        resumeGlobalSearchLedWithDelay();
-    }
-
-    if (globalSearchInputEl) {
-        globalSearchInputEl.addEventListener("focus", pauseGlobalSearchLed);
-        globalSearchInputEl.addEventListener("blur", resumeGlobalSearchLedWithDelay);
-        document.addEventListener("scroll", onUserScrollAwayFromSearch, { passive: true, capture: true });
-        window.addEventListener("wheel", onUserScrollAwayFromSearch, { passive: true });
-        window.addEventListener("touchmove", onUserScrollAwayFromSearch, { passive: true });
+    if (globalSearchShell && globalSearchInputEl) {
+        bindRailInteraction(globalSearchShell, globalSearchInputEl);
     }
 
     // --------------------------------------------------

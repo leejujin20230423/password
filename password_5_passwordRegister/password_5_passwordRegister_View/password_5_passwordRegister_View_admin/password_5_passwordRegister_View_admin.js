@@ -333,24 +333,37 @@ function debounce(fn, delayMs) {
 function setupPw5ListSearchRail(searchInput, searchShell) {
     if (!searchInput || !searchShell) return;
 
-    var resumeLedTimer = null;
+    var pauseTimer = null;
+    var resumeTimer = null;
 
-    function pauseLed() {
-      if (resumeLedTimer) {
-        clearTimeout(resumeLedTimer);
-        resumeLedTimer = null;
-      }
-      searchShell.classList.add("is-paused");
+    function clearPauseTimer() {
+      if (!pauseTimer) return;
+      clearTimeout(pauseTimer);
+      pauseTimer = null;
     }
 
-    function resumeLedWithDelay() {
-      if (resumeLedTimer) {
-        clearTimeout(resumeLedTimer);
-      }
-      resumeLedTimer = setTimeout(function () {
+    function clearResumeTimer() {
+      if (!resumeTimer) return;
+      clearTimeout(resumeTimer);
+      resumeTimer = null;
+    }
+
+    function schedulePause() {
+      clearResumeTimer();
+      clearPauseTimer();
+      pauseTimer = setTimeout(function () {
+        searchShell.classList.add("is-paused");
+        pauseTimer = null;
+      }, 500);
+    }
+
+    function scheduleResume() {
+      clearPauseTimer();
+      clearResumeTimer();
+      resumeTimer = setTimeout(function () {
         searchShell.classList.remove("is-paused");
-        resumeLedTimer = null;
-      }, 2000);
+        resumeTimer = null;
+      }, 1000);
     }
 
     function onScrollAway() {
@@ -361,11 +374,16 @@ function setupPw5ListSearchRail(searchInput, searchShell) {
       if (isFocused) {
         searchInput.blur();
       }
-      resumeLedWithDelay();
+      scheduleResume();
     }
 
-    searchInput.addEventListener("focus", pauseLed);
-    searchInput.addEventListener("blur", resumeLedWithDelay);
+    searchInput.addEventListener("focus", schedulePause);
+    searchInput.addEventListener("blur", scheduleResume);
+    searchShell.addEventListener("mouseenter", schedulePause);
+    searchShell.addEventListener("mouseleave", function () {
+      if (document.activeElement === searchInput) return;
+      scheduleResume();
+    });
     document.addEventListener("scroll", onScrollAway, { passive: true, capture: true });
     window.addEventListener("wheel", onScrollAway, { passive: true });
     window.addEventListener("touchmove", onScrollAway, { passive: true });
