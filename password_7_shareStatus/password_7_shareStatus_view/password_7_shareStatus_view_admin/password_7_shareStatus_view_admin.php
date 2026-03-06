@@ -261,13 +261,13 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
         <div class="share-container">
             <div class="share-tabs" id="shareStatusTabs" role="tablist" aria-label="공유현황 탭">
                 <button type="button" class="share-tab-btn is-active" data-tab="app" role="tab" aria-selected="true">
-                    App
+                    공유해준 비밀번호
                 </button>
                 <button type="button" class="share-tab-btn" data-tab="web" role="tab" aria-selected="false">
-                    Web
+                    공유받은 비밀번호
                 </button>
                 <button type="button" class="share-tab-btn" data-tab="tablet" role="tab" aria-selected="false">
-                    Tablet
+                    나만의 비밀번호
                 </button>
             </div>
 
