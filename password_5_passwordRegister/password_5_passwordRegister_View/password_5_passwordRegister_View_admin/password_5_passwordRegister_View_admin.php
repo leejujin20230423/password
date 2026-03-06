@@ -536,11 +536,17 @@ $initialMobileMode = $isEdit ? 'form' : 'list';
 
     // 캐시 이슈 방지: 파일 수정시간 기반으로 asset 버전 생성
     $assetVersion = (string) (@filemtime(__FILE__) ?: time());
+    $cssFilePath = $_SERVER['DOCUMENT_ROOT']
+        . '/password_5_passwordRegister/password_5_passwordRegister_View/password_5_passwordRegister_View_admin/password_5_passwordRegister_View_admin.css';
+    $jsFilePath = $_SERVER['DOCUMENT_ROOT']
+        . '/password_5_passwordRegister/password_5_passwordRegister_View/password_5_passwordRegister_View_admin/password_5_passwordRegister_View_admin.js';
+    $cssVersion = (string) (@filemtime($cssFilePath) ?: $assetVersion);
+    $jsVersion  = (string) (@filemtime($jsFilePath) ?: $assetVersion);
     ?>
 
     <!-- ✅ 비밀번호 등록 화면 전용 CSS -->
     <link rel="stylesheet"
-          href="/password_5_passwordRegister/password_5_passwordRegister_View/password_5_passwordRegister_View_admin/password_5_passwordRegister_View_admin.css?v=<?php echo htmlspecialchars($assetVersion, ENT_QUOTES, 'UTF-8'); ?>">
+          href="/password_5_passwordRegister/password_5_passwordRegister_View/password_5_passwordRegister_View_admin/password_5_passwordRegister_View_admin.css?v=<?php echo htmlspecialchars($cssVersion, ENT_QUOTES, 'UTF-8'); ?>">
 </head>
 
 
@@ -916,7 +922,7 @@ $initialMobileMode = $isEdit ? 'form' : 'list';
 
             </div><!-- /.main -->
     </div>
-    <script src="/password_5_passwordRegister/password_5_passwordRegister_View/password_5_passwordRegister_View_admin/password_5_passwordRegister_View_admin.js?v=20251128_03"></script>
+    <script src="/password_5_passwordRegister/password_5_passwordRegister_View/password_5_passwordRegister_View_admin/password_5_passwordRegister_View_admin.js?v=<?php echo htmlspecialchars($jsVersion, ENT_QUOTES, 'UTF-8'); ?>"></script>
 
 </body>
 
