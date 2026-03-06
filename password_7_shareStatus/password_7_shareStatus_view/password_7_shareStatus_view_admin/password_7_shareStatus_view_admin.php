@@ -253,13 +253,25 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
     <div class="global-tabs-bar">
         <div class="share-tabs" id="shareStatusTabs" role="tablist" aria-label="공유현황 탭">
             <button type="button" class="share-tab-btn is-active" data-tab="app" role="tab" aria-selected="true">
-                공유해준 비밀번호
+                <svg class="share-tab-led" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                    <rect class="share-tab-led-base" x="1.4" y="1.4" width="97.2" height="97.2" rx="49" ry="49"></rect>
+                    <rect class="share-tab-led-trail" x="1.4" y="1.4" width="97.2" height="97.2" rx="49" ry="49"></rect>
+                </svg>
+                <span>공유해준 비밀번호</span>
             </button>
             <button type="button" class="share-tab-btn" data-tab="web" role="tab" aria-selected="false">
-                공유받은 비밀번호
+                <svg class="share-tab-led" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                    <rect class="share-tab-led-base" x="1.4" y="1.4" width="97.2" height="97.2" rx="49" ry="49"></rect>
+                    <rect class="share-tab-led-trail" x="1.4" y="1.4" width="97.2" height="97.2" rx="49" ry="49"></rect>
+                </svg>
+                <span>공유받은 비밀번호</span>
             </button>
             <button type="button" class="share-tab-btn" data-tab="tablet" role="tab" aria-selected="false">
-                나만의 비밀번호
+                <svg class="share-tab-led" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                    <rect class="share-tab-led-base" x="1.4" y="1.4" width="97.2" height="97.2" rx="49" ry="49"></rect>
+                    <rect class="share-tab-led-trail" x="1.4" y="1.4" width="97.2" height="97.2" rx="49" ry="49"></rect>
+                </svg>
+                <span>나만의 비밀번호</span>
             </button>
         </div>
     </div>
