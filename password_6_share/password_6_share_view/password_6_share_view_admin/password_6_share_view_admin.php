@@ -126,6 +126,19 @@ $columnLabels = [
         . '/password_3_header/password_3_header_view/password_3_header_view_admin/password_3_header_view_admin.php';
     ?>
 
+    <div class="global-filter-bar">
+        <div class="global-search-shell" id="globalSearchShell">
+            <svg class="global-search-led" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <rect class="global-search-led-base" x="1.4" y="1.4" width="97.2" height="97.2" rx="12" ry="12"></rect>
+                <rect class="global-search-led-trail" x="1.4" y="1.4" width="97.2" height="97.2" rx="12" ry="12"></rect>
+            </svg>
+            <input
+                type="text"
+                id="globalShareSearch"
+                placeholder="사이트 주소, 매장명, 메모, 구분, 아이디에서 검색">
+        </div>
+    </div>
+
     <div class="main">
         <!-- ========================== 좌측 사이드바 include ========================== -->
         <?php
@@ -146,17 +159,8 @@ $columnLabels = [
 
             <!-- ========================== 가운데: 내 비밀번호 리스트 (체크박스) ========================== -->
             <section class="content">
-  <div class="container">
+                <div class="container">
                 <h2>공유할 비밀번호 선택</h2>
-
-                <!-- 🔍 사이트/매장명/메모 검색 박스 (입력 + 버튼) -->
-                <div class="search-box">
-                    <input
-                        type="text"
-                        id="passwordListSearch"
-                        placeholder="사이트 주소, 매장명, 메모에서 검색">
-                    <button type="button" id="passwordListSearchBtn">검색</button>
-                </div>
 
                 <div class="table-wrapper">
                     <table class="password-table" id="sharePasswordTable">
@@ -264,8 +268,8 @@ $columnLabels = [
                         </tbody>
                     </table>
                 </div><!-- /.table-wrapper -->
-              </div>
-</section>
+                </div>
+            </section>
 
             <!-- ========================== 우측: 공유 대상 선택 영역 ========================== -->
             <aside class="list-panel">

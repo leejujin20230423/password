@@ -5,17 +5,8 @@
 //    - 전화번호 입력창 엔터 검색 기능
 // ================================================
 document.addEventListener("DOMContentLoaded", function () {
-  // 1) "전체 선택" 체크박스
-  var checkAll = document.getElementById("checkAll");
-
-  if (checkAll) {
-    checkAll.addEventListener("change", function () {
-      var boxes = document.querySelectorAll('input[name="password_ids[]"]');
-      boxes.forEach(function (cb) {
-        cb.checked = checkAll.checked;
-      });
-    });
-  }
+  // 1) 상단 고정 검색바 LED 레일 인터랙션
+  setupGlobalSearchRail();
 
   // 2) 비밀번호 리스트 검색 초기화
   initPasswordListSearch();
@@ -38,20 +29,151 @@ document.addEventListener("DOMContentLoaded", function () {
 // ================================================
 // 1-1. 비밀번호 리스트 검색 초기화
 // ================================================
-function initPasswordListSearch() {
-  var input = document.getElementById("passwordListSearch");
-  if (!input) return;
-  var searchBtn = document.getElementById("passwordListSearchBtn");
+function setupGlobalSearchRail() {
+  var globalSearchShell = document.getElementById("globalSearchShell");
+  var globalSearchInputEl = document.getElementById("globalShareSearch");
+  if (!globalSearchShell || !globalSearchInputEl) return;
 
-  var tbody = document.querySelector(".password-table tbody");
+  var resumeLedTimer = null;
+
+  function syncGlobalSearchShellSize() {
+    if (window.innerWidth <= 900) {
+      globalSearchShell.style.width = "100%";
+      globalSearchShell.style.minWidth = "0";
+      globalSearchShell.style.maxWidth = "none";
+      return;
+    }
+
+    var w = Math.round(window.innerWidth * 0.4);
+    if (w < 360) w = 360;
+    if (w > 960) w = 960;
+
+    globalSearchShell.style.width = w + "px";
+    globalSearchShell.style.minWidth = "360px";
+    globalSearchShell.style.maxWidth = "960px";
+  }
+
+  function pauseGlobalSearchLed() {
+    if (resumeLedTimer) {
+      clearTimeout(resumeLedTimer);
+      resumeLedTimer = null;
+    }
+    globalSearchShell.classList.add("is-paused");
+  }
+
+  function resumeGlobalSearchLedWithDelay() {
+    if (resumeLedTimer) {
+      clearTimeout(resumeLedTimer);
+    }
+    resumeLedTimer = setTimeout(function () {
+      globalSearchShell.classList.remove("is-paused");
+      resumeLedTimer = null;
+    }, 2000);
+  }
+
+  function onUserScrollAwayFromSearch() {
+    var hasTyped = String(globalSearchInputEl.value || "").trim() !== "";
+    var isFocused = document.activeElement === globalSearchInputEl;
+    if (!hasTyped && !isFocused) return;
+
+    if (isFocused) {
+      globalSearchInputEl.blur();
+    }
+    resumeGlobalSearchLedWithDelay();
+  }
+
+  syncGlobalSearchShellSize();
+  window.addEventListener("resize", syncGlobalSearchShellSize);
+  globalSearchInputEl.addEventListener("focus", pauseGlobalSearchLed);
+  globalSearchInputEl.addEventListener("blur", resumeGlobalSearchLedWithDelay);
+  document.addEventListener("scroll", onUserScrollAwayFromSearch, {
+    passive: true,
+    capture: true,
+  });
+  window.addEventListener("wheel", onUserScrollAwayFromSearch, {
+    passive: true,
+  });
+  window.addEventListener("touchmove", onUserScrollAwayFromSearch, {
+    passive: true,
+  });
+}
+
+function initPasswordListSearch() {
+  var input =
+    document.getElementById("globalShareSearch") ||
+    document.getElementById("passwordListSearch");
+  if (!input) return;
+
+  var searchBtn = document.getElementById("passwordListSearchBtn");
+  var checkAll = document.getElementById("checkAll");
+
+  var table = document.getElementById("sharePasswordTable");
+  if (!table) return;
+
+  var tbody = table.querySelector("tbody");
   if (!tbody) return;
 
   var rows = Array.prototype.slice.call(tbody.querySelectorAll("tr"));
+
+  function getRowCheckbox(tr) {
+    return tr.querySelector('input[name="password_ids[]"]');
+  }
+
+  function isVisibleRow(tr) {
+    return tr.style.display !== "none";
+  }
+
+  function syncCheckAllState() {
+    if (!checkAll) return;
+
+    var visibleBoxes = rows
+      .filter(function (tr) {
+        return isVisibleRow(tr);
+      })
+      .map(getRowCheckbox)
+      .filter(Boolean);
+
+    if (visibleBoxes.length === 0) {
+      checkAll.checked = false;
+      checkAll.indeterminate = false;
+      return;
+    }
+
+    var checkedCount = visibleBoxes.filter(function (cb) {
+      return cb.checked;
+    }).length;
+
+    checkAll.checked = checkedCount === visibleBoxes.length;
+    checkAll.indeterminate =
+      checkedCount > 0 && checkedCount < visibleBoxes.length;
+  }
+
+  function applyCheckAllToVisibleRows(isChecked) {
+    rows.forEach(function (tr) {
+      var cb = getRowCheckbox(tr);
+      if (!cb) return;
+
+      if (isVisibleRow(tr)) {
+        cb.checked = isChecked;
+        return;
+      }
+
+      // 필터링된 상태에서 전체 선택 시 숨긴 행은 공유 대상에서 제외
+      if (isChecked) {
+        cb.checked = false;
+      }
+    });
+
+    syncCheckAllState();
+  }
 
   function runFilter() {
     var keyword = input.value.trim().toLowerCase();
 
     rows.forEach(function (tr) {
+      var rowCheckbox = getRowCheckbox(tr);
+      if (!rowCheckbox) return;
+
       var searchText = (
         tr.getAttribute("data-search") ||
         tr.textContent ||
@@ -64,8 +186,11 @@ function initPasswordListSearch() {
         tr.style.display = "";
       } else {
         tr.style.display = "none";
+        rowCheckbox.checked = false;
       }
     });
+
+    syncCheckAllState();
   }
 
   var debouncedRunFilter = debounce(runFilter, 160);
@@ -81,6 +206,20 @@ function initPasswordListSearch() {
       runFilter();
     }
   });
+
+  if (checkAll) {
+    checkAll.addEventListener("change", function () {
+      applyCheckAllToVisibleRows(checkAll.checked);
+    });
+  }
+
+  rows.forEach(function (tr) {
+    var cb = getRowCheckbox(tr);
+    if (!cb) return;
+    cb.addEventListener("change", syncCheckAllState);
+  });
+
+  runFilter();
 }
 
 function parseJsonWithFallback(rawText) {
