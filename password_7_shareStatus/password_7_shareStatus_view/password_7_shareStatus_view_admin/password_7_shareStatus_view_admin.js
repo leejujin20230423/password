@@ -178,6 +178,7 @@ document.addEventListener("DOMContentLoaded", function () {
         shareTabPanels.forEach(function (panel) {
             var active = panel.getAttribute("data-tab-panel") === tabKey;
             panel.hidden = !active;
+            panel.setAttribute("aria-hidden", active ? "false" : "true");
         });
     }
 
@@ -189,8 +190,10 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
 
-        var initialTab = shareTabButtons[0].getAttribute("data-tab") || "app";
-        activateShareTab(initialTab);
+        var hasAppTab = shareTabButtons.some(function (btn) {
+            return btn.getAttribute("data-tab") === "app";
+        });
+        activateShareTab(hasAppTab ? "app" : (shareTabButtons[0].getAttribute("data-tab") || "app"));
     }
 
     // --------------------------------------------------

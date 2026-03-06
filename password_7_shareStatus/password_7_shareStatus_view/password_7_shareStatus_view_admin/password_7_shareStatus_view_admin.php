@@ -431,7 +431,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
 </section>
 
             <!-- ========================== 중간: 내가 공유받은 비밀번호 목록 ========================== -->
-            <section class="content share-tab-panel" data-tab-panel="web">
+            <section class="content share-tab-panel" data-tab-panel="web" hidden aria-hidden="true">
                 <form
                     id="sharedToMeForm"
                     method="post"
@@ -572,7 +572,7 @@ $unsharedPasswordsRows = $stmtUnshared->fetchAll(PDO::FETCH_ASSOC);
             </section>
 
             <!-- ========================== 아래: 내가 공유하지 않은 비밀번호 목록 ========================== -->
-            <section class="content share-tab-panel" data-tab-panel="tablet">
+            <section class="content share-tab-panel" data-tab-panel="tablet" hidden aria-hidden="true">
                 <form
                     id="unsharedPasswordsForm"
                     method="post"
